@@ -202,7 +202,8 @@
       "one": "Una hora",
       "other": "Unas {count} horas"
     },
-    "range": "{exact} a 3 km; entre 5 y 8 horas si se toman de 2 a 5 km. Un solo píxel de satélite decide la llegada y el modelo se ajustó con este incendio, por eso se da una cifra redonda."
+    "range": "{exact} a 3 km; entre 5 y 8 horas si se toman de 2 a 5 km. Un solo píxel de satélite decide la llegada y el modelo se ajustó con este incendio, por eso se da una cifra redonda.",
+    "definition": "La antelación es el tiempo entre la primera previsión que puso {zone} en la trayectoria prevista del fuego, usando solo los focos de satélite vistos hasta ese momento, y el primer foco de satélite a menos de {radius} km de su contorno. Se calcula solo con datos de satélite y no dice nada sobre cuándo avisaron las autoridades."
   },
   "zoneKind": {
     "estate": "Urbanización",
@@ -334,6 +335,13 @@
     },
     "footer": {
       "license": "Licencia MIT"
+    },
+    "truth": {
+      "title": "Qué es real y qué no",
+      "realTitle": "Real",
+      "real": "El incendio: los focos de satélite de Deepfire del 23 de julio de 2026 y, en el modo en directo, los incendios activos en España con las simulaciones de propagación ELMFIRE de Deepfire. Los lugares y las carreteras, de OpenStreetMap. Las rutas, de openrouteservice. Los agentes de voz, que son agentes de IA reales en SLNG.",
+      "fictionTitle": "Ficticio, para la demo",
+      "fiction": "Los vecinos y sus casas, lo que responden, las llamadas del diferido, las evacuaciones y los avisos a bomberos. No se llamó a nadie cerca del incendio real. Las personas reales, los registros reales y los planes oficiales de evacuación llegarían de la mano de los servicios de emergencia."
     }
   },
   "crewPlan": {
@@ -375,5 +383,9 @@
     "affected": "Ya salían por aquí: {names}. Vuelve a llamarlos: el agente les da la ruta nueva.",
     "error": "No se ha podido cortar la carretera. Inténtalo de nuevo.",
     "marker": "Carretera cortada"
+  },
+  "dataNote": {
+    "replay": "Incendio real (satélite de Deepfire). Vecinos, llamadas y evacuaciones: ficticios.",
+    "live": "Incendios reales activos (Deepfire). En este modo no se llama a nadie."
   }
 }

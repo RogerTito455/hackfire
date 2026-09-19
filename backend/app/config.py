@@ -58,7 +58,9 @@ class Settings:
     # The language of what the voice agents are told (tool answers, call data) and of the crew SMS.
     # The dashboard picks its own per request (Accept-Language). Any code in app/locales/.
     agent_locale: str = field(default_factory=lambda: _env("HACKFIRE_AGENT_LOCALE", "en"))
-    crew_locale: str = field(default_factory=lambda: _env("HACKFIRE_CREW_LOCALE", "en"))
+    # The crews and the residents are reached in their own language: Spanish for a fire in Spain.
+    crew_locale: str = field(default_factory=lambda: _env("HACKFIRE_CREW_LOCALE", "es"))
+    resident_locale: str = field(default_factory=lambda: _env("HACKFIRE_RESIDENT_LOCALE", "es"))
     # The active scenario (app/scenario.py): which fire is replayed, where and when, from which files.
     # An id of data/scenarios/<id>.json, or a path to a scenario file. See docs/setup/new-scenario.md.
     scenario: str = field(default_factory=lambda: _env("HACKFIRE_SCENARIO", "el-tiemblo-2026-07-23"))

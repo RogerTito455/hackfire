@@ -34,7 +34,8 @@
     "avoidsBurned": "This route keeps away from the area the fire has already burned.",
     "warning": "Warning: no route avoids the burned area.",
     "none": "No route that keeps away from the fire was found. Follow the instructions of the emergency services on site.",
-    "closed": "The road to {destination} is closed."
+    "closed": "The road to {destination} is closed.",
+    "blocked": "The usual route goes through a closed road, and no other route can be planned right now. Follow the instructions of the emergency services on site."
   },
   "order": {
     "leave": "The order for {zone} is to leave now for {destination}.",
@@ -68,5 +69,9 @@
   },
   "call": {
     "endedWithoutRecord": "The call ended without a recorded answer: call again."
+  },
+  "sms": {
+    "videoLink": "Wildfire emergency: open this link to show the coordination your situation on video: {link}",
+    "crewRoom": "HackFire: the coordination is sharing its map with the crews. Join here: {link}"
   }
 }

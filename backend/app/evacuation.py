@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 import httpx
-from shapely.geometry import Point, Polygon, mapping
+from shapely.geometry import Point, Polygon, mapping, shape
 from shapely.geometry.base import BaseGeometry
 
 from . import closures, geo, impact, replay, scenario
@@ -179,6 +179,8 @@ def say(data: dict) -> str:
     """Two or three sentences a person can follow on a phone call, in the request's language."""
     if data.get("none"):
         return t("route.none")
+    if data.get("blocked"):
+        return t("route.blocked")
     roads = data["roads"]
     way = t("route.along", roads=t("route.then").join(roads)) if roads else ""
     sentences = [
@@ -258,12 +260,36 @@ def _disk_cache() -> dict[str, dict]:
 
 
 def cache_key(
-    start: tuple[float, float], end: tuple[float, float], mode: TravelMode, at: datetime, ahead_h: float
+    start: tuple[float, float],
+    end: tuple[float, float],
+    mode: TravelMode,
+    at: datetime,
+    ahead_h: float,
+    with_closures: bool = True,
 ) -> str:
     key = f"{mode}:{start[0]:.5f},{start[1]:.5f}->{end[0]:.5f},{end[1]:.5f}@{at.isoformat()}+{ahead_h:g}h"
     # A route planned before a road was closed must not be served after it.
-    closed = closures.fingerprint()
+    closed = closures.fingerprint() if with_closures else ""
     return f"{key}|closed:{closed}" if closed else key
+
+
+def _open_road_fallback(
+    start: tuple[float, float], end: tuple[float, float], mode: TravelMode, at: datetime, ahead_h: float
+) -> Route | None:
+    """With roads closed and openrouteservice unreachable (its daily quota, an outage), the route
+    cached before the closure. It still holds if it does not touch a closed road; if it does, the
+    resident is told the usual way is cut rather than being sent down it. None without closures."""
+    closed = closures.area_m()
+    if closed is None:
+        return None
+    key = cache_key(start, end, mode, at, ahead_h, with_closures=False)
+    cached = _memory.get(key) or _disk_cache().get(key)
+    if cached is None:
+        return None
+    route = _from_cache(cached)
+    if route.geometry is not None and geo.to_metres(shape(route.geometry)).intersects(closed):
+        return Route(mode=mode, spoken_directions=say({"blocked": True}))
+    return route
 
 
 def plan(
@@ -301,6 +327,9 @@ def plan(
         data = {"none": True}
         route = Route(mode=mode, spoken_directions=say(data))
     except httpx.HTTPError as error:
+        fallback = _open_road_fallback(start, end, mode, at, ahead_h)
+        if fallback is not None:
+            return fallback
         raise RoutingUnavailable(str(error)) from error
     else:
         summary = feature["properties"]["summary"]
@@ -354,7 +383,12 @@ def fastest_reachable(
     start: tuple[float, float], targets: list[Place], mode: TravelMode, at: datetime, refresh: bool = False
 ) -> Route | None:
     """The quickest route to any of `targets` that exists, or None if every one is cut off."""
-    routes = [plan(start, (p.lon, p.lat), mode, p.name, at, refresh) for p in targets]
+    routes = []
+    for place in targets:
+        try:
+            routes.append(plan(start, (place.lon, place.lat), mode, place.name, at, refresh))
+        except RoutingUnavailable:
+            continue  # this alternative was never cached and cannot be planned now
     reachable = [r for r in routes if r.geometry is not None]
     return min(reachable, key=lambda r: r.duration_s or float("inf"), default=None)
 

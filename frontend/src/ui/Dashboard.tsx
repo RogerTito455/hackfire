@@ -21,6 +21,7 @@ import type { Triage } from '../hooks/useTriage'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
 import { CrewAlerts } from './CrewAlerts'
+import { DataNote } from './DataNote'
 import { Icon } from './Icon'
 import { useI18n } from './i18n'
 import { LanguagePicker } from './LanguagePicker'
@@ -172,6 +173,7 @@ export function Dashboard({
               <LiveStatus {...live} />
             )}
             <StatusCounts counts={counts} />
+            <DataNote mode={mode} />
           </>
         }
       >

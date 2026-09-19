@@ -130,3 +130,35 @@ def test_a_crew_is_never_sent_through_a_closed_road(monkeypatch) -> None:
     closed = Point(NEAR_LA_ATALAYA["lon"], NEAR_LA_ATALAYA["lat"])
     assert route["geometry"] is not None
     assert len(asked) == 2 and all(avoid is not None and shape(avoid).contains(closed) for avoid in asked)
+
+
+def quota_spent(monkeypatch: pytest.MonkeyPatch) -> None:
+    """openrouteservice refusing every request, as when its daily quota is spent."""
+
+    def refuse(*_args, **_kwargs):
+        raise routing.httpx.HTTPStatusError("403", request=None, response=None)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(routing, "route_avoiding", refuse)
+
+
+def test_without_openrouteservice_a_closure_off_the_cached_route_keeps_that_route(monkeypatch) -> None:
+    neighbor = first_neighbor()["id"]
+    before = client.get(f"/api/routes/{neighbor}").json()
+    quota_spent(monkeypatch)
+    far_away = {"lat": 40.2, "lon": -4.9}
+    client.post("/api/closures", json=far_away)
+    after = client.get(f"/api/routes/{neighbor}")
+    assert after.status_code == 200
+    assert after.json()["geometry"] == before["geometry"]
+
+
+def test_without_openrouteservice_a_closure_on_the_cached_route_says_the_way_is_cut(monkeypatch) -> None:
+    neighbor = first_neighbor()["id"]
+    route = client.get(f"/api/routes/{neighbor}").json()
+    quota_spent(monkeypatch)
+    lon, lat = route["geometry"]["coordinates"][1]
+    client.post("/api/closures", json={"lat": lat, "lon": lon})
+    after = client.get(f"/api/routes/{neighbor}", headers={"Accept-Language": "es"})
+    assert after.status_code == 200
+    assert after.json()["geometry"] is None
+    assert after.json()["spoken_directions"].startswith("La ruta habitual pasa por una carretera cortada")

@@ -10,6 +10,7 @@ import logging
 import secrets
 
 from .config import settings
+from .i18n import t
 from .models import RescueVideo, RescueVideoLink, TriageStatus, VideoAccess
 from .providers import vonage
 from .state import state
@@ -70,7 +71,7 @@ def _text(phone: str, link: str) -> bool:
     if not vonage.sms_configured():
         return False
     try:
-        vonage.send_sms(phone, f"Emergencia incendio: abra este enlace para mostrar su situación en vídeo a la coordinación: {link}")
+        vonage.send_sms(phone, t("sms.videoLink", settings.resident_locale, link=link))
     except vonage.VonageUnavailable:
         logger.exception("the video link SMS failed")  # never log the number
         return False
