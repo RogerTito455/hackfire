@@ -30,6 +30,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `HACKFIRE_PHONE_CALLS` | Phoning residents from the call campaign (#8) | `1` once an outbound SIP trunk is attached to the agent in SLNG; anything else keeps phones off and the dashboard offers browser calls |
 | `SLNG_LLM_URL` | The backend's LLM: typed answers on the dashboard and `pnpm eval:triage`, with `SLNG_API_KEY` | SLNG's Context Router. Default `https://eu-north.context-router.slng.ai/v1` |
 | `SLNG_LLM_MODEL` | Same | Default `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, the model the voice agents think with |
+| `GALTEA_API_KEY` | `pnpm eval:galtea` only: simulated residents against the resident agent, with `SLNG_API_KEY`. The app never reads it | https://platform.galtea.ai → Settings. See [Galtea](../services/galtea.md) |
 | `ORS_API_KEY` | Evacuation and rescue routes (#6); only needed to plan routes that are not in `data/routes_cache.json` | https://openrouteservice.org/dev/#/signup |
 | `OVERPASS_URL` | `pnpm data:zones` (#4); optional, no key | Empty uses `https://overpass-api.de/api/interpreter`. See [Overpass](../services/overpass.md) if it refuses connections |
 
