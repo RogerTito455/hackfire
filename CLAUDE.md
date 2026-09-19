@@ -17,31 +17,43 @@ Everything written into this repo is in **English**: docs, code, comments, commi
 
 ## Layout
 
+Monorepo: pnpm workspace for the frontend, uv project for the backend, root `package.json` scripts for everything.
+
 ```
-backend/app/main.py     FastAPI app: dashboard API (/api) and agent tools (/tools)
-backend/app/models.py   Pydantic models; the tool contract lives here
-backend/app/state.py    In-memory triage state and rescue prioritisation
-backend/tests/          pytest
-frontend/src/App.tsx    Coordinator dashboard (MapLibre GL)
-frontend/src/api.ts     Typed backend client
-data/                   Static demo data (registry, cached hotspots and spread)
-scripts/                One-off data downloads
+backend/app/main.py        FastAPI app: dashboard API (/api) and agent tools (/tools)
+backend/app/models.py      Pydantic models; the tool contract lives here
+backend/app/state.py       In-memory triage state and rescue prioritisation
+backend/app/config.py      Every key, URL and path, read from the environment
+backend/app/providers/     One module per external service (deepfire, routing, llm, voice)
+backend/app/pipelines/     One-off data downloads that write to data/
+backend/tests/             pytest
+frontend/src/domain/       Types and pure functions — no React, no fetch, no styling
+frontend/src/services/     Backend client — the only place that knows URLs and HTTP
+frontend/src/hooks/        State and polling; returns plain data
+frontend/src/ui/           Presentational components, theme.ts, CSS
+frontend/src/App.tsx       Composition root only: hook → UI
+data/                      Static demo data (registry, cached hotspots and spread)
 ```
 
 ## Commands
 
 ```bash
-cd backend && uv sync && uv run uvicorn app.main:app --reload   # http://localhost:8000, docs at /docs
-cd backend && uv run pytest
-cd frontend && npm install && npm run dev                       # http://localhost:5173
-cd frontend && npm run build                                    # type-checks, then bundles
+pnpm setup           # pnpm install + uv sync
+pnpm dev:api         # http://localhost:8000, docs at /docs
+pnpm dev:web         # http://localhost:5173
+pnpm check           # backend tests, then frontend type-check and build
+pnpm data:hotspots   # download Deepfire hotspots into data/
 ```
 
-Run `uv run pytest` and `npm run build` before every commit that touches the respective side.
+Run `pnpm check` before every commit.
 
 ## Conventions
 
-- **The tool contract is shared.** The five `/tools` endpoints are the interface between the voice track and everything else. Changing a request or response model in `models.py` means updating `frontend/src/api.ts` and telling the team.
+- **Never hand-write manifests or config JSON.** `package.json`, `pyproject.toml`, lockfiles and tsconfig changes go through commands: `pnpm add`, `pnpm pkg set`, `uv add`, `uv remove`. pnpm only — no npm, no yarn.
+- **UI is independent of logic.** Components in `frontend/src/ui/` take props and render; they never fetch, poll or import from `services/`. Logic lives in `domain/` (pure) and `hooks/` (stateful). Colours and labels live in `ui/theme.ts` and CSS variables in `ui/theme.css`. A redesign should touch `ui/` only.
+- **No component kits or icon packages.** No shadcn, no icon or SVG libraries. Plain CSS and hand-written markup. MapLibre GL is the single third-party UI dependency.
+- **Third parties go through `providers/`.** Nothing outside `backend/app/providers/` makes HTTP calls to an external service, and nothing outside `config.py` reads `os.environ`.
+- **The tool contract is shared.** The five `/tools` endpoints are the interface between the voice track and everything else. Changing a request or response model in `models.py` means updating `frontend/src/domain/triage.ts` and telling the team.
 - **Stubs are explicit.** Placeholder responses set `stub: true` and carry a `TODO(track)` comment, where track is `map`, `voice` or `data`. Remove both when the real implementation lands.
 - **Demo mode comes first.** Everything slow or external (Deepfire, the spread simulation, Overpass) is fetched once and cached as static files under `data/`. The live demo must not depend on a third-party API answering in time. Deepfire runs on shared capacity and returns 503 under load.
 - **Routing limits.** openrouteservice rejects `avoid_polygons` larger than 200 km² or 20 km across. Always clip the fire polygon to the demo box `-4.85,40.30,-4.40,40.50` or tighter.

@@ -32,12 +32,25 @@ Still to build: hotspot and spread layers, time slider, routing, the voice agent
 
 ## Architecture
 
+A single repo, run on localhost and deployed straight from `main`. No staging environment.
+
 ```
-frontend/   React + TypeScript + MapLibre GL — coordinator dashboard
-backend/    FastAPI — agent tools, triage state, dashboard API
-data/       Static demo data: resident registry, cached hotspots and spread
-scripts/    One-off data downloads
+frontend/src/
+  domain/      Types and pure functions. No React, no fetch, no styling
+  services/    Backend client: the only place that knows URLs and HTTP
+  hooks/       State and polling; returns plain data
+  ui/          Presentational components, theme and CSS. Props in, markup out
+backend/app/
+  main.py      Dashboard API (/api) and agent tools (/tools)
+  models.py    The tool contract
+  state.py     Triage state and rescue prioritisation
+  config.py    Every key, URL and path, read from the environment in one place
+  providers/   One module per external service: Deepfire, openrouteservice, Nebius, SLNG
+  pipelines/   One-off data downloads that write to data/
+data/          Static demo data: resident registry, cached hotspots and spread
 ```
+
+The UI is independent of the logic: redesigning the dashboard means touching `ui/` only. No component kit and no icon library; the one third-party UI dependency is MapLibre GL.
 
 | Piece | Technology |
 |---|---|
@@ -63,18 +76,12 @@ Interactive docs are served at `http://localhost:8000/docs`.
 
 ## Running it locally
 
-Requirements: Python 3.12+, [uv](https://docs.astral.sh/uv/), Node 20+.
+Requirements: Python 3.12+, [uv](https://docs.astral.sh/uv/), Node 20+ and [pnpm](https://pnpm.io/).
 
 ```bash
-# Backend — http://localhost:8000
-cd backend
-uv sync
-uv run uvicorn app.main:app --reload
-
-# Frontend — http://localhost:5173
-cd frontend
-npm install
-npm run dev
+pnpm setup      # installs frontend and backend dependencies
+pnpm dev:api    # backend  — http://localhost:8000
+pnpm dev:web    # frontend — http://localhost:5173
 ```
 
 Copy `.env.example` to `.env` and fill in the keys you have. The skeleton runs without any of them.
@@ -92,8 +99,7 @@ The pin for that resident turns red and they appear in the rescue queue. `POST /
 ### Tests
 
 ```bash
-cd backend && uv run pytest
-cd frontend && npm run build
+pnpm check      # backend tests, then frontend type-check and build
 ```
 
 ### Resident registry

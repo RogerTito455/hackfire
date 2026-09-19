@@ -1,17 +1,15 @@
 """In-memory triage state. Good enough for the demo; swap for SQLite if needed."""
 
 import json
-import os
 from datetime import UTC, datetime
 from pathlib import Path
 
+from .config import DATA_DIR, settings
 from .models import Neighbor, ReportStatusRequest, Rescue, TriageStatus
-
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
 # neighbors.local.json holds the team's real phone numbers and is git-ignored.
 _REGISTRY_CANDIDATES = [
-    os.environ.get("HACKFIRE_NEIGHBORS_FILE"),
+    settings.neighbors_file,
     DATA_DIR / "neighbors.local.json",
     DATA_DIR / "neighbors.sample.json",
 ]

@@ -1,0 +1,14 @@
+{
+  "name": "hackfire",
+  "scripts": {
+    "test": "cd backend && uv run python -m pytest",
+    "setup": "pnpm install && uv sync --project backend",
+    "dev:web": "pnpm --filter frontend dev",
+    "dev:api": "cd backend && uv run uvicorn app.main:app --reload",
+    "build": "pnpm --filter frontend build",
+    "check": "pnpm test && pnpm build",
+    "data:hotspots": "cd backend && uv run python -m app.pipelines.fetch_hotspots"
+  },
+  "packageManager": "pnpm@10.33.3",
+  "private": true
+}

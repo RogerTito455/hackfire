@@ -79,6 +79,18 @@
   font-weight: 600;
 }
 
+.reset {
+  margin-top: 24px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .empty {
   font-size: 14px;
   color: var(--text);

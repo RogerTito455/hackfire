@@ -1,0 +1,15 @@
+// Backend client. The only file that knows URLs and HTTP.
+
+import type { Neighbor, Rescue } from '../domain/triage'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, init)
+  if (!response.ok) throw new Error(`${path} returned ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export const fetchNeighbors = () => request<Neighbor[]>('/api/neighbors')
+export const fetchRescues = () => request<Rescue[]>('/api/rescues')
+export const resetDemo = () => request<{ status: string }>('/api/reset', { method: 'POST' })
