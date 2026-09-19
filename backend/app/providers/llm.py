@@ -9,11 +9,16 @@ import httpx
 from ..config import settings
 
 
-def chat(client: httpx.Client, messages: list[dict], **params) -> str:
+def complete(client: httpx.Client, messages: list[dict], **params) -> dict:
+    """One chat completion. Returns the assistant message, tool calls included."""
     response = client.post(
         f"{settings.nebius_base_url.rstrip('/')}/chat/completions",
         headers={"Authorization": f"Bearer {settings.nebius_api_key}"},
         json={"model": settings.nebius_model, "messages": messages, **params},
     )
     response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    return response.json()["choices"][0]["message"]
+
+
+def chat(client: httpx.Client, messages: list[dict], **params) -> str:
+    return complete(client, messages, **params)["content"]

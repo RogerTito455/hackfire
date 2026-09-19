@@ -76,6 +76,43 @@ def test_reset_restores_the_initial_registry() -> None:
     assert client.get("/api/rescues").json() == []
 
 
+# SLNG's API Request tool posts the model's arguments as a raw JSON body and does not check their
+# types: nulls, empty strings and numbers as text reach us exactly as the model wrote them.
+
+
+def test_report_status_accepts_the_nulls_and_empty_strings_an_agent_sends() -> None:
+    neighbor_id = client.get("/api/neighbors").json()[0]["id"]
+
+    response = client.post(
+        "/tools/report_status",
+        json={"neighbor_id": neighbor_id, "status": "needs_rescue", "people": None, "mobility": "", "observation": None},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "needs_rescue"
+
+
+def test_report_status_reads_people_sent_as_text() -> None:
+    neighbor_id = client.get("/api/neighbors").json()[0]["id"]
+
+    response = client.post("/tools/report_status", json={"neighbor_id": neighbor_id, "status": "evacuating", "people": "3"})
+
+    assert response.json()["people"] == 3
+
+
+def test_report_status_keeps_the_triage_when_people_is_not_a_number() -> None:
+    # A rejected call would leave the pin unchanged in the middle of an emergency call.
+    neighbor_id = client.get("/api/neighbors").json()[0]["id"]
+
+    response = client.post(
+        "/tools/report_status", json={"neighbor_id": neighbor_id, "status": "needs_rescue", "people": "unos tres"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "needs_rescue"
+    assert response.json()["people"] is None
+
+
 def test_unknown_neighbor_is_404() -> None:
     response = client.post("/tools/report_status", json={"neighbor_id": "nope", "status": "evacuating"})
     assert response.status_code == 404

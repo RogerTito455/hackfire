@@ -1,7 +1,7 @@
 # SLNG
 
 **Used for:** step 3 (the agent calls residents) and step 4 (crew notification, the coordinator's voice query). Slices 6–9 (#7, #8, #9, #10), latency numbers (#14).
-**Status:** in progress. The resident agent is an Unmute package in `voice/resident/` that validates but is not deployed; `backend/app/providers/voice.py` is a stub
+**Status:** in progress. The three API Request tools the resident agent needs are published in SLNG. The agent itself (`voice/resident/`) validates but is not deployed: it waits on a Nebius key. `backend/app/providers/voice.py` is a stub
 **Owner:** Roger
 
 ## Access
@@ -100,7 +100,7 @@ Install: take the Linux archive and `checksums.txt` from https://github.com/slng
 
 ## CLI and SDKs
 
-- **`voiceai` CLI** (source: https://github.com/slng-ai/sdks): `whoami`, `tts`, `stt`, `agents {list,create,push}`, `agents calls dispatch`, `trunks list`, `mcp list`. Handy for scripting the voice track and for checking what trunk we have. Install with `curl -fsSL https://docs.slng.ai/install.sh | sh`. It reads `VOICEAI_API_KEY`, not `SLNG_API_KEY`, so export both.
+- **`voiceai` CLI** (source: https://github.com/slng-ai/sdks): `whoami`, `tts`, `stt`, `agents {list,create,push}`, `agents calls dispatch`, `trunks list`, `mcp list`. Handy for scripting the voice track and for checking what trunk we have. The install script `https://docs.slng.ai/install.sh` returned 404 on 2026-09-19; take `voiceai-linux-x64` from the latest `cli-v*` release of `slng-ai/sdks` instead (see [voice/README.md](../../voice/README.md#commands)). It reads `VOICEAI_API_KEY`, not `SLNG_API_KEY`, so export both.
 - **Python SDK** `voiceai-sdk`, if the backend ever needs more than `httpx`: `uv add voiceai-sdk` inside `backend/`. It defaults to `SLNG_API_KEY`.
 
 `slng-ai/sdks` is not an MCP server; it is the source of the CLI and SDKs.

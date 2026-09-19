@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, field_validator
 
 
 class TriageStatus(StrEnum):
@@ -70,6 +70,15 @@ class ReportStatusRequest(BaseModel):
     people: int | None = None
     mobility: str | None = None
     observation: str | None = None
+
+    @field_validator("people", mode="before")
+    @classmethod
+    def _unreadable_count_is_unknown(cls, value: object) -> object:
+        # SLNG passes the model's arguments through unchecked. A count in words must not reject
+        # the call and lose the triage status with it.
+        if isinstance(value, str) and not value.strip().isdigit():
+            return None
+        return value
 
 
 class Rescue(BaseModel):

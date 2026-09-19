@@ -2,7 +2,7 @@
 
 The voice agents as [Unmute](https://unmute.ai) packages: SLNG's declarative voice-agent compiler. A package is `agent.yaml`, a Markdown prompt and `targets.yaml`; `unmute deploy` compiles it and pushes it to SLNG, which hosts the agent.
 
-**Status:** the package validates and compiles offline with unmute 0.5.5. Not yet deployed, and nobody has heard it: it waits on access (#1), the deployed backend (#2) and a Nebius model.
+**Status:** the package validates with unmute 0.5.5, and the three API Request tools exist in SLNG (step 2 below, done 2026-09-19). Not yet deployed, and nobody has heard it: it waits on a Nebius key and model (#1).
 
 | Package | Slice | What it does |
 |---|---|---|
@@ -43,6 +43,8 @@ unmute deploy --dry-run  # needs a key: checks tool names, injected arguments an
 unmute deploy            # pushes; the agent is called hackfire-resident-slng
 ```
 
+`voiceai` 0.1.19 comes from the `cli-v0.1.19` release of [slng-ai/sdks](https://github.com/slng-ai/sdks/releases) (`voiceai-linux-x64`, checked against the digest `gh release view --json assets` shows); SLNG's install script returned 404 on 2026-09-19.
+
 `unmute deploy` reads `SLNG_API_KEY`, then `VOICEAI_API_KEY`, then a `voiceai login` profile. Export it from the root `.env` (`set -a; . ../../.env; set +a`); do not create a second `.env`. It pushes through the `voiceai` CLI (0.1.18 or later), installed as described in [SLNG](../docs/services/slng.md#cli-and-sdks).
 
 `unmute validate` output on 2026-09-19:
@@ -54,7 +56,7 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 ## From package to phone call, in order
 
 1. **Deployed backend over HTTPS** (#2). SLNG tools only call HTTPS URLs, so `localhost` will not do; a tunnel to a laptop works while developing.
-2. **Create three API Request tools** in the SLNG dashboard: Global Tools → New tool → API Request. The names must match exactly, because the package references them by name. Method `POST`, authentication None (the backend has none), result shown to the model. A `POST` sends the arguments as the raw JSON body, which is exactly what our `/tools` endpoints take. Each tool needs a successful test run before it can be published.
+2. **Done on 2026-09-19, through the API** (`POST /v1/agents/tools`, then `/run` and `/publish`), pointing at `https://frontend-production-ae2c.up.railway.app/tools/…`: each test run answered in under 100 ms. SLNG passes the model's arguments through unchecked; see [the finding](../docs/findings/2026-09-19-slng-tool-arguments-unchecked.md). To recreate them, **create three API Request tools** in the SLNG dashboard: Global Tools → New tool → API Request. The names must match exactly, because the package references them by name. Method `POST`, authentication None (the backend has none), result shown to the model. A `POST` sends the arguments as the raw JSON body, which is exactly what our `/tools` endpoints take. Each tool needs a successful test run before it can be published.
 
    | Name | URL | Parameters (JSON Schema) | Test input |
    |---|---|---|---|
@@ -67,6 +69,10 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 4. **Deploy:** `unmute deploy --dry-run`, then `unmute deploy`. Check first with `voiceai agents list` that `hackfire-resident-slng` is free, because a push replaces the agent with that name.
 5. **Test in the browser:** open the agent in the SLNG dashboard → Test agent → Web session. The panel cannot pass arguments, so the session uses the test defaults: sample resident `n01`. Checkpoint 1 is n01's pin changing on the deployed dashboard.
 6. **Trunk for real calls** (#1, #8). SLNG provides no numbers: an admin adds an outbound SIP trunk in Telephony and attaches it to the agent. A push does not detach it. Then `unmute deploy --call +34…` or Test agent → Outbound call rings a phone, and the call campaign dispatches calls with all four variables in `arguments` (`neighbor_id`, `resident_name`, `address`, `zone`).
+
+## Checking the model's triage without voice
+
+`pnpm eval:triage` sends `instructions.md` and the `report_status` description to Nebius with four answers at the point of the three questions: no car, road cut and a mother who cannot walk must come back as `needs_rescue`, leaving now by car as `evacuating`. It needs `NEBIUS_API_KEY` and `NEBIUS_MODEL` (skipped otherwise), and is not part of `pnpm check`, because a model's answer can vary. Run it after changing the prompt, the tool description or the model.
 
 ## Placeholders and open questions
 
