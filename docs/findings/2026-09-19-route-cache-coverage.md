@@ -8,11 +8,11 @@
 
 It went unnoticed because the first version of `pnpm check:routes` (written the same day) enumerated the same three places as the planner and printed `OK`. The reviewer of that change found it. Checking production's five residents with the remote check would also have said `OK`, since a 200 does not say where a route came from.
 
-## What we do about it
+## What we did about it
 
 - One list, `required_routes` in `backend/app/pipelines/common.py`, is what `pnpm data:routes` plans and `pnpm check:routes` verifies: the nearest safe point, **all five places**, each by car and on foot, and the crew's route. They cannot drift apart again.
-- With the check on the committed cache, every resident is missing routes: 4 each for El Tiemblo and Cebreros, and everything for n06 to n10. About 75 openrouteservice requests close it, once there is quota ([the quota](../services/openrouteservice.md#the-quota-and-why-the-demo-must-not-touch-it)).
-- Until then, avoid ordering a zone to El Tiemblo or Cebreros in a rehearsal on the deployed service, or leave `ORS_API_KEY` set there only if it has quota.
+- With the check on the cache as it was, every resident was missing routes: 4 each for El Tiemblo and Cebreros, and everything for n06 to n10, about 75 openrouteservice requests ([the quota](../services/openrouteservice.md#the-quota-and-why-the-demo-must-not-touch-it)).
+- **Closed the same day** with a new key: exactly 75 requests, 110 routes. `pnpm check:routes` says `OK`, and a run with no key and the registry coming from `HACKFIRE_NEIGHBORS_JSON` ordered each of the two zones to each of the five places and asked for every resident's route by car and on foot (120 requests, 0 failures, each route going to the ordered place).
 - If restricting orders to the qualifying places is preferable, that is a product decision for whoever owns the orders panel; then `required_routes` should list `safe_points(at)` again.
 
 ## Sources

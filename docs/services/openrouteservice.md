@@ -1,7 +1,7 @@
 # openrouteservice
 
 **Used for:** step 3 (resident's route out) and step 4 (crew's route to a rescue). Slice 5 (#6), reused by #9 and #10.
-**Status:** working. Both routing tools are real; 35 demo routes cached in `data/routes_cache.json`, for residents n01 to n05 and only the three places that qualify at the scenario time. `pnpm check:routes` lists what is missing: 4 routes per resident for El Tiemblo and Cebreros (an order to a place marked "not safe now") and everything for n06 to n10, about 75 requests in all. On 2026-09-19 the team's key ran out of quota (`403 {"error": "Quota exceeded"}`, even for a trivial route)
+**Status:** working. Both routing tools are real; 110 demo routes cached in `data/routes_cache.json` for the 10-resident registry (the 5 sample residents are the first 5): every resident, by car and on foot, to every place an order can go to (El Tiemblo and Cebreros, marked "not safe now", included), and the crew's route. `pnpm check:routes` proves it with openrouteservice cut off, so the demo needs no `ORS_API_KEY`
 **Owner:** Bryan
 
 ## Access
