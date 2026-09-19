@@ -16,8 +16,16 @@ import type { RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } fro
 const DEFAULT_API_URL = import.meta.env.DEV ? 'http://localhost:8000' : ''
 const API_URL = (import.meta.env.VITE_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, '')
 
+// The backend writes some sentences itself (route directions, orders, crew alerts): every request
+// asks for them in the dashboard's language, which the i18n provider keeps in <html lang>.
+function inDashboardLanguage(init?: RequestInit): RequestInit {
+  const headers = new Headers(init?.headers)
+  headers.set('Accept-Language', document.documentElement.lang || 'en')
+  return { ...init, headers }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, init)
+  const response = await fetch(`${API_URL}${path}`, inDashboardLanguage(init))
   if (!response.ok) throw new Error(`${path} returned ${response.status}`)
   return response.json() as Promise<T>
 }

@@ -13,6 +13,7 @@ import { useVoiceConversations } from './hooks/useConversation'
 import { useRescueVideo } from './hooks/useRescueVideo'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
+import { useI18n } from './ui/i18n'
 
 // Composition root: logic comes from hooks, presentation from ui/.
 function App() {
@@ -20,7 +21,8 @@ function App() {
   const replay = useFireReplay()
   const [mode, setMode] = useMapMode()
   const live = useLiveFires(mode === 'live')
-  const selection = useSelectedRoute()
+  const { locale } = useI18n()
+  const selection = useSelectedRoute(locale)
   const orders = useOrders()
   const textTriage = useTextTriage()
   const voice = useVoiceCapabilities()

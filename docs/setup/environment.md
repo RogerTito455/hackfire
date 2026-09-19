@@ -16,6 +16,8 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | The crew SMS (#9). All three plus `HACKFIRE_CREW_PHONE`, or alerts stay on the dashboard | Twilio console → Account info; the from number must be SMS-capable. Ask the SLNG mentors if they lend one |
 | `HACKFIRE_PUBLIC_URL` | The link in each crew alert (#9) | The deployed dashboard URL. Empty means `http://localhost:5173` |
 | `HACKFIRE_SCENARIO_TIME` | The replay moment the calls happen at: routes avoid the fire burned up to then, and `get_fire_status` answers for it until the dashboard's slider sets another (#4) | ISO 8601. Empty means `2026-07-23T16:00:00Z` (18:00 CEST): after La Atalaya is first flagged (15:30 CEST), with about 4 h to impact and safe ways out still open. After changing it, run `pnpm data:routes` |
+| `HACKFIRE_AGENT_LOCALE` | The language of what the voice agents are told: tool answers (`get_fire_status`, routes, orders) and each call's data. Any code in `backend/app/locales/` | Empty means `en`. `es` makes the agents receive Spanish sentences; try it with `pnpm eval:triage` before a demo |
+| `HACKFIRE_CREW_LOCALE` | The language of the crew SMS (the dashboard shows each alert in its own language) | Empty means `en` |
 | `DEEPFIRE_CLIENT_ID` | Hotspots, live fires, spread (#3, #4, #11) | https://app.deepfire.co → Settings → API clients → Create |
 | `DEEPFIRE_CLIENT_SECRET` | Same | Shown once when the API client is created |
 | `SLNG_API_KEY` | Voice agent, calls, SMS (#7, #8, #9, #10) | https://app.slng.ai → Projects → Generate key |

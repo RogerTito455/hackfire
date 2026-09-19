@@ -13,6 +13,7 @@ from datetime import datetime
 
 from . import evacuation, impact
 from .config import settings
+from .i18n import t
 from .models import (
     EvacuationOrder,
     Neighbor,
@@ -49,8 +50,8 @@ def _proposal(zone_id: str, at: datetime) -> tuple[OrderAction, evacuation.Place
 
 def message(zone_name: str, action: OrderAction, destination: str | None) -> str:
     if action == OrderAction.EVACUATE and destination:
-        return f"The order for {zone_name} is to leave now for {destination}."
-    return f"The order for {zone_name} is to stay indoors until the emergency services say otherwise."
+        return t("order.leave", zone=zone_name, destination=destination)
+    return t("order.stay", zone=zone_name)
 
 
 def _place(place_id: str | None) -> evacuation.Place | None:

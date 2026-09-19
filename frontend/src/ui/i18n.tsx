@@ -1,6 +1,6 @@
 // The language in use, shared through context. The words and the lookup live in locales.ts.
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react'
 import { hasLocale, localeInfo, preferredLocale, translate, type Vars } from './locales'
 
 const STORAGE_KEY = 'hackfire.locale'
@@ -30,7 +30,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState(initialLocale)
   const { intl } = localeInfo(locale)
 
-  useEffect(() => {
+  // A layout effect runs before every child's effects, so their requests already carry the new
+  // language (services/api.ts reads <html lang> for Accept-Language).
+  useLayoutEffect(() => {
     document.documentElement.lang = locale
   }, [locale])
 

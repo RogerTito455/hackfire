@@ -3,14 +3,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import briefing, campaign, evacuation, impact, live, orders, replay, rescue_video, text_triage
+from . import briefing, campaign, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -37,7 +37,7 @@ from .models import (
     TravelMode,
 )
 from .providers import sms, voice, vonage
-from .state import state
+from .state import crew_message, state
 
 app = FastAPI(title="HackFire", version="0.1.0")
 
@@ -48,6 +48,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+
+@app.middleware("http")
+async def request_locale(request: Request, call_next):
+    """The language of the sentences this request gets back (app/i18n.py).
+
+    The agents' tools answer in HACKFIRE_AGENT_LOCALE; the dashboard gets ?lang= or its Accept-Language.
+    """
+    if request.url.path.startswith("/tools/"):
+        locale = settings.agent_locale
+    else:
+        locale = request.query_params.get("lang") or i18n.negotiate(request.headers.get("accept-language"))
+    token = i18n.set_current(locale)
+    try:
+        return await call_next(request)
+    finally:
+        i18n.reset(token)
 
 
 @app.get("/health")
@@ -155,8 +172,15 @@ def get_focus() -> AgentFocus | None:
 
 @app.get("/api/alerts")
 def list_alerts() -> list[CrewAlert]:
-    """Crew alerts for new rescues, newest first."""
-    return state.alerts()
+    """Crew alerts for new rescues, newest first, written in the dashboard's language."""
+    alerts = state.alerts()
+    neighbors = {neighbor.id: neighbor for neighbor in state.neighbors()}
+    return [
+        alert.model_copy(update={"message": crew_message(neighbors[alert.neighbor_id], alert.link)})
+        if alert.neighbor_id in neighbors
+        else alert
+        for alert in alerts
+    ]
 
 
 @app.get("/api/orders")

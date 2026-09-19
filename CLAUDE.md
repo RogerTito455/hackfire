@@ -29,6 +29,7 @@ backend/app/lead_time.py   Lead time: first flag of a zone to first hotspot with
 backend/app/replay.py      Cached replay files under data/, served as-is
 backend/app/evacuation.py  Routes that avoid the fire and safe points; orders.py: evacuation orders per zone
 backend/app/config.py      Every key, URL and path, read from the environment
+backend/app/i18n.py        Sentences the backend writes (directions, orders, alerts), per language in app/locales/
 backend/app/providers/     One module per external service (deepfire, routing, llm, voice)
 backend/app/pipelines/     One-off data downloads that write to data/
 backend/tests/             pytest
