@@ -1,0 +1,65 @@
+# HackFire coordinator agent (slice 9, issue #10).
+#
+# The emergency coordinator, or a firefighter by phone, asks which rescues there are and in what
+# order, and for the route to one of them. The agent reads the rescue queue, which is ranked by
+# predicted time to impact, and asks the backend for the crew's route. The dashboard follows it and
+# draws that route (GET /api/focus).
+#
+# Prerequisites: ../README.md, section "The coordinator agent".
+version: 1
+
+# Deploys as `hackfire-coordinator-slng`.
+name: hackfire-coordinator
+entry_agent: rescue_coordinator
+
+agents:
+  rescue_coordinator:
+    # Spanish on purpose, like the resident agent: the people asking speak Spanish.
+    instructions: instructions.md
+    think: reasoning
+    speak: sergio
+    tools:
+      - get_rescue_queue
+      - get_rescue_route
+      - end_call
+
+models:
+  think:
+    reasoning:
+      description: NVIDIA Nemotron Super 3 (120B) on Bedrock, served by SLNG, as for the resident agent
+      model: "bedrock-mantle/nvidia.nemotron-super-3-120b:latest"
+  speak:
+    sergio:
+      description: Fish S2.1 Pro hosted by SLNG, Castilian voice Sergio, so it does not sound like the resident agent
+      provider: slng
+      model: "slng/fish/tts:s2.1-pro"
+      voice: "ad2a0e367c664e1a88208e0311ef97ee"
+  listen:
+    transcriber:
+      description: Soniox real-time v5 through SLNG, Spanish
+      provider: slng
+      model: "soniox/speech-ai:rt-v5"
+      language: es
+
+tools:
+  - get_rescue_queue
+  - get_rescue_route
+  - end_call
+
+conversation:
+  greeting:
+    speaks_first: agent
+    text: "Coordinación de HackFire. ¿Qué necesita?"
+  interruption:
+    enabled: true
+
+# Browser audio only for now. A firefighter calling in needs an inbound number (a trunk) attached
+# in the SLNG dashboard, as for the resident agent's calls (#1, #8).
+channels:
+  web:
+    kind: realtime_audio
+
+capacity:
+  peak_sessions: 2
+  max_sessions: 4
+  avg_session_duration: 3m

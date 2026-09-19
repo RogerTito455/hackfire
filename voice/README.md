@@ -6,9 +6,9 @@ The voice agents as [Unmute](https://unmute.ai) packages: SLNG's declarative voi
 
 | Package | Slice | What it does |
 |---|---|---|
+| [`coordinator/`](coordinator/) | 9 (#10) | Tells the coordinator, or a firefighter, which rescues are pending and in what order, and reads the crew's route to one of them; the dashboard draws that route |
 | [`resident/`](resident/) | 6 (#7) | Calls one resident of an at-risk zone, gives the fire status and their exit route, asks the three questions, and records the answer with `report_status` |
 
-The coordinator agent (slice 9, #10), which reads `get_rescue_queue` and `get_rescue_route`, does not exist yet.
 
 ## What is in `resident/`
 
@@ -70,6 +70,24 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 5. **Test in the browser:** open the agent in the SLNG dashboard → Test agent → Web session. The panel cannot pass arguments, so the session uses the test defaults: sample resident `n01`. Checkpoint 1 is n01's pin changing on the deployed dashboard.
 6. **Trunk for real calls** (#1, #8). SLNG provides no numbers: an admin adds an outbound SIP trunk in Telephony and attaches it to the agent. A push does not detach it. Then `unmute deploy --call +34…` or Test agent → Outbound call rings a phone, and the call campaign dispatches calls with all four variables in `arguments` (`neighbor_id`, `resident_name`, `address`, `zone`).
 
+## The coordinator agent (`coordinator/`, #10)
+
+Same shape as the resident agent: Nemotron Super 3 to think, Soniox to listen, and the Castilian voice **Sergio** (Fish S2.1 Pro) to speak, so the two agents don't sound alike. `unmute validate` and `unmute compile` pass (0.5.5); **not deployed yet**.
+
+| Tool | API Request tool in SLNG | Parameters |
+|---|---|---|
+| `get_rescue_queue` | `POST <backend>/tools/get_rescue_queue`, empty JSON body | none |
+| `get_rescue_route` | `POST <backend>/tools/get_rescue_route` | `rescue_id` string, required |
+| `end_call` | built in | none |
+
+When the agent calls `get_rescue_route`, the backend records that rescue as the **agent's focus** (`GET /api/focus`), and the dashboard, polling every 2 s, opens that resident with the crew route drawn. So "dame la ruta al más urgente" said to the agent appears on the coordinator's map.
+
+To deploy, in order:
+1. Create the two API Request tools as for the resident agent, pointing at the Railway backend, and test-run them. `get_rescue_route` needs a rescue in the queue to answer 200: mark a resident *Needs rescue* on the dashboard first.
+2. `cd voice/coordinator && unmute deploy --dry-run`, then `unmute deploy`. The agent is called `hackfire-coordinator-slng`.
+3. Test agent → Web session: "¿Qué rescates tengo y en qué orden?", then "Dame la ruta al más urgente", and watch the dashboard.
+4. For a firefighter to reach it by phone: an inbound number attached in SLNG's Telephony (the same trunk question as #8).
+
 ## Checking the model's triage without voice
 
 `pnpm eval:triage` sends `instructions.md` and the `report_status` description to Nebius with four answers at the point of the three questions: no car, road cut and a mother who cannot walk must come back as `needs_rescue`, leaving now by car as `evacuating`. It needs `NEBIUS_API_KEY` and `NEBIUS_MODEL` (skipped otherwise), and is not part of `pnpm check`, because a model's answer can vary. Run it after changing the prompt, the tool description or the model.
@@ -78,7 +96,7 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 
 - **PLACEHOLDER: the Nebius model.** `model: "PLACEHOLDER-nebius-model-id"` in `agent.yaml`. Nobody has a Nebius key yet. SLNG's docs do not say which string selects a BYOK client model in an agent: probably the model name registered in step 3, possibly `slng/auto` (the Context Router's route to the organisation's registered model). Check what the dashboard's Think dropdown or `voiceai agents get <id> --json` shows. Unmute's docs report that Nebius answers `400` to a request carrying `reasoning_effort`, so do not add one. Pick a fast model with tool calling ([Nebius](../docs/services/nebius.md)).
 - **TEST DEFAULTS: the call variables.** All four default to sample resident `n01`, only so the dashboard test works. A dispatch that forgets a variable would silently report on n01. Remove the defaults once calls come from the campaign, unless SLNG refuses to attach the trunk without them; Unmute says it does for inbound trunks.
-- **Where a confinement order comes from.** The prompt passes on a stay-inside order when the fire status says so, but `FireStatus` has no field for the order, so today it can only come through `summary`. Either add a field (a tool-contract change) or make it a call variable the coordinator sets when approving the campaign.
+- **Where a confinement order comes from: resolved.** The coordinator approves one order per zone in the dashboard (#36): leave for a safe point, or stay indoors. `get_fire_status` appends it to `summary` ("The order for El Tiemblo is to stay indoors until the emergency services say otherwise.") and `get_evacuation_route` starts with it, so the prompt's existing rule for passing on a stay-inside order applies without a contract change.
 - **No triage state for "confined at home".** A resident who stays inside and is fine is reported as `evacuating`, with the observation saying so. A resident who refuses to leave is reported as `needs_rescue`. Both are the prompt's choices; the team should confirm them.
 - **The backend's spoken text is in English.** `FireStatus.summary` and `Route.spoken_directions` are English, and the prompt tells the agent to retell them in Spanish. Retelling costs latency and risks mangling road names; better that the backend writes them in Spanish, since this agent is their only listener.
 - **Numbers in words.** The prompt asks for numbers written as words (`unos cuarenta minutos`), as agreed for Spanish TTS. Unmute's own guidance (2026-08-28) is the opposite: write digits and let the voice normalise them. Listen to Fish saying both before choosing.

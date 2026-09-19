@@ -1,0 +1,12 @@
+# A tool SLNG hosts: an API Request tool named get_rescue_route, pointing at
+# POST <backend>/tools/get_rescue_route with {"rescue_id": "..."}. Calling it also makes the
+# coordinator's dashboard draw that route.
+slng: get_rescue_route
+
+description: >-
+  Get the fire crew's route from the El Tiemblo fire station to one rescue:
+  distance, time and spoken directions. Pass the rescue_id exactly as
+  get_rescue_queue gave it; if you were not told which rescue, use the first
+  one in the queue. The route also appears on the coordinator's map.
+
+effect: returns_data

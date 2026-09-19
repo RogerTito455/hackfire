@@ -1,4 +1,5 @@
 import logging
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -12,6 +13,7 @@ from pydantic import BaseModel, Field
 from . import evacuation, impact, live, orders, replay, text_triage
 from .config import settings
 from .models import (
+    AgentFocus,
     CrewAlert,
     EvacuationOrder,
     EvacuationRouteRequest,
@@ -136,6 +138,12 @@ def neighbor_rescue_route(neighbor_id: str) -> Route:
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
     return _route_or_503(lambda: evacuation.rescue_route(neighbor))
+
+
+@app.get("/api/focus")
+def get_focus() -> AgentFocus | None:
+    """The rescue the voice agent last asked the route for, or null."""
+    return state.focus
 
 
 @app.get("/api/alerts")
@@ -298,6 +306,8 @@ def get_rescue_route(request: RescueRouteRequest) -> Route:
     rescue = next((r for r in state.rescue_queue() if r.rescue_id == request.rescue_id), None)
     if rescue is None:
         raise HTTPException(status_code=404, detail=f"Unknown rescue {request.rescue_id}")
+    # The dashboard follows the agent: it draws the route the coordinator just asked for (#10).
+    state.focus = AgentFocus(neighbor_id=rescue.neighbor.id, rescue_id=rescue.rescue_id, at=datetime.now(UTC))
     return _route_or_503(lambda: evacuation.rescue_route(rescue.neighbor))
 
 

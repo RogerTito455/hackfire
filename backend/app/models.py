@@ -103,6 +103,14 @@ class CrewAlert(BaseModel):
     sent_by_sms: bool = Field(default=False, description="False: shown on the dashboard only")
 
 
+class AgentFocus(BaseModel):
+    """The rescue the voice agent last asked the route for, so the dashboard can draw it."""
+
+    neighbor_id: str
+    rescue_id: str
+    at: datetime
+
+
 class OrderAction(StrEnum):
     EVACUATE = "evacuate"
     SHELTER = "shelter"

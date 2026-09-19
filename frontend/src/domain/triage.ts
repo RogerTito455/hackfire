@@ -72,3 +72,10 @@ export interface CrewAlert {
   /** False: shown on the dashboard only. */
   sent_by_sms: boolean
 }
+
+/** Mirrors AgentFocus in backend/app/models.py: the rescue the voice agent last asked the route for. */
+export interface AgentFocus {
+  neighbor_id: string
+  rescue_id: string
+  at: string
+}

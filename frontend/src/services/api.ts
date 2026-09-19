@@ -6,7 +6,7 @@ import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { SpreadCollection } from '../domain/spread'
 import type { TextClassification } from '../domain/textTriage'
-import type { CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
+import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
@@ -63,3 +63,4 @@ export const reportStatus = (neighborId: string, status: TriageStatus) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ neighbor_id: neighborId, status }),
   })
+export const fetchFocus = () => request<AgentFocus | null>('/api/focus')
