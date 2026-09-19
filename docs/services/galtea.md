@@ -65,6 +65,14 @@ How one run goes:
 
 What the first `panicked-parent` run shows about the agent: it records only at the end of the call, so a resident who hangs up early leaves the pin pending. The prompt is the voice track's; this is reported, not changed.
 
+**Second run, 2026-09-19 evening**, after three changes to `voice/resident/instructions.md`: record as soon as it is clear whether they can leave, put only what the resident said in `mobility` and `observation`, and keep *usted* in instructions and goodbyes. Run on the local prompt (`pnpm eval:galtea -k "panicked or prank or wheelchair"`); the deployed agent changes only with `pnpm voice:deploy`.
+
+| Scenario | Result | Notes |
+|---|---|---|
+| `prank-caller` | PASS, `needs_rescue` | **New finding:** the model's reasoning, in English and ending in `</think>`, came back inside the agent's text. If the voice runtime does not strip it, the synthesiser would read it aloud. Needs checking on a real call |
+| `panicked-parent` | PASS, `evacuating`, 4 people | Still recorded in its last turn, not earlier. *Usted* throughout ("Quédense juntos") |
+| `wheelchair-user` | PASS, `needs_rescue`, 1 person | *Usted* throughout ("Manténgase", "avise") |
+
 Not yet run: Galtea's own metrics (such as Role Adherence) on these sessions. `evaluations.create(session_id=..., metrics=[...])` does it ([Simulating conversations](https://docs.galtea.ai/sdk/tutorials/simulating-conversations.md)) and spends credits.
 
 ## In Claude Code
