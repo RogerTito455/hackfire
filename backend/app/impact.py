@@ -1,4 +1,4 @@
-"""Which zones the predicted spread reaches, and when. Reads the cached spread and zones in data/.
+"""Which zones the predicted spread reaches, and when. Reads the active scenario's cached spread and zones.
 
 A forecast issued at time T says, for each zone, in how many hours the spread first touches it.
 Between two forecasts the last one stays valid for MAX_FORECAST_AGE and its minutes count down, so
@@ -11,11 +11,9 @@ import math
 from bisect import bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from functools import cache
-
 from shapely.geometry import shape
 
-from .replay import SPREAD_FILE, ZONES_FILE
+from .scenario import cached, current
 
 MAX_FORECAST_AGE = timedelta(hours=3)
 # How far ahead each forecast looks; the same horizon build_spread.py writes.
@@ -38,24 +36,26 @@ class IssuedForecast:
     hours_to_reach: dict[str, int]
 
 
-@cache
+@cached
 def zones() -> dict[str, Zone]:
-    if not ZONES_FILE.exists():
+    path = current().files.zones
+    if not path.exists():
         return {}
-    collection = json.loads(ZONES_FILE.read_text(encoding="utf-8"))
+    collection = json.loads(path.read_text(encoding="utf-8"))
     return {
         f["id"]: Zone(f["id"], f["properties"]["name"], f["properties"]["kind"], shape(f["geometry"]))
         for f in collection["features"]
     }
 
 
-@cache
+@cached
 def forecasts() -> list[IssuedForecast]:
     """Cached forecasts sorted by issue time, with each zone's hours to reach precomputed."""
-    if not SPREAD_FILE.exists():
+    path = current().files.spread
+    if not path.exists():
         return []
     polygons: dict[datetime, dict[int, object]] = {}
-    for feature in json.loads(SPREAD_FILE.read_text(encoding="utf-8"))["features"]:
+    for feature in json.loads(path.read_text(encoding="utf-8"))["features"]:
         properties = feature["properties"]
         issued_at = datetime.fromisoformat(properties["issued_at"])
         polygons.setdefault(issued_at, {})[properties["hour"]] = shape(feature["geometry"])
@@ -72,7 +72,7 @@ def forecasts() -> list[IssuedForecast]:
     return issued
 
 
-@cache
+@cached
 def _issue_times() -> list[datetime]:
     return [f.issued_at for f in forecasts()]
 
@@ -129,13 +129,14 @@ def timeline(step: timedelta = timedelta(minutes=5)) -> dict | None:
     }
 
 
-@cache
+@cached
 def _footprints() -> dict[datetime, dict[int, object]]:
     """Every cached forecast's polygons, by issue time and hour ahead (lon/lat)."""
-    if not SPREAD_FILE.exists():
+    path = current().files.spread
+    if not path.exists():
         return {}
     polygons: dict[datetime, dict[int, object]] = {}
-    for feature in json.loads(SPREAD_FILE.read_text(encoding="utf-8"))["features"]:
+    for feature in json.loads(path.read_text(encoding="utf-8"))["features"]:
         properties = feature["properties"]
         polygons.setdefault(datetime.fromisoformat(properties["issued_at"]), {})[properties["hour"]] = shape(
             feature["geometry"]

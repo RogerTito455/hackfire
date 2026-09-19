@@ -1,19 +1,35 @@
 """Helpers shared by the pipelines: the cached hotspots and the routes the API must be able to serve."""
 
 import json
+import sys
 from collections.abc import Callable
 from datetime import datetime
+from pathlib import Path
 
 from .. import evacuation
 from ..models import Neighbor, Route, TravelMode
-from ..replay import HOTSPOTS_FILE
+from ..scenario import current
 from ..spread import Hotspot
 
 
+def write_or_compare(path: Path, body: str, what: str, check: bool) -> None:
+    """Write a pipeline's output or, with `check`, compare it with the file and exit 1 if they differ:
+    the proof that a change to the code left a scenario's cached data as it was, without writing."""
+    if not check:
+        path.write_text(body, encoding="utf-8")
+        print(f"wrote {what} to {path}")
+        return
+    if path.exists() and path.read_text(encoding="utf-8") == body:
+        print(f"OK: {path} is unchanged ({what})")
+        return
+    print(f"DIFFERENT: rebuilding {path} would change it ({what})")
+    sys.exit(1)
+
+
 def read_hotspots() -> list[Hotspot]:
-    """The cached hotspots as model inputs. Raises if `pnpm data:hotspots` has not been run: a pipeline
-    must never write its output from an empty input."""
-    collection = json.loads(HOTSPOTS_FILE.read_text(encoding="utf-8"))
+    """The active scenario's cached hotspots as model inputs. Raises if `pnpm data:hotspots` has not
+    been run: a pipeline must never write its output from an empty input."""
+    collection = json.loads(current().files.hotspots.read_text(encoding="utf-8"))
     return [
         Hotspot(
             lon=f["geometry"]["coordinates"][0],

@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic safe points: North Town is 16 km north of the fire's line, West Village behind where it started, East Town straight ahead of it.",
+  "safe_points": [
+    { "id": "north-town", "name": "North Town", "lat": 45.2447, "lon": 2.17737 },
+    { "id": "west-village", "name": "West Village", "lat": 45.1, "lon": 1.9481 },
+    { "id": "east-town", "name": "East Town", "lat": 45.1, "lon": 2.27927 }
+  ],
+  "crew_base": { "id": "test-fire-station", "name": "Test fire station", "lat": 45.11809, "lon": 1.98631 }
+}

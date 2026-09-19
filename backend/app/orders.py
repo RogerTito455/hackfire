@@ -14,7 +14,7 @@ from datetime import datetime
 from shapely.geometry import shape
 
 from . import closures, evacuation, geo, impact
-from .config import settings
+from .scenario import current
 from .i18n import t
 from .models import (
     EvacuationOrder,
@@ -63,7 +63,7 @@ def _place(place_id: str | None) -> evacuation.Place | None:
 
 def orders(at: datetime | None = None) -> list[EvacuationOrder]:
     """One order per zone with residents in the registry, most urgent first."""
-    at = at or settings.scenario_time
+    at = at or current().scenario_time
     result = []
     for zone_id in sorted({n.zone for n in state.neighbors()}):
         proposed_action, proposed = _proposal(zone_id, at)
@@ -119,7 +119,7 @@ def route_for(neighbor: Neighbor, mode: TravelMode) -> Route:
     if route.geometry is None and closures.fingerprint():
         # A closed road cuts the ordered destination off: say so, and send them to the fastest one left.
         home = (neighbor.lon, neighbor.lat)
-        at = settings.scenario_time
+        at = current().scenario_time
         others = evacuation.nearest_safe_points(at, home, exclude=destination.id)
         detour = evacuation.fastest_reachable(home, others, mode, at)
         if detour is not None:
@@ -129,7 +129,7 @@ def route_for(neighbor: Neighbor, mode: TravelMode) -> Route:
 
 
 def safe_point_list(at: datetime | None = None) -> list[SafePoint]:
-    at = at or settings.scenario_time
+    at = at or current().scenario_time
     qualifying = {p.id for p in evacuation.safe_points(at)}
     return [SafePoint(id=p.id, name=p.name, lat=p.lat, lon=p.lon, safe=p.id in qualifying) for p in evacuation.all_places()]
 

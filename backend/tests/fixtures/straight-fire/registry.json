@@ -1,0 +1,5 @@
+[
+  { "id": "r1", "name": "Test Resident One", "phone": "+00000000001", "address": "1 Test Street, Zone A", "zone": "zone-a", "lat": 45.10181, "lon": 2.17737 },
+  { "id": "r2", "name": "Test Resident Two", "phone": "+00000000002", "address": "2 Test Street, Zone A", "zone": "zone-a", "lat": 45.09819, "lon": 2.17992 },
+  { "id": "r3", "name": "Test Resident Three", "phone": "+00000000003", "address": "3 Test Street, Zone B", "zone": "zone-b", "lat": 45.20853, "lon": 2.17737 }
+]

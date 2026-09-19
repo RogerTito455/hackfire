@@ -122,7 +122,7 @@ def test_a_bad_resident_in_a_registry_file_does_not_leak_the_phone(tmp_path, mon
     incomplete = {"id": "x1", "phone": PHONE}
     broken = tmp_path / "neighbors.json"
     broken.write_text(json.dumps([incomplete]), encoding="utf-8")
-    monkeypatch.setattr("app.state._REGISTRY_CANDIDATES", [broken])
+    monkeypatch.setattr("app.state._registry_candidates", lambda: [broken])
 
     with pytest.raises(ValueError) as error:
         client.post("/api/reset")

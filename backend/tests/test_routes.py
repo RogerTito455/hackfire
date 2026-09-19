@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 from shapely.geometry import shape
 
 from app import evacuation, geo
-from app.config import DATA_DIR, settings
+from app.config import DATA_DIR
+from app.scenario import current
 from app.main import app
 from app.models import Neighbor, TravelMode
 from app.providers import routing
@@ -58,7 +59,7 @@ def first_neighbor() -> dict:
 
 def test_avoid_polygon_fits_openrouteservice_limits() -> None:
     home, cebreros = (-4.4588, 40.3829), (-4.46516, 40.45515)
-    avoid = evacuation.avoid_polygon(home, cebreros, settings.scenario_time)
+    avoid = evacuation.avoid_polygon(home, cebreros, current().scenario_time)
     assert avoid is not None
     area = geo.to_metres(shape(avoid))
     min_x, min_y, max_x, max_y = area.bounds
@@ -78,7 +79,7 @@ def test_evacuation_route_tool_returns_a_real_route(isolated_routing) -> None:
     assert route["distance_m"] == 12_600
     assert isolated_routing[0]["mode"] == TravelMode.WALKING
     home = (first_neighbor()["lon"], first_neighbor()["lat"])
-    assert route["spoken_directions"].startswith(f"Walk to {evacuation.safest_point(settings.scenario_time, home).name}")
+    assert route["spoken_directions"].startswith(f"Walk to {evacuation.safest_point(current().scenario_time, home).name}")
 
 
 def test_spoken_directions_name_the_main_roads_in_order() -> None:
@@ -141,7 +142,7 @@ def test_rescue_route_starts_at_the_crew_base(isolated_routing) -> None:
 def test_fire_area_is_a_polygon_up_to_the_scenario_time() -> None:
     area = client.get("/api/fire-area").json()
     assert area["geometry"]["type"] in ("Polygon", "MultiPolygon")
-    assert area["properties"]["until"] == settings.scenario_time.isoformat()
+    assert area["properties"]["until"] == current().scenario_time.isoformat()
 
 
 def test_committed_cache_covers_the_sample_registry(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -211,9 +212,9 @@ def test_crew_routes_avoid_only_what_has_burned() -> None:
 
 def test_safe_point_is_outside_the_forecast_and_clear_of_the_fire() -> None:
     home = (-4.4588, 40.3829)
-    target = evacuation.safest_point(settings.scenario_time, home)
+    target = evacuation.safest_point(current().scenario_time, home)
     area = geo.point_m(target.lon, target.lat).buffer(evacuation.SAFE_POINT_RADIUS_M)
-    assert not evacuation.fire_m(settings.scenario_time, 6).intersects(area)
+    assert not evacuation.fire_m(current().scenario_time, 6).intersects(area)
 
 
 def test_burned_area_before_the_first_hotspot_is_empty() -> None:

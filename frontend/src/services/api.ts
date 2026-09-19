@@ -14,6 +14,7 @@ import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voic
 import type { CrewRoom, RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
 import type { CrewPlan } from '../domain/crewPlan'
 import type { RoadClosure } from '../domain/closures'
+import type { Scenario } from '../domain/scenario'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -37,6 +38,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const fetchNeighbors = () => request<Neighbor[]>('/api/neighbors')
 export const fetchRescues = () => request<Rescue[]>('/api/rescues')
 export const resetDemo = () => request<{ status: string }>('/api/reset', { method: 'POST' })
+export const fetchScenario = () => request<Scenario>('/api/scenario')
 export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
 export const fetchLiveSpread = () => request<LiveSpreadResponse>('/api/live/spread')

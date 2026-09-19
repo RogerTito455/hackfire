@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_spread, orders, replay, rescue_video, text_triage
+from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_spread, orders, replay, rescue_video, scenario, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -41,6 +41,7 @@ from .models import (
     RoadClosureRequest,
     Route,
     SafePoint,
+    ScenarioInfo,
     TravelMode,
 )
 from .providers import sms, voice, vonage
@@ -92,9 +93,25 @@ def list_rescues() -> list[Rescue]:
     return state.rescue_queue()
 
 
+@app.get("/api/scenario")
+def get_scenario() -> ScenarioInfo:
+    """The active scenario (HACKFIRE_SCENARIO): its name, the box the map fits, the replay window."""
+    active = scenario.current()
+    return ScenarioInfo(
+        id=active.id,
+        name=active.name,
+        bbox=active.bbox,
+        time_zone=active.time_zone,
+        replay_start=active.replay_start,
+        replay_end=active.replay_end,
+        scenario_time=active.scenario_time,
+        lead_time_zone=active.lead_time_zone,
+    )
+
+
 @app.get("/api/hotspots")
 def list_hotspots() -> Response:
-    """Deepfire hotspots for the 22–24 July 2026 replay, sorted by observed_at."""
+    """The active scenario's Deepfire hotspots (22–24 July 2026 for the demo), sorted by observed_at."""
     body = replay.hotspots_geojson()
     if body is None:
         raise HTTPException(status_code=404, detail="No cached hotspots: run pnpm data:hotspots")
@@ -103,7 +120,7 @@ def list_hotspots() -> Response:
 
 @app.get("/api/spread")
 def get_spread() -> Response:
-    """Predicted spread for 23 July: one polygon per hour ahead, for each forecast issued."""
+    """The scenario's predicted spread (23 July for the demo): one polygon per hour ahead, per forecast."""
     body = replay.spread_geojson()
     if body is None:
         raise HTTPException(status_code=404, detail="No cached spread: run pnpm data:spread")
@@ -130,7 +147,8 @@ def get_impact() -> dict:
 
 @app.get("/api/lead-time")
 def get_lead_time() -> Response:
-    """La Atalaya's lead time and how it was computed. Written by `pnpm data:lead-time`."""
+    """The scenario's lead time (La Atalaya's for the demo) and how it was computed. Written by
+    `pnpm data:lead-time`."""
     body = replay.lead_time_json()
     if body is None:
         raise HTTPException(status_code=404, detail="No cached lead time: run pnpm data:lead-time")

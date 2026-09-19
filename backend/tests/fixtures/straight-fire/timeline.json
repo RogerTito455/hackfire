@@ -1,0 +1,11 @@
+{
+  "about": "Autopilot script for the synthetic scenario: Zone A's order 10 minutes after it enters the forecast, then resident 1 evacuates and resident 2 needs rescue. Resident 3 lives in Zone B, which the forecast never reaches, so is never called.",
+  "order_after_minutes": 10,
+  "orders": [{ "zone_of": 1, "after_minutes": 10 }],
+  "outcomes": [
+    { "position": 1, "after_minutes": 5, "status": "evacuating", "people": 2 },
+    { "position": 2, "after_minutes": 20, "status": "needs_rescue", "people": 1, "mobility": "wheelchair" },
+    { "position": 3, "after_minutes": 5, "status": "evacuating" }
+  ],
+  "calls": { "needs_rescue": ["synthetic-rescue"] }
+}

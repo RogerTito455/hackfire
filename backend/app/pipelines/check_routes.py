@@ -1,6 +1,6 @@
 """Prove that the API answers every route request without openrouteservice.
 
-    pnpm check:routes                                  # this machine: the registry it loads and data/routes_cache.json
+    pnpm check:routes                                  # this machine: the registry it loads and the scenario's route cache
     pnpm check:routes https://<service>.up.railway.app # the deployed service, with the registry it has loaded
 
 The demo must not depend on a third party answering in time, and a route that is not cached costs a
@@ -26,8 +26,8 @@ from unittest import mock
 import httpx
 
 from .. import evacuation
-from ..config import settings
 from ..providers import routing
+from ..scenario import current
 from ..state import state
 from .common import required_routes
 
@@ -38,7 +38,7 @@ def _offline(*_args, **_kwargs):
 
 def check_local() -> tuple[dict[str, list[str]], list[str]]:
     """(missing routes by resident, routes that are cached but empty) for the registry this process loaded."""
-    at = settings.scenario_time
+    at = current().scenario_time
     missing: dict[str, list[str]] = {}
     empty: list[str] = []
     with mock.patch.object(routing, "route_avoiding", _offline):
@@ -51,7 +51,10 @@ def check_local() -> tuple[dict[str, list[str]], list[str]]:
                 else:
                     if route.geometry is None:
                         empty.append(f"{neighbor.id}: {label}")
-    print(f"{len(state.neighbors())} residents, {len(evacuation.all_places())} places to order a zone to, scenario time {at.isoformat()}")
+    print(
+        f"scenario {current().id}: {len(state.neighbors())} residents, {len(evacuation.all_places())} places "
+        f"to order a zone to, scenario time {at.isoformat()}"
+    )
     return missing, empty
 
 
