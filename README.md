@@ -29,7 +29,9 @@ Hackathon skeleton. What works today:
 - Dashboard with a map of the demo area, resident pins coloured by triage state, live counts and the rescue queue, polling the backend every 2 seconds.
 - Replay of the fire: 7,068 Deepfire satellite hotspots from 22–24 July 2026, cached in `data/`, on a time slider with play and pause. Hotspots are coloured by age and sized by fire radiative power.
 
-Still to build: the predicted spread and zones at risk, lead time, routing, the voice agent and outbound calls, crew notifications, live mode. See [PLAN.md](PLAN.md) and the issues.
+- Live mode: a toggle switches the map to Deepfire's active fire clusters right now, refreshed every minute. If Deepfire is down, the page shows a message and the replay keeps working.
+
+Still to build: the predicted spread and zones at risk, lead time, routing, the voice agent and outbound calls, crew notifications. See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 

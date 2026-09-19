@@ -44,6 +44,22 @@ const replayTimeFormat = new Intl.DateTimeFormat('en-GB', {
   timeZoneName: 'short',
 })
 
-export function formatReplayTime(epochMs: number): string {
+export function formatSpanishTime(epochMs: number): string {
   return replayTimeFormat.format(epochMs)
 }
+
+// Live fires: colour by hours since the last detection, radius by hours burning.
+export const LIVE_RECENCY_COLORS: readonly (readonly [hours: number, color: string])[] = [
+  [0, '#ff5a1f'],
+  [6, '#d93025'],
+  [24, '#7a2a1d'],
+]
+
+export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: number])[] = [
+  [0, 4],
+  [6, 7],
+  [24, 10],
+  [72, 14],
+]
+
+export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const

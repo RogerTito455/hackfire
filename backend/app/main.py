@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import Response
 
-from . import replay
+from . import live, replay
 from .config import settings
 from .models import (
     EvacuationRouteRequest,
@@ -54,6 +54,15 @@ def list_hotspots() -> Response:
     if body is None:
         raise HTTPException(status_code=404, detail="No cached hotspots: run pnpm data:hotspots")
     return Response(content=body, media_type="application/geo+json")
+
+
+@app.get("/api/live/fires")
+def list_live_fires() -> dict:
+    """Deepfire's active fire clusters over Iberia, cached for a minute."""
+    try:
+        return live.active_fires()
+    except live.LiveUnavailable as error:
+        raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
 
 
 @app.post("/api/reset")

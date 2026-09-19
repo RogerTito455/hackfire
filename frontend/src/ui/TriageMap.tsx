@@ -11,9 +11,19 @@ import {
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
-import { MINUTE, type Hotspot } from '../domain/hotspots'
+import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
+import { burningHours, type LiveFires } from '../domain/liveFires'
 import type { Neighbor } from '../domain/triage'
-import { HOTSPOT_AGE_COLORS, HOTSPOT_RADIUS_BY_FRP, STATUS_COLOR, STATUS_LABEL } from './theme'
+import type { MapMode } from '../hooks/useMapMode'
+import {
+  formatSpanishTime,
+  HOTSPOT_AGE_COLORS,
+  HOTSPOT_RADIUS_BY_FRP,
+  LIVE_RADIUS_BY_HOURS,
+  LIVE_RECENCY_COLORS,
+  STATUS_COLOR,
+  STATUS_LABEL,
+} from './theme'
 
 // MapLibre v6 inside a bundler cannot find its worker on its own.
 setWorkerUrl(workerUrl)
@@ -22,6 +32,12 @@ setWorkerUrl(workerUrl)
 const DEMO_BOUNDS: [[number, number], [number, number]] = [
   [-4.85, 40.3],
   [-4.4, 40.5],
+]
+
+// Live mode: the Iberian Peninsula and the Balearic Islands, as queried by the backend.
+const IBERIA_BOUNDS: [[number, number], [number, number]] = [
+  [-9.6, 35.8],
+  [4.4, 44.0],
 ]
 
 const OSM_STYLE: StyleSpecification = {
@@ -38,6 +54,7 @@ const OSM_STYLE: StyleSpecification = {
 }
 
 const HOTSPOTS = 'hotspots'
+const LIVE_FIRES = 'live-fires'
 
 type GeoJSONData = Parameters<GeoJSONSource['setData']>[0]
 
@@ -59,6 +76,36 @@ function ageColor(nowMinutes: number): ExpressionSpecification {
   return ['interpolate', ['linear'], ['-', nowMinutes, ['get', 't']], ...stops] as ExpressionSpecification
 }
 
+function liveFireCollection(live: LiveFires | null): GeoJSONData {
+  return {
+    type: 'FeatureCollection',
+    features: (live?.fires ?? []).map((fire) => ({
+      type: 'Feature',
+      id: fire.id,
+      geometry: { type: 'Point', coordinates: [fire.lon, fire.lat] },
+      properties: {
+        hoursSinceSeen: (live!.fetchedAt - fire.lastObserved) / HOUR,
+        hoursBurning: burningHours(fire),
+        lastObserved: fire.lastObserved,
+      },
+    })),
+  }
+}
+
+const liveColor = [
+  'interpolate',
+  ['linear'],
+  ['get', 'hoursSinceSeen'],
+  ...LIVE_RECENCY_COLORS.flat(),
+] as ExpressionSpecification
+
+const liveRadius = [
+  'interpolate',
+  ['linear'],
+  ['get', 'hoursBurning'],
+  ...LIVE_RADIUS_BY_HOURS.flat(),
+] as ExpressionSpecification
+
 const radiusByFrp = [
   'interpolate',
   ['linear'],
@@ -67,13 +114,15 @@ const radiusByFrp = [
 ] as ExpressionSpecification
 
 interface TriageMapProps {
+  mode: MapMode
   neighbors: Neighbor[]
   hotspots: Hotspot[]
   /** Replay time in epoch milliseconds: hotspots observed after it are hidden. */
   time: number | null
+  live: LiveFires | null
 }
 
-export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
+export function TriageMap({ mode, neighbors, hotspots, time, live }: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<Map<string, Marker>>(new Map())
@@ -107,6 +156,33 @@ export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
           'circle-stroke-color': '#3a0d06',
         },
       })
+      instance.addSource(LIVE_FIRES, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+        attribution: 'Active fires: Deepfire',
+      })
+      instance.addLayer({
+        id: LIVE_FIRES,
+        type: 'circle',
+        source: LIVE_FIRES,
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-radius': liveRadius,
+          'circle-color': liveColor,
+          'circle-opacity': 0.85,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff',
+        },
+      })
+      instance.on('click', LIVE_FIRES, (event) => {
+        const feature = event.features?.[0]
+        if (!feature || feature.geometry.type !== 'Point') return
+        const { hoursBurning, lastObserved } = feature.properties as { hoursBurning: number; lastObserved: number }
+        new Popup({ offset: 12 })
+          .setLngLat(feature.geometry.coordinates as [number, number])
+          .setText(`Detected over ${Math.round(hoursBurning)} h · last seen ${formatSpanishTime(lastObserved)}`)
+          .addTo(instance)
+      })
       setStyleReady(true)
     })
     map.current = instance
@@ -132,6 +208,18 @@ export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
     map.current.setFilter(HOTSPOTS, ['<=', ['get', 't'], now])
     map.current.setPaintProperty(HOTSPOTS, 'circle-color', ageColor(now))
   }, [styleReady, time, origin])
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(LIVE_FIRES)?.setData(liveFireCollection(live))
+  }, [styleReady, live])
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.setLayoutProperty(HOTSPOTS, 'visibility', mode === 'replay' ? 'visible' : 'none')
+    map.current.setLayoutProperty(LIVE_FIRES, 'visibility', mode === 'live' ? 'visible' : 'none')
+    map.current.fitBounds(mode === 'live' ? IBERIA_BOUNDS : DEMO_BOUNDS, { padding: 24, duration: 800 })
+  }, [styleReady, mode])
 
   useEffect(() => {
     if (!map.current) return
