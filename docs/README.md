@@ -12,6 +12,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [Deployment](setup/deployment.md) | The one Railway service that serves the API and the dashboard |
 | | [A new scenario](setup/new-scenario.md) | Replaying another fire: the scenario file, the pipelines, what needs keys and quota |
 | | [Operations](setup/operations.md) | The audit log file and endpoints, and the service status checks |
+| | [Phone calls](setup/phone-calls.md) | The resident agent ringing real phones through a Vonage SIP trunk: Vonage, SLNG, the repo, the first test call |
 | **Services** | [Deepfire](services/deepfire.md) | Hotspots, active fires, spread simulation |
 | | [SLNG](services/slng.md) | Voice agent, outbound calls, SMS |
 | | [openrouteservice](services/openrouteservice.md) | Evacuation and rescue routes |
