@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from shapely.geometry import Point, shape
 
 from app import evacuation, geo
-from app.config import settings
+from app.scenario import current
 from app.main import app
 from app.providers import routing
 
@@ -62,7 +62,7 @@ def test_a_route_asked_after_a_closure_goes_around_it(isolated_routing) -> None:
 
 def safe_points_nearest_first(neighbor: dict) -> list:
     here = geo.point_m(neighbor["lon"], neighbor["lat"])
-    return sorted(evacuation.safe_points(settings.scenario_time), key=lambda p: here.distance(geo.point_m(p.lon, p.lat)))
+    return sorted(evacuation.safe_points(current().scenario_time), key=lambda p: here.distance(geo.point_m(p.lon, p.lat)))
 
 
 def cut_off(monkeypatch: pytest.MonkeyPatch, unreachable, minutes: dict) -> None:

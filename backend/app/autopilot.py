@@ -6,7 +6,8 @@ minutes after the zone first enters the predicted spread (impact.py), and each s
 lands a set number of minutes after their zone's order. Outcomes are named by registry position:
 residents evacuating, one not answering, one needing rescue, a retry. Each scripted resident takes the
 latest outcome at or before the clock, or goes back to pending, so scrubbing back undoes. It is a
-simulation with the demo residents, not what happened on 23 July 2026.
+simulation with the demo residents, not what happened in the replayed fire. The script and the recorded
+calls are the active scenario's (scenario.py).
 
 Each scripted outcome also names a transcript from data/demo_calls.json: a real call of the resident
 agent with a resident simulated by Galtea, with the same status. The dashboard types it out when the
@@ -24,10 +25,7 @@ import threading
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from functools import cache
-
 from . import impact, orders
-from .config import DATA_DIR
 from .i18n import t
 from .models import (
     AgentFocus,
@@ -38,10 +36,8 @@ from .models import (
     OrderDecision,
     TriageStatus,
 )
+from .scenario import cached, current
 from .state import state
-
-TIMELINE_FILE = DATA_DIR / "demo_timeline.json"
-CALLS_FILE = DATA_DIR / "demo_calls.json"
 
 
 def _note(key: str | None) -> str | None:
@@ -130,9 +126,9 @@ def parse(raw: dict) -> Timeline:
     )
 
 
-@cache
+@cached
 def timeline() -> Timeline:
-    return parse(json.loads(TIMELINE_FILE.read_text(encoding="utf-8")))
+    return parse(json.loads(current().files.timeline.read_text(encoding="utf-8")))
 
 
 def parse_transcripts(raw: dict) -> dict[str, AutopilotTranscript]:
@@ -148,11 +144,12 @@ def parse_transcripts(raw: dict) -> dict[str, AutopilotTranscript]:
     return transcripts
 
 
-@cache
+@cached
 def transcripts() -> dict[str, AutopilotTranscript]:
-    if not CALLS_FILE.exists():
+    path = current().files.calls
+    if not path.exists():
         return {}
-    return parse_transcripts(json.loads(CALLS_FILE.read_text(encoding="utf-8")))
+    return parse_transcripts(json.loads(path.read_text(encoding="utf-8")))
 
 
 def assign_transcripts(

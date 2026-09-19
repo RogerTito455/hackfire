@@ -1,0 +1,13 @@
+{
+  "about": "A made-up transcript for the synthetic scenario's autopilot test. Not a recorded call.",
+  "calls": {
+    "synthetic-rescue": {
+      "status": "needs_rescue",
+      "turns": [
+        { "speaker": "agent", "text": "The fire is heading for Zone A. The order is to leave for North Town." },
+        { "speaker": "resident", "text": "I cannot leave on my own." },
+        { "speaker": "agent", "text": "I have asked a crew to come for you." }
+      ]
+    }
+  }
+}

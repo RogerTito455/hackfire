@@ -74,6 +74,19 @@ class AutopilotCall(BaseModel):
     transcript: str | None = Field(default=None, description="A key of `transcripts`")
 
 
+class ScenarioInfo(BaseModel):
+    """What the dashboard needs to know about the active scenario (app/scenario.py)."""
+
+    id: str
+    name: str
+    bbox: tuple[float, float, float, float] = Field(description="min lon, min lat, max lon, max lat: the map fits it")
+    time_zone: str = Field(description="IANA time zone the replay is told in")
+    replay_start: datetime
+    replay_end: datetime
+    scenario_time: datetime = Field(description="The moment the calls happen at, and routes are planned for")
+    lead_time_zone: str
+
+
 class Autopilot(BaseModel):
     """The demo autopilot (autopilot.py): a labelled simulation of the workflow along the replay."""
 

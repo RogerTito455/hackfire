@@ -1,0 +1,30 @@
+{
+  "about": "The demo's scenario: the Burgohondo fire of 23 July 2026 near El Tiemblo, Ávila, replayed from real satellite hotspots. Read by backend/app/scenario.py; HACKFIRE_SCENARIO picks a scenario by id. Paths are relative to this file. See docs/setup/new-scenario.md.",
+  "id": "el-tiemblo-2026-07-23",
+  "name": "Burgohondo fire near El Tiemblo, Ávila, 23 July 2026",
+  "bbox": [-4.85, 40.30, -4.40, 40.50],
+  "time_zone": "Europe/Madrid",
+  "replay": { "start": "2026-07-22T00:00:00Z", "end": "2026-07-25T00:00:00Z" },
+  "forecasts": { "first": "2026-07-23T00:00:00Z", "last": "2026-07-23T23:30:00Z", "every_minutes": 30 },
+  "scenario_time_note": "18:00 CEST: after La Atalaya is first flagged (15:30 CEST, see lead_time), with about 4 h to impact and safe ways out still open. HACKFIRE_SCENARIO_TIME overrides it.",
+  "scenario_time": "2026-07-23T16:00:00Z",
+  "lead_time_note": "A hotspot within 3 km of the estate's outline counts as the fire reaching La Atalaya: 3 km is the pixel size of MTG, the sensor behind 62% of the hotspots. See docs/findings/2026-09-19-lead-time.md.",
+  "lead_time": { "zone": "la-atalaya", "radius_km": 3 },
+  "places_note": "The zones the registry's residents belong to, drawn by pnpm data:zones from the residential land use within radius_m of each OSM node. La Atalaya: hamlet node 1433078707. El Tiemblo: village node 64835850.",
+  "places": [
+    { "id": "la-atalaya", "name": "La Atalaya", "kind": "estate", "lon": -4.46095, "lat": 40.3821, "radius_m": 1000 },
+    { "id": "el-tiemblo", "name": "El Tiemblo", "kind": "town", "lon": -4.499, "lat": 40.413, "radius_m": 1500 }
+  ],
+  "files": {
+    "hotspots": "../hotspots_2026-07-22_24.geojson",
+    "spread": "../spread_2026-07-23.geojson",
+    "zones": "../zones.geojson",
+    "lead_time": "../lead_time_la-atalaya.json",
+    "places": "../places.json",
+    "routes": "../routes_cache.json",
+    "registry": "../neighbors.sample.json",
+    "local_registry": "../neighbors.local.json",
+    "timeline": "../demo_timeline.json",
+    "calls": "../demo_calls.json"
+  }
+}

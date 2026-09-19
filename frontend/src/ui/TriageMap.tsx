@@ -15,6 +15,7 @@ import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
 import { closureArea, type RoadClosure } from '../domain/closures'
 import { liveSpreadPolygons, simulationFor, type LiveSpread } from '../domain/liveSpread'
+import type { Bounds } from '../domain/scenario'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import { ROAD_CLOSED_WITHIN_MIN, type ZoneImpact } from '../domain/zones'
@@ -42,14 +43,8 @@ import {
 // MapLibre v6 inside a bundler cannot find its worker on its own.
 setWorkerUrl(workerUrl)
 
-// Demo box around Burgohondo, El Tiemblo and La Atalaya (see PLAN.md section 4).
-const DEMO_BOUNDS: [[number, number], [number, number]] = [
-  [-4.85, 40.3],
-  [-4.4, 40.5],
-]
-
 // Live mode: the Iberian Peninsula and the Balearic Islands, as queried by the backend.
-const IBERIA_BOUNDS: [[number, number], [number, number]] = [
+const IBERIA_BOUNDS: Bounds = [
   [-9.6, 35.8],
   [4.4, 44.0],
 ]
@@ -252,6 +247,8 @@ function routePadding() {
 
 interface TriageMapProps {
   mode: MapMode
+  /** The active scenario's box, which the replay fits; null until it has loaded. */
+  replayBounds: Bounds | null
   neighbors: Neighbor[]
   hotspots: Hotspot[]
   /** Replay time in epoch milliseconds: hotspots observed after it are hidden. */
@@ -281,6 +278,7 @@ interface TriageMapProps {
 
 export function TriageMap({
   mode,
+  replayBounds,
   neighbors,
   hotspots,
   time,
@@ -300,6 +298,10 @@ export function TriageMap({
 }: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
+  // The map is built once, framed on the first box it can show: the scenario's, or Iberia in live mode.
+  const wanted = mode === 'live' ? IBERIA_BOUNDS : replayBounds
+  const [startBounds, setStartBounds] = useState<Bounds | null>(wanted)
+  if (startBounds === null && wanted !== null) setStartBounds(wanted)
   const markers = useRef<Map<string, Marker>>(new Map())
   const [styleReady, setStyleReady] = useState(false)
   const endpoint = useRef<Marker | null>(null)
@@ -325,13 +327,13 @@ export function TriageMap({
   }, [liveSpread])
 
   useEffect(() => {
-    if (!container.current || map.current) return
+    if (!container.current || map.current || startBounds === null) return
     const instance = new MapLibreMap({
       // Credits collapse to an (i) button, so they never cover the sheet on a phone.
       attributionControl: { compact: true },
       container: container.current,
       style: OSM_STYLE,
-      bounds: DEMO_BOUNDS,
+      bounds: startBounds,
       fitBoundsOptions: { padding: 24 },
     })
     instance.addControl(new NavigationControl(), 'top-left')
@@ -517,7 +519,8 @@ export function TriageMap({
       map.current = null
       setStyleReady(false)
     }
-  }, [])
+    // startBounds goes from null to a box once, and never changes after the map is built.
+  }, [startBounds])
 
   useEffect(() => {
     if (!styleReady || !window.matchMedia) return
@@ -582,8 +585,9 @@ export function TriageMap({
       map.current.setLayoutProperty(layer, 'visibility', mode === 'replay' ? 'visible' : 'none')
     }
     map.current.setLayoutProperty(LIVE_FIRES, 'visibility', mode === 'live' ? 'visible' : 'none')
-    map.current.fitBounds(mode === 'live' ? IBERIA_BOUNDS : DEMO_BOUNDS, { padding: 24, duration: 800 })
-  }, [styleReady, mode])
+    const target = mode === 'live' ? IBERIA_BOUNDS : replayBounds
+    if (target) map.current.fitBounds(target, { padding: 24, duration: 800 })
+  }, [styleReady, mode, replayBounds])
 
   // The route and the area it avoids belong to the replay; live mode hides them.
   const showRoute = mode === 'replay' && route?.geometry != null

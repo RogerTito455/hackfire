@@ -4,6 +4,7 @@ import type { FireForecast } from '../hooks/useFireForecast'
 import { closedRoads } from '../domain/zones'
 import type { FireReplay } from '../hooks/useFireReplay'
 import type { LeadTimeView } from '../hooks/useLeadTime'
+import type { Bounds } from '../domain/scenario'
 import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
@@ -46,6 +47,8 @@ import './dashboard.css'
 interface DashboardProps {
   triage: Triage
   replay: FireReplay
+  /** The active scenario's box, which the replay map fits; null until it has loaded. */
+  replayBounds: Bounds | null
   mode: MapMode
   onModeChange: (mode: MapMode) => void
   live: LiveMode
@@ -70,6 +73,7 @@ interface DashboardProps {
 export function Dashboard({
   triage,
   replay,
+  replayBounds,
   mode,
   onModeChange,
   live,
@@ -108,6 +112,7 @@ export function Dashboard({
       <div className="map-area">
         <TriageMap
           mode={mode}
+          replayBounds={replayBounds}
           neighbors={neighbors}
           hotspots={replay.hotspots}
           time={replay.time}

@@ -2,8 +2,11 @@
 
 Static files so the live demo never waits on a third-party API.
 
+Every file below belongs to the demo's scenario, [`scenarios/el-tiemblo-2026-07-23.json`](scenarios/el-tiemblo-2026-07-23.json), which names them and holds the box, the dates, the scenario time and the lead-time zone. `HACKFIRE_SCENARIO` picks another scenario; the pipelines then read and write that one's files. See [A new scenario](../docs/setup/new-scenario.md).
+
 | File | What | Tracked |
 |---|---|---|
+| `scenarios/<id>.json` | One file per scenario: name, box, replay window, forecast day, scenario time, lead-time zone, the named places for `pnpm data:zones`, and the paths of every file below | Yes |
 | `neighbors.sample.json` | Placeholder resident registry | Yes |
 | `neighbors.local.json` | 10 residents (6 in La Atalaya, 4 in El Tiemblo) on real OSM streets with invented house numbers and fictional names, and the team's phone numbers in place of `REPLACE-ME-NN`. Wins over the sample when it exists. On Railway the same content is the variable `HACKFIRE_NEIGHBORS_JSON` | **No** (git-ignored) |
 | `hotspots_2026-07-22_24.geojson` | 7,068 Deepfire hotspots for the demo box, 22–24 July 2026, sorted by time. Written by `pnpm data:hotspots`, served at `GET /api/hotspots` | Yes |
@@ -16,4 +19,4 @@ Static files so the live demo never waits on a third-party API.
 | `lead_time_la-atalaya.json` | La Atalaya's lead time and how it was computed. Written by `pnpm data:lead-time`, served at `GET /api/lead-time` | Yes |
 | `live_spread.json` | Live mode's last good predicted spread: Deepfire's automatic ELMFIRE runs matched to the active fires. Rewritten by the backend every few minutes, served when Deepfire fails (`backend/app/live_spread.py`) | **No** (ignored, runtime cache) |
 
-Demo box (lon/lat): `-4.85,40.30,-4.40,40.50`. Keep every polygon clipped to it.
+Demo box (lon/lat): `-4.85,40.30,-4.40,40.50`, the scenario's `bbox`. Keep every polygon clipped to it.

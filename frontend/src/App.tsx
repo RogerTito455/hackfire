@@ -3,6 +3,7 @@ import { useScriptedCall } from './hooks/useScriptedCall'
 import { useFireForecast } from './hooks/useFireForecast'
 import { useFireReplay } from './hooks/useFireReplay'
 import { useLeadTime } from './hooks/useLeadTime'
+import { useScenario } from './hooks/useScenario'
 import { useLiveFires } from './hooks/useLiveFires'
 import { useMapMode, type MapMode } from './hooks/useMapMode'
 import { useSelectedRoute } from './hooks/useSelectedRoute'
@@ -23,6 +24,7 @@ import { useI18n } from './ui/i18n'
 // Composition root: logic comes from hooks, presentation from ui/.
 function App() {
   const triage = useTriage()
+  const scenario = useScenario()
   const replay = useFireReplay()
   const [mode, setMode] = useMapMode()
   const live = useLiveFires(mode === 'live')
@@ -67,6 +69,7 @@ function App() {
     <Dashboard
       triage={{ ...triage, reset: resetDemo }}
       replay={replay}
+      replayBounds={scenario.bounds}
       mode={mode}
       onModeChange={changeMode}
       live={live}

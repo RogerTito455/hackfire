@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "zone-a",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2.17101, 45.09548], [2.18374, 45.09548], [2.18374, 45.10452], [2.17101, 45.10452], [2.17101, 45.09548]]]
+      },
+      "properties": { "id": "zone-a", "name": "Zone A", "kind": "town", "osm": null }
+    },
+    {
+      "type": "Feature",
+      "id": "zone-b",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2.17101, 45.20401], [2.18374, 45.20401], [2.18374, 45.21305], [2.17101, 45.21305], [2.17101, 45.20401]]]
+      },
+      "properties": { "id": "zone-b", "name": "Zone B", "kind": "town", "osm": null }
+    }
+  ]
+}

@@ -1,50 +1,46 @@
-"""Cached fire data for the replay of 22–24 July 2026, read from data/."""
+"""Cached fire data for the active scenario's replay (scenario.py), read from its files."""
 
 import json
 from datetime import datetime
-from functools import cache
+from pathlib import Path
 
 import shapely
 from shapely.geometry.base import BaseGeometry
 
 from . import geo
-from .config import DATA_DIR
-
-HOTSPOTS_FILE = DATA_DIR / "hotspots_2026-07-22_24.geojson"
-# Demo box around Burgohondo, El Tiemblo and La Atalaya (min lon, min lat, max lon, max lat).
-# Every cached polygon is clipped to it.
-DEMO_BOX = shapely.box(-4.85, 40.30, -4.40, 40.50)
-SPREAD_FILE = DATA_DIR / "spread_2026-07-23.geojson"
-ZONES_FILE = DATA_DIR / "zones.geojson"
-LEAD_TIME_FILE = DATA_DIR / "lead_time_la-atalaya.json"
+from .scenario import cached, current
 
 
-@cache
+def _bytes(path: Path) -> bytes | None:
+    return path.read_bytes() if path.exists() else None
+
+
+@cached
 def hotspots_geojson() -> bytes | None:
     """The hotspot FeatureCollection written by `pnpm data:hotspots`, or None if it is missing.
 
     Served as raw bytes: re-encoding ~7,000 features on every request would cost more than the
     request itself.
     """
-    return HOTSPOTS_FILE.read_bytes() if HOTSPOTS_FILE.exists() else None
+    return _bytes(current().files.hotspots)
 
 
-@cache
+@cached
 def spread_geojson() -> bytes | None:
     """The predicted spread written by `pnpm data:spread`, or None if it is missing."""
-    return SPREAD_FILE.read_bytes() if SPREAD_FILE.exists() else None
+    return _bytes(current().files.spread)
 
 
-@cache
+@cached
 def zones_geojson() -> bytes | None:
     """The zones written by `pnpm data:zones`, or None if it is missing."""
-    return ZONES_FILE.read_bytes() if ZONES_FILE.exists() else None
+    return _bytes(current().files.zones)
 
 
-@cache
+@cached
 def lead_time_json() -> bytes | None:
     """The lead time written by `pnpm data:lead-time`, or None if it is missing."""
-    return LEAD_TIME_FILE.read_bytes() if LEAD_TIME_FILE.exists() else None
+    return _bytes(current().files.lead_time)
 
 
 # Satellite pixels are 375 m (VIIRS) to about 2 km (MTG): a hotspot stands for an area, not a point.
@@ -53,7 +49,7 @@ HOTSPOT_RADIUS_M = 750
 GRID_M = 200
 
 
-@cache
+@cached
 def _hotspot_times_and_points() -> tuple[list[datetime], list[tuple[float, float]]]:
     body = hotspots_geojson()
     features = json.loads(body)["features"] if body else []
@@ -62,7 +58,7 @@ def _hotspot_times_and_points() -> tuple[list[datetime], list[tuple[float, float
     return times, points
 
 
-@cache
+@cached
 def burned_area_m(until: datetime) -> BaseGeometry:
     """The area the fire had reached by `until`, in local metres (see geo.py).
 

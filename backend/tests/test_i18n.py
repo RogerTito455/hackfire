@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 from app import briefing, evacuation, i18n
 from app.config import settings
+from app.scenario import current
 from app.main import app
 from app.models import TravelMode
 from app.providers import routing
@@ -56,7 +57,7 @@ def test_plural_forms_and_placeholders() -> None:
 
 
 def test_every_cached_route_reads_back_into_data_without_losing_a_word() -> None:
-    cache = json.loads(evacuation.CACHE_FILE.read_text(encoding="utf-8"))
+    cache = json.loads(evacuation.cache_file().read_text(encoding="utf-8"))
     assert cache
     with i18n.using("en"):
         for key, cached in cache.items():
@@ -103,7 +104,7 @@ def test_a_new_route_keeps_its_data_so_it_can_be_said_in_another_language(monkey
     monkeypatch.setattr(evacuation, "_disk_cache", lambda: {})
     monkeypatch.setattr(evacuation, "_memory", {})
     monkeypatch.setattr(routing, "route_avoiding", lambda *_args: feature)
-    args = ((-4.46, 40.38), (-4.40, 40.36), TravelMode.CAR, "Cebreros", settings.scenario_time)
+    args = ((-4.46, 40.38), (-4.40, 40.36), TravelMode.CAR, "Cebreros", current().scenario_time)
     with i18n.using("es"):
         first = evacuation.plan(*args)
     with i18n.using("en"):

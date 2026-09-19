@@ -29,6 +29,7 @@ backend/app/lead_time.py   Lead time: first flag of a zone to first hotspot with
 backend/app/replay.py      Cached replay files under data/, served as-is
 backend/app/evacuation.py  Routes that avoid the fire and safe points; orders.py: evacuation orders per zone
 backend/app/config.py      Every key, URL and path, read from the environment
+backend/app/scenario.py    The active scenario (data/scenarios/<id>.json, HACKFIRE_SCENARIO): box, dates, lead-time zone, data files
 backend/app/i18n.py        Sentences the backend writes (directions, orders, alerts), per language in app/locales/
 backend/app/autopilot.py   Demo autopilot: scripted call outcomes timed by the forecast (data/demo_timeline.json, demo_calls.json), off by default
 backend/app/providers/     One module per external service (deepfire, routing, llm, voice)
@@ -72,6 +73,7 @@ Run `pnpm check` before every commit.
 - **Third parties go through `providers/`.** Nothing outside `backend/app/providers/` makes HTTP calls to an external service, and nothing outside `config.py` reads `os.environ`.
 - **The tool contract is shared.** The five `/tools` endpoints are the interface between the voice track and everything else. Changing a request or response model in `models.py` means updating `frontend/src/domain/triage.ts` and telling the team.
 - **Stubs are explicit.** Placeholder responses set `stub: true` and carry a `TODO(track)` comment, where track is `map`, `voice` or `data`. Remove both when the real implementation lands.
+- **No scenario in code.** The fire's box, dates, scenario time, lead-time zone and data file names live in `data/scenarios/<id>.json` and are read through `app/scenario.py`; files read from them are cached with `scenario.cached`. See `docs/setup/new-scenario.md`.
 - **Demo mode comes first.** Everything slow or external (Deepfire, the spread simulation, Overpass) is fetched once and cached as static files under `data/`. The live demo must not depend on a third-party API answering in time. Deepfire runs on shared capacity and returns 503 under load.
 - **Routing limits.** openrouteservice rejects `avoid_polygons` larger than 200 km² or 20 km in height or width. The demo box `-4.85,40.30,-4.40,40.50` is ~38 × 22 km, so clipping to it is not enough: clip the fire to a square of at most 14 km around the route (see `docs/findings/2026-09-19-ors-avoid-polygon-limit.md`).
 - **MapLibre GL v6 has no default export.** Use named imports (`import { Map as MapLibreMap, Marker } from 'maplibre-gl'`).

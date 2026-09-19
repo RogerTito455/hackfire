@@ -8,16 +8,16 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from .i18n import t
-from . import impact
-from .config import DATA_DIR, settings
+from . import impact, scenario
+from .config import settings
 from .models import AgentFocus, CrewAlert, Neighbor, OrderDecision, ReportStatusRequest, Rescue, TriageStatus
 
-# neighbors.local.json holds the team's real phone numbers and is git-ignored.
-_REGISTRY_CANDIDATES = [
-    settings.neighbors_file,
-    DATA_DIR / "neighbors.local.json",
-    DATA_DIR / "neighbors.sample.json",
-]
+def _registry_candidates() -> list:
+    """Where the registry is read from, first found wins: HACKFIRE_NEIGHBORS_FILE, then the scenario's
+    local registry (data/neighbors.local.json holds the team's real phone numbers and is git-ignored),
+    then its tracked one."""
+    files = scenario.current().files
+    return [settings.neighbors_file, files.local_registry, files.registry]
 
 
 def _build_registry(text: str, source: str) -> dict[str, Neighbor]:
@@ -71,7 +71,7 @@ class TriageState:
         if settings.neighbors_json:
             self._neighbors = _build_registry(settings.neighbors_json, "HACKFIRE_NEIGHBORS_JSON")
             return
-        for candidate in _REGISTRY_CANDIDATES:
+        for candidate in _registry_candidates():
             if candidate and Path(candidate).exists():
                 self._neighbors = _build_registry(Path(candidate).read_text(encoding="utf-8"), Path(candidate).name)
                 return
@@ -170,10 +170,11 @@ class TriageState:
     def clock(self) -> datetime:
         """The replay moment every answer refers to: the slider's, or the scenario's until it moves.
 
-        The scenario time (HACKFIRE_SCENARIO_TIME) is the moment the calls happen at, and the one
-        the routes avoid the burned area of, so the agent's words and its routes agree.
+        The scenario time (the scenario's `scenario_time`, or HACKFIRE_SCENARIO_TIME) is the moment
+        the calls happen at, and the one the routes avoid the burned area of, so the agent's words and
+        its routes agree.
         """
-        moment = self.replay_time or settings.scenario_time
+        moment = self.replay_time or scenario.current().scenario_time
         return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
 
     def minutes_to_impact(self, zone: str) -> int | None:

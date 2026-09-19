@@ -4,28 +4,26 @@ A resident's route goes from their home to the nearest safe point the fire is no
 avoids the area burned up to the scenario time plus the next AVOID_AHEAD_H of predicted spread
 (impact.py, from the cached forecasts). A rescue route goes from the crew base to the resident's
 home and avoids only what has burned: crews work inside the fire's path. If even that leaves no way
-through, the crew still gets the direct route, with a warning. Routes are cached in memory and in data/routes_cache.json (written by `pnpm data:routes`),
-so the live demo does not wait on openrouteservice.
+through, the crew still gets the direct route, with a warning. Routes are cached in memory and in the
+scenario's route cache, data/routes_cache.json for the demo (written by `pnpm data:routes`), so the
+live demo does not wait on openrouteservice.
 """
 
 import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from functools import cache
+from pathlib import Path
 
 import httpx
 from shapely.geometry import Point, Polygon, mapping
 from shapely.geometry.base import BaseGeometry
 
-from . import closures, geo, impact, replay
-from .config import DATA_DIR, settings
+from . import closures, geo, impact, replay, scenario
 from .i18n import t
 from .models import Neighbor, Route, TravelMode
 from .providers import routing
-
-PLACES_FILE = DATA_DIR / "places.json"
-CACHE_FILE = DATA_DIR / "routes_cache.json"
+from .scenario import cached, current
 
 # ORS takes avoid polygons up to 200 km² and 20 km in height or width: a 14 km square is under both.
 AVOID_SQUARE_M = 14_000
@@ -51,9 +49,9 @@ class Place:
     lon: float
 
 
-@cache
+@cached
 def _places() -> tuple[list[Place], Place]:
-    raw = json.loads(PLACES_FILE.read_text(encoding="utf-8"))
+    raw = json.loads(current().files.places.read_text(encoding="utf-8"))
     safe = [Place(p["id"], p["name"], p["lat"], p["lon"]) for p in raw["safe_points"]]
     base = raw["crew_base"]
     return safe, Place(base["id"], base["name"], base["lat"], base["lon"])
@@ -245,11 +243,18 @@ def _from_cache(cached: dict) -> Route:
 # --- Planning and cache --------------------------------------------------------
 
 _memory: dict[str, dict] = {}
+scenario.on_change(_memory.clear)
 
 
-@cache
+def cache_file() -> Path:
+    """The active scenario's route cache (`pnpm data:routes`)."""
+    return current().files.routes
+
+
+@cached
 def _disk_cache() -> dict[str, dict]:
-    return json.loads(CACHE_FILE.read_text(encoding="utf-8")) if CACHE_FILE.exists() else {}
+    path = cache_file()
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
 def cache_key(
@@ -317,7 +322,7 @@ def route_to(
     neighbor: Neighbor, target: Place, mode: TravelMode, at: datetime | None = None, refresh: bool = False
 ) -> Route:
     """The resident's route to a given safe point (an approved order's destination)."""
-    at = at or settings.scenario_time
+    at = at or current().scenario_time
     return plan((neighbor.lon, neighbor.lat), (target.lon, target.lat), mode, target.name, at, refresh)
 
 
@@ -325,7 +330,7 @@ def evacuation_route(
     neighbor: Neighbor, mode: TravelMode, at: datetime | None = None, refresh: bool = False
 ) -> Route:
     """To the nearest safe point; with roads closed, to whichever of the nearest is fastest to reach."""
-    at = at or settings.scenario_time
+    at = at or current().scenario_time
     home = (neighbor.lon, neighbor.lat)
     if closures.fingerprint():
         best = fastest_reachable(home, nearest_safe_points(at, home), mode, at, refresh)
@@ -355,7 +360,7 @@ def fastest_reachable(
 
 
 def rescue_route(neighbor: Neighbor, at: datetime | None = None, refresh: bool = False) -> Route:
-    at = at or settings.scenario_time
+    at = at or current().scenario_time
     base = crew_base()
     start, end = (base.lon, base.lat), (neighbor.lon, neighbor.lat)
     return plan(start, end, TravelMode.CAR, neighbor.address, at, refresh, ahead_h=0, crew=True)
@@ -363,7 +368,7 @@ def rescue_route(neighbor: Neighbor, at: datetime | None = None, refresh: bool =
 
 def fire_area(at: datetime | None = None, crew: bool = False) -> dict:
     """The area routes avoid, as a GeoJSON Feature: residents' routes, or with `crew`, crews'."""
-    at = at or settings.scenario_time
+    at = at or current().scenario_time
     ahead_h = 0 if crew else AVOID_AHEAD_H
     return {
         "type": "Feature",

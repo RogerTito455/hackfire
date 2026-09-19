@@ -6,7 +6,8 @@
 Needs ORS_API_KEY. For each resident in the registry the backend loads (the local one if present) it
 plans `required_routes` (pipelines/common.py): the route to the nearest safe point and to every place
 a coordinator can order the zone to, by car and on foot, and the crew's route, all at the scenario
-time. Writes data/routes_cache.json: coordinates, directions and geometry, never names or phones.
+time. Writes the active scenario's route cache (HACKFIRE_SCENARIO; data/routes_cache.json for the
+demo): coordinates, directions and geometry, never names or phones.
 Rerun it after changing the registry, the scenario time, data/places.json or the forecasts. The cache
 keys hold coordinates and the scenario time, not the forecasts, so a new spread needs `--refresh`.
 
@@ -31,8 +32,8 @@ from unittest import mock
 import httpx
 
 from .. import evacuation
-from ..config import settings
 from ..providers import routing
+from ..scenario import current
 from ..state import state
 from .common import required_routes
 
@@ -43,13 +44,13 @@ RATE_LIMIT_RETRIES = 3
 
 
 def existing_cache() -> dict[str, dict]:
-    path = evacuation.CACHE_FILE
+    path = evacuation.cache_file()
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
 def write_cache(routes: dict[str, dict]) -> None:
     """Replace the file in one step: an interruption must never leave half a cache."""
-    path = evacuation.CACHE_FILE
+    path = evacuation.cache_file()
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(json.dumps(dict(sorted(routes.items())), indent=1) + "\n", encoding="utf-8")
     os.replace(temporary, path)
@@ -76,7 +77,7 @@ def explain(error: evacuation.RoutingUnavailable, label: str, refresh: bool) -> 
     else:
         why = f"openrouteservice failed on '{label}': {str(error).splitlines()[0]}"
     kept = (
-        f"{evacuation.CACHE_FILE.name} is unchanged: --refresh writes only when it finishes."
+        f"{evacuation.cache_file().name} is unchanged: --refresh writes only when it finishes."
         if refresh
         else "What was planned is saved; rerun `pnpm data:routes` to plan only what is missing."
     )
@@ -105,7 +106,7 @@ def main() -> None:
             finally:
                 time.sleep(PAUSE_SECONDS)
 
-    at = settings.scenario_time
+    at = current().scenario_time
     label = ""
     try:
         with mock.patch.object(routing, "route_avoiding", paced_route):
@@ -118,13 +119,13 @@ def main() -> None:
     except evacuation.RoutingUnavailable as error:
         total = save(replace=False) if not refresh else len(existing_cache())
         print(explain(error, label, refresh))
-        print(f"{total} routes are in {evacuation.CACHE_FILE}")
+        print(f"{total} routes are in {evacuation.cache_file()}")
         sys.exit(2)
     except BaseException:
         if not refresh:
             save(replace=False)  # Ctrl-C or an unexpected error: keep what was planned
         raise
-    print(f"wrote {save(replace=refresh)} routes to {evacuation.CACHE_FILE} ({calls} openrouteservice requests)")
+    print(f"wrote {save(replace=refresh)} routes to {evacuation.cache_file()} ({calls} openrouteservice requests)")
 
 
 if __name__ == "__main__":

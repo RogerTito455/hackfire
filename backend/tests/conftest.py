@@ -2,7 +2,8 @@ from dataclasses import replace
 
 import pytest
 
-from app.config import DATA_DIR, settings
+from app import scenario
+from app.config import settings
 from app.state import state
 
 
@@ -14,10 +15,10 @@ def fresh_replay_clock() -> None:
 
 @pytest.fixture(autouse=True)
 def sample_registry(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Tests run against the sample registry, never a developer's private registry, whether it sits in
-    neighbors.local.json or in HACKFIRE_NEIGHBORS_JSON."""
+    """Tests run against the active scenario's tracked registry, never a developer's private registry,
+    whether it sits in neighbors.local.json or in HACKFIRE_NEIGHBORS_JSON."""
     monkeypatch.setattr("app.state.settings", replace(settings, neighbors_json=""))
-    monkeypatch.setattr("app.state._REGISTRY_CANDIDATES", [DATA_DIR / "neighbors.sample.json"])
+    monkeypatch.setattr("app.state._registry_candidates", lambda: [scenario.current().files.registry])
     state.load()
 
 

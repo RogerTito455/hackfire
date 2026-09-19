@@ -55,15 +55,17 @@ class Settings:
     twilio_from_number: str = field(default_factory=lambda: _env("TWILIO_FROM_NUMBER"))
     # Where the dashboard is reachable, for the link in each crew alert.
     public_url: str = field(default_factory=lambda: _env("HACKFIRE_PUBLIC_URL", "http://localhost:5173").rstrip("/"))
-    # The replay moment the calls happen at: routes avoid the fire burned up to then.
-    # Default: 23 July 2026, 18:00 CEST: after La Atalaya is first flagged (15:30 CEST, see
-    # data/lead_time_la-atalaya.json), with about 4 h to impact and safe ways out still open.
     # The language of what the voice agents are told (tool answers, call data) and of the crew SMS.
     # The dashboard picks its own per request (Accept-Language). Any code in app/locales/.
     agent_locale: str = field(default_factory=lambda: _env("HACKFIRE_AGENT_LOCALE", "en"))
     crew_locale: str = field(default_factory=lambda: _env("HACKFIRE_CREW_LOCALE", "en"))
-    scenario_time: datetime = field(
-        default_factory=lambda: datetime.fromisoformat(_env("HACKFIRE_SCENARIO_TIME", "2026-07-23T16:00:00Z"))
+    # The active scenario (app/scenario.py): which fire is replayed, where and when, from which files.
+    # An id of data/scenarios/<id>.json, or a path to a scenario file. See docs/setup/new-scenario.md.
+    scenario: str = field(default_factory=lambda: _env("HACKFIRE_SCENARIO", "el-tiemblo-2026-07-23"))
+    # The replay moment the calls happen at, instead of the scenario's own `scenario_time`: routes
+    # avoid the fire burned up to then. None (unset) keeps the scenario's.
+    scenario_time_override: datetime | None = field(
+        default_factory=lambda: datetime.fromisoformat(value) if (value := _env("HACKFIRE_SCENARIO_TIME")) else None
     )
 
     deepfire_client_id: str = field(default_factory=lambda: _env("DEEPFIRE_CLIENT_ID"))

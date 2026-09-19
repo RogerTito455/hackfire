@@ -2,16 +2,16 @@
 
     pnpm data:zones
 
-Needs no key. Writes data/zones.geojson: La Atalaya and El Tiemblo (ids `la-atalaya` and
-`el-tiemblo`, the zones the resident registry refers to), care homes, schools, health centres and
-main roads inside the demo box. Every zone is a polygon or a line, so it can be intersected with
-the predicted spread.
+Needs no key. Writes the active scenario's zones (HACKFIRE_SCENARIO; the demo's: data/zones.geojson):
+the scenario's named places (the demo's: La Atalaya and El Tiemblo, ids `la-atalaya` and `el-tiemblo`,
+the zones the resident registry refers to), care homes, schools, health centres and main roads inside
+the scenario's box. Every zone is a polygon or a line, so it can be intersected with the predicted
+spread.
 """
 
 import json
 import re
 import sys
-from dataclasses import dataclass
 
 import httpx
 import shapely
@@ -19,14 +19,9 @@ from shapely import LineString, MultiLineString, Point, Polygon
 from shapely.geometry import mapping
 from shapely.ops import unary_union
 
-from ..config import DATA_DIR
 from ..providers import overpass
-from ..replay import DEMO_BOX
-
-OUTPUT = DATA_DIR / "zones.geojson"
-
-# The demo box as Overpass wants it: south, west, north, east.
-BBOX_OVERPASS = "40.30,-4.85,40.50,-4.40"
+from ..scenario import NamedPlace as Place
+from ..scenario import current
 
 # A facility mapped as a point is padded to roughly a building plot (about 150 m).
 POINT_PADDING_DEG = 0.0015
@@ -35,40 +30,34 @@ ROAD_TOLERANCE_DEG = 0.0002
 COORDINATE_GRID_DEG = 0.00001  # about 1 m
 
 
-@dataclass(frozen=True)
-class Place:
-    id: str
-    name: str
-    kind: str
-    lon: float
-    lat: float
-    # OSM has no boundary for these: take the residential land use around the place's node.
-    radius_m: int
+
+def overpass_bbox(bbox: tuple[float, float, float, float]) -> str:
+    """The scenario's box as Overpass wants it: south, west, north, east."""
+    west, south, east, north = bbox
+    return ",".join(str(value) for value in (south, west, north, east))
 
 
-# La Atalaya: hamlet node 1433078707. El Tiemblo: village node 64835850.
-PLACES = [
-    Place("la-atalaya", "La Atalaya", "estate", -4.46095, 40.3821, 1000),
-    Place("el-tiemblo", "El Tiemblo", "town", -4.499, 40.413, 1500),
-]
-
-FACILITIES_QUERY = f"""
+def facilities_query(bbox: str) -> str:
+    return f"""
 [out:json][timeout:90];
 (
-  nwr["amenity"~"^(nursing_home|school|kindergarten|clinic|hospital|doctors)$"]({BBOX_OVERPASS});
-  nwr["social_facility"]({BBOX_OVERPASS});
+  nwr["amenity"~"^(nursing_home|school|kindergarten|clinic|hospital|doctors)$"]({bbox});
+  nwr["social_facility"]({bbox});
 );
 out geom center tags;
 """
 
-ROADS_QUERY = f"""
+
+def roads_query(bbox: str) -> str:
+    return f"""
 [out:json][timeout:90];
-way["highway"~"^(trunk|primary|secondary)$"]["ref"]({BBOX_OVERPASS});
+way["highway"~"^(trunk|primary|secondary)$"]["ref"]({bbox});
 out geom tags;
 """
 
 
 def residential_query(place: Place) -> str:
+    """OSM has no boundary for the named places: take the residential land use around the node."""
     return f"""
 [out:json][timeout:60];
 way["landuse"="residential"](around:{place.radius_m},{place.lat},{place.lon});
@@ -110,8 +99,8 @@ def facility_geometry(element: dict) -> Polygon | None:
 
 
 def finish(geometry, simplify: float = 0.0):
-    """Clip to the demo box, simplify and snap coordinates to a ~1 m grid."""
-    clipped = geometry.intersection(DEMO_BOX)
+    """Clip to the scenario's box, simplify and snap coordinates to a ~1 m grid."""
+    clipped = geometry.intersection(current().box)
     if clipped.is_empty:
         return None
     if simplify:
@@ -130,7 +119,7 @@ def feature(zone_id: str, name: str | None, kind: str, osm: str | None, geometry
 
 def place_features(client: httpx.Client) -> list[dict]:
     features = []
-    for place in PLACES:
+    for place in current().places:
         polygons = [p for e in overpass.elements(client, residential_query(place)) if (p := way_polygon(e))]
         if not polygons:
             sys.exit(f"No residential land use within {place.radius_m} m of {place.name}")
@@ -142,7 +131,7 @@ def place_features(client: httpx.Client) -> list[dict]:
 
 def facility_features(client: httpx.Client) -> list[dict]:
     features = []
-    for element in overpass.elements(client, FACILITIES_QUERY):
+    for element in overpass.elements(client, facilities_query(overpass_bbox(current().bbox))):
         kind = facility_kind(element["tags"])
         geometry = facility_geometry(element) if kind else None
         geometry = finish(geometry) if geometry is not None else None
@@ -157,7 +146,7 @@ def facility_features(client: httpx.Client) -> list[dict]:
 def road_features(client: httpx.Client) -> list[dict]:
     """One zone per road number: a road is cut as soon as the fire touches any stretch of it."""
     by_ref: dict[str, list[LineString]] = {}
-    for element in overpass.elements(client, ROADS_QUERY):
+    for element in overpass.elements(client, roads_query(overpass_bbox(current().bbox))):
         coords = [(p["lon"], p["lat"]) for p in element.get("geometry", [])]
         if len(coords) >= 2:
             by_ref.setdefault(element["tags"]["ref"], []).append(LineString(coords))
@@ -175,14 +164,15 @@ def main() -> None:
 
     # Stable order so the file diffs cleanly: named places first, then by kind and id.
     features.sort(key=lambda f: (f["properties"]["kind"] not in {"estate", "town"}, f["properties"]["kind"], f["id"]))
-    OUTPUT.write_text(
+    output = current().files.zones
+    output.write_text(
         json.dumps({"type": "FeatureCollection", "features": features}, separators=(",", ":")),
         encoding="utf-8",
     )
     kinds: dict[str, int] = {}
     for f in features:
         kinds[f["properties"]["kind"]] = kinds.get(f["properties"]["kind"], 0) + 1
-    print(f"wrote {len(features)} zones {kinds} to {OUTPUT}")
+    print(f"wrote {len(features)} zones {kinds} to {output}")
 
 
 if __name__ == "__main__":
