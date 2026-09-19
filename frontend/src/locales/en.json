@@ -1,0 +1,195 @@
+{
+  "_meta": {
+    "name": "English",
+    "intl": "en-GB"
+  },
+  "app": {
+    "connected": "Connected",
+    "offline": "Offline",
+    "language": "Language: {name}",
+    "tapResident": "Tap a resident on the map to see their way out.",
+    "reset": "Reset demo"
+  },
+  "sheet": {
+    "label": "Coordination panel",
+    "peek": "Show more",
+    "half": "Expand panel",
+    "full": "Collapse panel"
+  },
+  "mode": {
+    "label": "Map mode",
+    "replay": "Replay",
+    "live": "Live"
+  },
+  "status": {
+    "strip": "Residents by triage state",
+    "pending": "Not called yet",
+    "evacuating": "Evacuating",
+    "no_answer": "No answer",
+    "needs_rescue": "Needs rescue"
+  },
+  "section": {
+    "wayOut": "Way out",
+    "rescues": "Rescue queue",
+    "orders": "Evacuation orders",
+    "fire": "Where the fire is heading",
+    "alerts": "Crew alerts",
+    "typedBackup": "Voice not working? Type the answer",
+    "callResident": "Call this resident"
+  },
+  "time": {
+    "now": "now"
+  },
+  "replay": {
+    "loading": "Loading satellite hotspots…",
+    "unavailable": "Satellite hotspots unavailable",
+    "play": "Play replay",
+    "pause": "Pause replay",
+    "slider": "Replay time",
+    "hotspots": {
+      "one": "{count} hotspot so far",
+      "other": "{count} hotspots so far"
+    },
+    "fresh": "Just detected",
+    "old": "A day old"
+  },
+  "live": {
+    "loading": "Loading the fires burning now…",
+    "down": "Deepfire is unavailable right now. The replay still works.",
+    "clusters": {
+      "one": "{count} active fire on this map",
+      "other": "{count} active fires on this map"
+    },
+    "refreshFailed": "Could not refresh; showing data from {time}.",
+    "busy": "Deepfire is busy; showing data from {time}.",
+    "updated": "Updated {time}. Source: Deepfire."
+  },
+  "route": {
+    "close": "Close route",
+    "modes": "Travel mode",
+    "car": "By car",
+    "walking": "On foot",
+    "rescue": "Crew route",
+    "pick": "Tap a resident on the map to see their route out.",
+    "planning": "Planning the route…",
+    "unavailable": "Routing is unavailable right now.",
+    "summary": "{distance}, {duration}",
+    "avoidsAhead": {
+      "one": "Avoids the fire and its predicted spread over the next hour, as of {time}.",
+      "other": "Avoids the fire and its next {count} h of predicted spread, as of {time}."
+    },
+    "avoidsBurned": "Avoids the area already burned, as of {time}."
+  },
+  "talk": {
+    "notConfigured": "The voice agent is not configured (SLNG_API_KEY).",
+    "approveFirst": "{zone}'s order is not approved: approve it under Evacuation orders, then call {name}.",
+    "connecting": "Connecting to the agent…",
+    "onTheLine": "The resident agent is calling {name}: answer as them.",
+    "hangUp": "Hang up",
+    "take": "Call {name} (answer here)",
+    "failed": "Could not reach the agent. Use the typed answer below."
+  },
+  "ask": {
+    "connecting": "Connecting to the agent…",
+    "onTheLine": "You are talking to the coordinator agent. Ask: “¿Qué rescates tengo y en qué orden?”, then “Dame la ruta al más urgente”.",
+    "hangUp": "Hang up",
+    "ask": "Ask the coordinator agent",
+    "failed": "Could not reach the agent. Read the queue below."
+  },
+  "typed": {
+    "question": "What did {name} say?",
+    "placeholder": "“Mi madre no puede andar”",
+    "send": "Classify and record",
+    "sending": "Classifying…",
+    "noLlm": "No LLM configured: use the buttons below.",
+    "manual": "Set the status by hand",
+    "recorded": "Recorded: {status}",
+    "people": {
+      "one": "{count} person",
+      "other": "{count} people"
+    },
+    "classifyFailed": "Could not classify it. Use the buttons.",
+    "recordFailed": "Could not record it."
+  },
+  "rescues": {
+    "empty": "No rescues pending.",
+    "people": {
+      "one": "{count} person",
+      "other": "{count} people"
+    },
+    "peopleUnknown": "People unknown",
+    "mobilityUnknown": "mobility unknown",
+    "impact": "Fire in about {time}",
+    "impactNow": "Fire already there"
+  },
+  "orders": {
+    "empty": "No zones with residents in the registry.",
+    "proposed": "Proposed",
+    "approved": "Approved",
+    "residents": {
+      "one": "{count} resident",
+      "other": "{count} residents"
+    },
+    "impactNone": "not in the forecast",
+    "impactNow": "fire already there",
+    "impactIn": "fire in {time}",
+    "choice": "Order for {zone}",
+    "leaveFor": "Leave for {place}",
+    "stayIndoors": "Stay indoors",
+    "proposedTag": " (proposed)",
+    "unsafeTag": " (not safe now)",
+    "saving": "Saving…",
+    "change": "Change order",
+    "approve": "Approve order",
+    "calling": "Calling…",
+    "call": "Call residents",
+    "noLine": "No phone line: take each resident's call from their panel.",
+    "callsFailed": "Could not start the calls.",
+    "nobodyToCall": "Nobody to call: every resident already has a status or a call going.",
+    "callsPlaced": {
+      "one": "Calling {count} resident; an unanswered call turns into No answer.",
+      "other": "Calling {count} residents; unanswered calls turn into No answer."
+    },
+    "callsRefused": {
+      "one": "SLNG refused the call to {count} resident: marked No answer.",
+      "other": "SLNG refused the calls to {count} residents: marked No answer."
+    }
+  },
+  "fire": {
+    "loading": "Loading the forecast…",
+    "error": "Forecast unavailable: is the backend up and the data cached?",
+    "noForecast": "No forecast at this time.",
+    "noZones": "No zone in the predicted path.",
+    "showFewer": "Show fewer",
+    "showMore": "Show {count} more",
+    "legendNow": "Now",
+    "legendAhead": "6 h ahead",
+    "issued": "Forecast from {time}"
+  },
+  "leadTime": {
+    "loading": "Loading the lead time…",
+    "error": "Lead time unavailable: run pnpm data:lead-time.",
+    "notFlagged": "{zone} has not been flagged yet.",
+    "label": "lead time",
+    "explanation": "{zone} was flagged at {flagged}, using only the hotspots seen up to then. In the recorded satellite data the first hotspot within {radius} km of it came at {reached}.",
+    "how": "How it is computed"
+  },
+  "zoneKind": {
+    "estate": "Housing estate",
+    "town": "Town",
+    "care_home": "Care home",
+    "health_centre": "Health centre",
+    "school": "School",
+    "road": "Road"
+  },
+  "alerts": {
+    "empty": "No alerts sent to the crew yet.",
+    "sms": "Sent by SMS",
+    "dashboardOnly": "Dashboard only, SMS not set up",
+    "showRoute": "Show crew route"
+  },
+  "map": {
+    "liveFire": "Detected over {hours} h, last seen {time}",
+    "resident": "{name}: {status}"
+  }
+}

@@ -5,7 +5,7 @@
     "dev:web": "pnpm --filter frontend dev",
     "dev:api": "cd backend && uv run uvicorn app.main:app --reload",
     "build": "pnpm --filter frontend build",
-    "check": "pnpm test && pnpm --filter frontend icons:check && pnpm build",
+    "check": "pnpm test && pnpm --filter frontend icons:check && pnpm --filter frontend locales:check && pnpm build",
     "data:hotspots": "cd backend && uv run python -m app.pipelines.fetch_hotspots",
     "bootstrap": "pnpm install && uv sync --project backend && (git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true)",
     "data:zones": "cd backend && uv run python -m app.pipelines.fetch_zones",

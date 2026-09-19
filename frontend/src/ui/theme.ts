@@ -1,20 +1,13 @@
-// Visual vocabulary for triage states. Change the look here; logic does not import colours.
+// Visual vocabulary: colours, icons and number formats. Change the look here; logic does not
+// import colours. Words live in src/locales/*.json (see locales.ts and DESIGN.md).
 
 import type { TriageStatus } from '../domain/triage'
-import type { ZoneKind } from '../domain/zones'
-
-export const STATUS_LABEL: Record<TriageStatus, string> = {
-  pending: 'Not called yet',
-  evacuating: 'Evacuating',
-  no_answer: 'No answer',
-  needs_rescue: 'Needs rescue',
-}
 
 export const STATUS_COLOR: Record<TriageStatus, string> = {
-  pending: '#8a8f98',
-  evacuating: '#2e9e5b',
-  no_answer: '#e0a100',
-  needs_rescue: '#d93025',
+  pending: '#64708f',
+  evacuating: '#0e9f6e',
+  no_answer: '#e9a100',
+  needs_rescue: '#e0302a',
 }
 
 // Hotspot colour by age at the replay time, in hours: fresh detections bright, old ones dark.
@@ -36,17 +29,23 @@ export const HOTSPOT_RADIUS_BY_FRP: readonly (readonly [frp: number, radius: num
 // The fire is in Spain, so the replay clock shows Spanish local time.
 export const REPLAY_TIME_ZONE = 'Europe/Madrid'
 
-const replayTimeFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: REPLAY_TIME_ZONE,
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZoneName: 'short',
-})
+const timeFormats = new Map<string, Intl.DateTimeFormat>()
 
-export function formatSpanishTime(epochMs: number): string {
-  return replayTimeFormat.format(epochMs)
+/** Spanish local time (the fire's), written the way `intl` writes dates: "23 Jul, 18:00 CEST". */
+export function formatSpanishTime(epochMs: number, intl = 'en-GB'): string {
+  let format = timeFormats.get(intl)
+  if (!format) {
+    format = new Intl.DateTimeFormat(intl, {
+      timeZone: REPLAY_TIME_ZONE,
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    })
+    timeFormats.set(intl, format)
+  }
+  return format.format(epochMs)
 }
 
 // Predicted spread by hours after the forecast: red is the fire now, yellow is furthest ahead.
@@ -66,15 +65,6 @@ export const ZONE_URGENCY_COLORS: readonly (readonly [minutes: number, color: st
   [360, '#d1a3dc'],
 ]
 
-export const ZONE_KIND_LABEL: Record<ZoneKind, string> = {
-  estate: 'Housing estate',
-  town: 'Town',
-  care_home: 'Care home',
-  health_centre: 'Health centre',
-  school: 'School',
-  road: 'Road',
-}
-
 /** "45 min", "4 h" or "4 h 30 min", from minutes. (formatDuration below takes seconds.) */
 export function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} min`
@@ -83,9 +73,9 @@ export function formatMinutes(minutes: number): string {
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`
 }
 
-/** "now" or a duration: how the panel says when the fire arrives. */
-export function formatMinutesToImpact(minutes: number): string {
-  return minutes <= 0 ? 'now' : formatMinutes(minutes)
+/** `now` (the locale's word for it) or a duration: how the panel says when the fire arrives. */
+export function formatMinutesToImpact(minutes: number, now: string): string {
+  return minutes <= 0 ? now : formatMinutes(minutes)
 }
 
 // Live fires: colour by hours since the last detection, radius by hours burning.
@@ -102,17 +92,17 @@ export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: nu
   [72, 14],
 ]
 
-export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const
 export const MAP_MODE_ICON = { replay: 'replay', live: 'live' } as const
 
-export const ROUTE_KIND_LABEL = { car: 'By car', walking: 'On foot', rescue: 'Crew route' } as const
 export const ROUTE_KIND_ICON = { car: 'car', walking: 'walk', rescue: 'fire-truck' } as const
 
-export const ROUTE_COLOR = '#1a73e8'
-export const FIRE_AREA_COLOR = '#d93025'
+// The way out is civil-protection blue (DESIGN.md); the fire keeps the warm colours.
+export const ROUTE_COLOR = '#2447d6'
+export const FIRE_AREA_COLOR = '#e5301f'
 
-export function formatDistance(metres: number): string {
-  return metres < 1000 ? `${Math.round(metres / 10) * 10} m` : `${(metres / 1000).toFixed(1)} km`
+export function formatDistance(metres: number, intl = 'en-GB'): string {
+  if (metres < 1000) return `${Math.round(metres / 10) * 10} m`
+  return `${new Intl.NumberFormat(intl, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(metres / 1000)} km`
 }
 
 export function formatDuration(seconds: number): string {
@@ -120,11 +110,9 @@ export function formatDuration(seconds: number): string {
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`
 }
 
-const clockFormat = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-
 /** Wall-clock time for things happening now, such as crew alerts. */
-export function formatClock(iso: string): string {
-  return clockFormat.format(Date.parse(iso))
+export function formatClock(iso: string, intl = 'en-GB'): string {
+  return new Intl.DateTimeFormat(intl, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(Date.parse(iso))
 }
 
 // Icon for each triage status, next to its label and inside its map marker (see ui/icons/README.md).
@@ -140,5 +128,4 @@ export const STATUS_ICON: Record<TriageStatus, import('./Icon').IconName> = {
 export const MARKER_OUTLINE_COLOR = '#fff'
 export const PLACE_MARKER_INK = '#3c4043'
 
-export const ORDER_STATE_LABEL = { proposed: 'Proposed', approved: 'Approved' } as const
 export const ORDER_STATE_COLOR = { proposed: '#e0a100', approved: '#2e9e5b' } as const

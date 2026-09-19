@@ -20,7 +20,8 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | **Demo** | [Runbook](demo/runbook.md) | Before the demo, and what to do when something fails on stage |
 | | [Pitch script](demo/pitch.md) | The three minutes, the checked figures, questions to prepare |
 | **Development** | [Workflow](development/workflow.md) | Slices, branches, checks, the tool contract |
-| **Design** | [Icons](../frontend/src/ui/icons/README.md) | The hand-drawn icon set: format rules, map markers, catalogue |
+| **Design** | [DESIGN.md](../DESIGN.md) | Colours, type, the mobile layout, old-browser rules, languages |
+| | [Icons](../frontend/src/ui/icons/README.md) | The hand-drawn icon set: format rules, map markers, catalogue |
 | **Findings** | [Findings log](findings/README.md) | Things we learned the hard way, dated |
 
 ## Adding a page

@@ -1,6 +1,7 @@
 import type { MapMode } from '../hooks/useMapMode'
 import { Icon } from './Icon'
-import { MAP_MODE_ICON, MAP_MODE_LABEL } from './theme'
+import { useI18n } from './i18n'
+import { MAP_MODE_ICON } from './theme'
 
 interface ModeToggleProps {
   mode: MapMode
@@ -10,8 +11,9 @@ interface ModeToggleProps {
 const MODES: readonly MapMode[] = ['replay', 'live']
 
 export function ModeToggle({ mode, onChange }: ModeToggleProps) {
+  const { t } = useI18n()
   return (
-    <div className="mode-toggle" role="group" aria-label="Map mode">
+    <div className="mode-toggle" role="group" aria-label={t('mode.label')}>
       {MODES.map((option) => (
         <button
           key={option}
@@ -21,7 +23,7 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
           onClick={() => onChange(option)}
         >
           <Icon name={MAP_MODE_ICON[option]} size={16} />
-          {MAP_MODE_LABEL[option]}
+          <span className="mode-label">{t(`mode.${option}`)}</span>
         </button>
       ))}
     </div>

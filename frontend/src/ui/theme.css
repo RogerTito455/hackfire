@@ -1,26 +1,84 @@
+/* HackFire tokens. See DESIGN.md: warm colours are the fire, blue is the way out, the status
+   colours are people. Nothing is coloured for decoration. */
+
 :root {
-  --text: #5b6270;
-  --text-h: #0d1117;
-  --bg: #fff;
-  --border: #e3e5e8;
-  --alert: #d93025;
+  /* Ink and surfaces: a navy family, not neutral black and white-grey. */
+  --ink: #0f1b3d;
+  --ink-2: #4a5578;
+  --paper: #ffffff;
+  --mist: #eef2fb;
+  --line: #d6ddee;
+
+  /* The way out: civil-protection blue (the triangle on the international civil-defence sign). */
+  --route: #2447d6;
+  --route-ink: #ffffff;
+  --route-soft: #e3e9ff;
+
+  /* The fire, fresh to old. Also the time-to-impact figures. */
+  --fire-1: #ffd23f;
+  --fire-2: #ff7a1a;
+  --fire-3: #e5301f;
+  --fire-4: #7a1f12;
+
+  /* Kept for components that read these names. */
+  --text: var(--ink-2);
+  --text-h: var(--ink);
+  --bg: var(--paper);
+  --border: var(--line);
+  --alert: var(--fire-3);
   --zone: #7b1fa2;
 
-  font: 16px/1.45 system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Shape and depth: radius follows hierarchy; only things floating over the map cast a shadow. */
+  --radius-sheet: 22px;
+  --radius-group: 14px;
+  --radius-control: 10px;
+  --float: 0 6px 24px rgb(15 27 61 / 18%), 0 1px 3px rgb(15 27 61 / 12%);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* The phone's own typeface: SF Pro on iPhone, Roboto on Android. */
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, Roboto, 'Segoe UI', sans-serif;
+  font-feature-settings: 'tnum' 0;
   color-scheme: light dark;
-  color: var(--text-h);
-  background: var(--bg);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
+    /* Night blue, so the map and the panels read as one surface after dark. */
+    --ink: #eef2ff;
+    --ink-2: #a7b1d6;
+    --paper: #141e42;
+    --mist: #0b1330;
+    --line: #26325c;
+    --route: #6f8cff;
+    --route-ink: #0b1330;
+    --route-soft: #1f2d63;
+    --float: 0 6px 24px rgb(0 0 0 / 45%), 0 1px 3px rgb(0 0 0 / 35%);
   }
 }
 
 body {
   margin: 0;
+  background: var(--mist);
+  overscroll-behavior: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--route);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

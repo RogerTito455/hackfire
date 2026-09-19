@@ -1,0 +1,195 @@
+{
+  "_meta": {
+    "name": "Español",
+    "intl": "es-ES"
+  },
+  "app": {
+    "connected": "Conectado",
+    "offline": "Sin conexión",
+    "language": "Idioma: {name}",
+    "tapResident": "Toca un vecino en el mapa para ver su salida.",
+    "reset": "Reiniciar la demo"
+  },
+  "sheet": {
+    "label": "Panel de coordinación",
+    "peek": "Mostrar más",
+    "half": "Ampliar el panel",
+    "full": "Recoger el panel"
+  },
+  "mode": {
+    "label": "Modo del mapa",
+    "replay": "Diferido",
+    "live": "En directo"
+  },
+  "status": {
+    "strip": "Vecinos por estado",
+    "pending": "Sin llamar",
+    "evacuating": "Evacuando",
+    "no_answer": "No contesta",
+    "needs_rescue": "Necesita rescate"
+  },
+  "section": {
+    "wayOut": "Salida",
+    "rescues": "Cola de rescates",
+    "orders": "Órdenes de evacuación",
+    "fire": "Hacia dónde va el fuego",
+    "alerts": "Avisos a bomberos",
+    "typedBackup": "¿Falla la voz? Escribe la respuesta",
+    "callResident": "Llamar a este vecino"
+  },
+  "time": {
+    "now": "ya"
+  },
+  "replay": {
+    "loading": "Cargando los focos del satélite…",
+    "unavailable": "Los focos del satélite no están disponibles",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "slider": "Hora del diferido",
+    "hotspots": {
+      "one": "{count} foco hasta ahora",
+      "other": "{count} focos hasta ahora"
+    },
+    "fresh": "Recién detectado",
+    "old": "Hace un día"
+  },
+  "live": {
+    "loading": "Cargando los incendios activos…",
+    "down": "Deepfire no responde ahora mismo. El diferido sigue funcionando.",
+    "clusters": {
+      "one": "{count} incendio activo en este mapa",
+      "other": "{count} incendios activos en este mapa"
+    },
+    "refreshFailed": "No se pudo actualizar; se muestran los datos de {time}.",
+    "busy": "Deepfire está saturado; se muestran los datos de {time}.",
+    "updated": "Actualizado: {time}. Fuente: Deepfire."
+  },
+  "route": {
+    "close": "Cerrar la ruta",
+    "modes": "Cómo se desplaza",
+    "car": "En coche",
+    "walking": "A pie",
+    "rescue": "Ruta de bomberos",
+    "pick": "Toca un vecino en el mapa para ver su ruta de salida.",
+    "planning": "Calculando la ruta…",
+    "unavailable": "El cálculo de rutas no está disponible ahora mismo.",
+    "summary": "{distance}, {duration}",
+    "avoidsAhead": {
+      "one": "Evita el fuego y su avance previsto en la próxima hora, según los datos de {time}.",
+      "other": "Evita el fuego y su avance previsto en las próximas {count} h, según los datos de {time}."
+    },
+    "avoidsBurned": "Evita la zona ya quemada, según los datos de {time}."
+  },
+  "talk": {
+    "notConfigured": "El agente de voz no está configurado (SLNG_API_KEY).",
+    "approveFirst": "La orden de {zone} no está aprobada: apruébala en Órdenes de evacuación y luego llama a {name}.",
+    "connecting": "Conectando con el agente…",
+    "onTheLine": "El agente de vecinos está llamando a {name}: contesta en su nombre.",
+    "hangUp": "Colgar",
+    "take": "Llamar a {name} (contestas aquí)",
+    "failed": "No se pudo conectar con el agente. Usa la respuesta escrita de abajo."
+  },
+  "ask": {
+    "connecting": "Conectando con el agente…",
+    "onTheLine": "Estás hablando con el agente coordinador. Pregunta: «¿Qué rescates tengo y en qué orden?» y luego «Dame la ruta al más urgente».",
+    "hangUp": "Colgar",
+    "ask": "Preguntar al agente coordinador",
+    "failed": "No se pudo conectar con el agente. Consulta la cola de abajo."
+  },
+  "typed": {
+    "question": "¿Qué ha dicho {name}?",
+    "placeholder": "«Mi madre no puede andar»",
+    "send": "Clasificar y registrar",
+    "sending": "Clasificando…",
+    "noLlm": "No hay un LLM configurado: usa los botones de abajo.",
+    "manual": "Marcar el estado a mano",
+    "recorded": "Registrado: {status}",
+    "people": {
+      "one": "{count} persona",
+      "other": "{count} personas"
+    },
+    "classifyFailed": "No se pudo clasificar. Usa los botones.",
+    "recordFailed": "No se pudo registrar."
+  },
+  "rescues": {
+    "empty": "No hay rescates pendientes.",
+    "people": {
+      "one": "{count} persona",
+      "other": "{count} personas"
+    },
+    "peopleUnknown": "Número de personas desconocido",
+    "mobilityUnknown": "movilidad desconocida",
+    "impact": "Fuego en unos {time}",
+    "impactNow": "El fuego ya ha llegado"
+  },
+  "orders": {
+    "empty": "No hay zonas con vecinos en el registro.",
+    "proposed": "Propuesta",
+    "approved": "Aprobada",
+    "residents": {
+      "one": "{count} vecino",
+      "other": "{count} vecinos"
+    },
+    "impactNone": "fuera de la previsión",
+    "impactNow": "el fuego ya ha llegado",
+    "impactIn": "fuego en {time}",
+    "choice": "Orden para {zone}",
+    "leaveFor": "Salir hacia {place}",
+    "stayIndoors": "Quedarse en casa",
+    "proposedTag": " (propuesta)",
+    "unsafeTag": " (ahora no es seguro)",
+    "saving": "Guardando…",
+    "change": "Cambiar la orden",
+    "approve": "Aprobar la orden",
+    "calling": "Llamando…",
+    "call": "Llamar a los vecinos",
+    "noLine": "Sin línea telefónica: atiende la llamada de cada vecino desde su panel.",
+    "callsFailed": "No se pudieron iniciar las llamadas.",
+    "nobodyToCall": "No hay nadie a quien llamar: todos los vecinos tienen ya un estado o una llamada en curso.",
+    "callsPlaced": {
+      "one": "Llamando a {count} vecino; si no contesta, pasa a No contesta.",
+      "other": "Llamando a {count} vecinos; las llamadas sin respuesta pasan a No contesta."
+    },
+    "callsRefused": {
+      "one": "SLNG rechazó la llamada a {count} vecino: marcado como No contesta.",
+      "other": "SLNG rechazó las llamadas a {count} vecinos: marcados como No contesta."
+    }
+  },
+  "fire": {
+    "loading": "Cargando la previsión…",
+    "error": "La previsión no está disponible: ¿funciona el backend y están los datos en caché?",
+    "noForecast": "No hay previsión para este momento.",
+    "noZones": "Ninguna zona en la trayectoria prevista.",
+    "showFewer": "Ver menos",
+    "showMore": "Ver {count} más",
+    "legendNow": "Ahora",
+    "legendAhead": "Dentro de 6 h",
+    "issued": "Previsión de {time}"
+  },
+  "leadTime": {
+    "loading": "Cargando la antelación…",
+    "error": "La antelación no está disponible: ejecuta pnpm data:lead-time.",
+    "notFlagged": "{zone} todavía no está marcada.",
+    "label": "de antelación",
+    "explanation": "{zone} se marcó el {flagged}, usando solo los focos vistos hasta entonces. En los datos del satélite, el primer foco a menos de {radius} km llegó el {reached}.",
+    "how": "Cómo se calcula"
+  },
+  "zoneKind": {
+    "estate": "Urbanización",
+    "town": "Pueblo",
+    "care_home": "Residencia de mayores",
+    "health_centre": "Centro de salud",
+    "school": "Colegio",
+    "road": "Carretera"
+  },
+  "alerts": {
+    "empty": "Todavía no se ha enviado ningún aviso a los bomberos.",
+    "sms": "Enviado por SMS",
+    "dashboardOnly": "Solo en el panel; el SMS no está configurado",
+    "showRoute": "Ver la ruta de bomberos"
+  },
+  "map": {
+    "liveFire": "Detectado durante {hours} h; visto por última vez: {time}",
+    "resident": "{name}: {status}"
+  }
+}

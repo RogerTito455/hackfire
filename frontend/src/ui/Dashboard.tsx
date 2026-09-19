@@ -10,8 +10,11 @@ import type { Campaign } from '../hooks/useCampaign'
 import type { Conversations, CoordinatorConversation } from '../hooks/useConversation'
 import type { VoiceCapabilities } from '../domain/voice'
 import type { Triage } from '../hooks/useTriage'
+import { BottomSheet } from './BottomSheet'
 import { CrewAlerts } from './CrewAlerts'
 import { Icon } from './Icon'
+import { useI18n } from './i18n'
+import { LanguagePicker } from './LanguagePicker'
 import { OrdersPanel } from './OrdersPanel'
 import { TextTriagePanel } from './TextTriagePanel'
 import { LeadTimeCard } from './LeadTimeCard'
@@ -62,139 +65,11 @@ export function Dashboard({
   conversation,
   coordinatorCall,
 }: DashboardProps) {
+  const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   return (
-    <div className="layout">
-      <aside className="panel">
-        <header>
-          <h1 className="brand">
-            <Icon name="logo" size={28} />
-            HackFire
-          </h1>
-          <p className={online ? 'conn ok' : 'conn down'}>
-            {online ? 'Backend connected' : 'Backend unreachable'}
-          </p>
-        </header>
-
-        <section>
-          <h2>Triage</h2>
-          <StatusCounts counts={counts} />
-        </section>
-
-        {mode === 'replay' && (
-          <>
-            <section>
-              <h2>Lead time</h2>
-              <LeadTimeCard view={leadTime} />
-            </section>
-
-            <section>
-              <h2 className="icon-button">
-                <Icon name="flame" size={16} />
-                Where the fire is heading
-              </h2>
-              {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
-              <ZonesAtRisk
-                status={forecast.status}
-                zones={forecast.zonesAtRisk}
-                hasForecast={forecast.issuedAt !== null}
-              />
-            </section>
-          </>
-        )}
-
-        <section>
-          <h2 className="icon-button">
-            <Icon name="flag" size={16} />
-            Evacuation orders
-          </h2>
-          <OrdersPanel
-            orders={orders.orders}
-            safePoints={orders.safePoints}
-            saving={orders.saving}
-            onApprove={orders.approve}
-            phoneCalls={voice.phone_calls}
-            calling={campaign.calling}
-            campaign={campaign.result}
-            onCall={campaign.call}
-          />
-        </section>
-
-        <section>
-          <h2 className="icon-button">
-            <Icon name="route" size={16} />
-            Evacuation route
-          </h2>
-          <RoutePanel
-            neighbor={selected}
-            mode={selection.mode}
-            route={selection.route}
-            status={selection.status}
-            avoids={selection.fireArea}
-            onModeChange={selection.setMode}
-            onClose={() => selection.select(null)}
-          />
-        </section>
-
-        {selected !== null && (
-          <section>
-            <h2 className="icon-button">
-              <Icon name="live" size={16} />
-              Call this resident
-            </h2>
-            <TalkPanel
-              neighbor={selected}
-              available={voice.web_sessions}
-              order={orders.orders.find((order) => order.zone === selected.zone)}
-              activeId={conversation.neighborId}
-              state={conversation.state}
-              onTalk={() => conversation.start(selected.id)}
-              onHangUp={conversation.hangUp}
-            />
-          </section>
-        )}
-
-        {selected !== null && (
-          <section>
-            <h2>Typed answer (backup)</h2>
-            <TextTriagePanel key={selected.id} neighbor={selected} triage={textTriage} />
-          </section>
-        )}
-
-        <section>
-          <h2 className="icon-button">
-            <Icon name="lifebuoy" size={16} />
-            Rescue queue
-          </h2>
-          <AskAgentPanel
-            available={voice.coordinator}
-            state={coordinatorCall.state}
-            onAsk={coordinatorCall.start}
-            onHangUp={coordinatorCall.hangUp}
-          />
-          <RescueQueue rescues={rescues} />
-        </section>
-
-        <section>
-          <h2 className="icon-button">
-            <Icon name="bell" size={16} />
-            Crew alerts
-          </h2>
-          <CrewAlerts
-            alerts={alerts}
-            onShowRoute={(neighborId) => {
-              onModeChange('replay')
-              selection.showRescue(neighborId)
-            }}
-          />
-        </section>
-
-        <button type="button" className="reset icon-button" onClick={reset}>
-          <Icon name="reset" size={16} />
-          Reset demo
-        </button>
-      </aside>
+    <div className="app">
       <div className="map-area">
         <TriageMap
           mode={mode}
@@ -210,21 +85,147 @@ export function Dashboard({
           spread={forecast.spread}
           zones={forecast.zonesAtRisk}
         />
-        <ModeToggle mode={mode} onChange={onModeChange} />
-        {mode === 'replay' ? (
-          <ReplayControls
-            status={replay.status}
-            range={replay.range}
-            time={replay.time}
-            observedCount={replay.observedCount}
-            playing={replay.playing}
-            onTimeChange={replay.setTime}
-            onTogglePlay={replay.togglePlay}
-          />
-        ) : (
-          <LiveStatus {...live} />
-        )}
       </div>
+
+      <header className="topbar">
+        <h1 className="brand">
+          <Icon name="logo" size={26} />
+          <span className="brand-name">HackFire</span>
+        </h1>
+        <span className={online ? 'conn ok' : 'conn down'} role="status">
+          <span className="conn-dot" aria-hidden="true" />
+          <span className="conn-label">{online ? t('app.connected') : t('app.offline')}</span>
+        </span>
+        <ModeToggle mode={mode} onChange={onModeChange} />
+        <LanguagePicker />
+      </header>
+
+      <BottomSheet
+        wake={selection.neighborId}
+        header={
+          <>
+            {mode === 'replay' ? (
+              <ReplayControls
+                status={replay.status}
+                range={replay.range}
+                time={replay.time}
+                observedCount={replay.observedCount}
+                playing={replay.playing}
+                onTimeChange={replay.setTime}
+                onTogglePlay={replay.togglePlay}
+              />
+            ) : (
+              <LiveStatus {...live} />
+            )}
+            <StatusCounts counts={counts} />
+          </>
+        }
+      >
+        {selected !== null && (
+          <section className="group group-selected">
+            <h2 className="icon-button">
+              <Icon name="route" size={18} />
+              {t('section.wayOut')}
+            </h2>
+            <RoutePanel
+              neighbor={selected}
+              mode={selection.mode}
+              route={selection.route}
+              status={selection.status}
+              avoids={selection.fireArea}
+              onModeChange={selection.setMode}
+              onClose={() => selection.select(null)}
+            />
+            <h3 className="subhead icon-button">
+              <Icon name="live" size={16} />
+              {t('section.callResident')}
+            </h3>
+            <TalkPanel
+              neighbor={selected}
+              available={voice.web_sessions}
+              order={orders.orders.find((order) => order.zone === selected.zone)}
+              activeId={conversation.neighborId}
+              state={conversation.state}
+              onTalk={() => conversation.start(selected.id)}
+              onHangUp={conversation.hangUp}
+            />
+            <details className="backup">
+              <summary>{t('section.typedBackup')}</summary>
+              <TextTriagePanel key={selected.id} neighbor={selected} triage={textTriage} />
+            </details>
+          </section>
+        )}
+
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="lifebuoy" size={18} />
+            {t('section.rescues')}
+          </h2>
+          <AskAgentPanel
+            available={voice.coordinator}
+            state={coordinatorCall.state}
+            onAsk={coordinatorCall.start}
+            onHangUp={coordinatorCall.hangUp}
+          />
+          <RescueQueue rescues={rescues} />
+        </section>
+
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="flag" size={18} />
+            {t('section.orders')}
+          </h2>
+          <OrdersPanel
+            orders={orders.orders}
+            safePoints={orders.safePoints}
+            saving={orders.saving}
+            onApprove={orders.approve}
+            phoneCalls={voice.phone_calls}
+            calling={campaign.calling}
+            campaign={campaign.result}
+            onCall={campaign.call}
+          />
+        </section>
+
+        {mode === 'replay' && (
+          <section className="group">
+            <h2 className="icon-button">
+              <Icon name="flame" size={18} />
+              {t('section.fire')}
+            </h2>
+            <LeadTimeCard view={leadTime} />
+            {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
+            <ZonesAtRisk
+              status={forecast.status}
+              zones={forecast.zonesAtRisk}
+              hasForecast={forecast.issuedAt !== null}
+            />
+          </section>
+        )}
+
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="bell" size={18} />
+            {t('section.alerts')}
+          </h2>
+          <CrewAlerts
+            alerts={alerts}
+            onShowRoute={(neighborId) => {
+              onModeChange('replay')
+              selection.showRescue(neighborId)
+            }}
+          />
+        </section>
+
+        {selected === null && (
+          <p className="hint">{t('app.tapResident')}</p>
+        )}
+
+        <button type="button" className="reset icon-button" onClick={reset}>
+          <Icon name="reset" size={16} />
+          {t('app.reset')}
+        </button>
+      </BottomSheet>
     </div>
   )
 }
