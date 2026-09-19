@@ -1,8 +1,11 @@
-"""Helpers shared by the pipelines that read the cached hotspots."""
+"""Helpers shared by the pipelines: the cached hotspots and the routes the API must be able to serve."""
 
 import json
+from collections.abc import Callable
 from datetime import datetime
 
+from .. import evacuation
+from ..models import Neighbor, Route, TravelMode
 from ..replay import HOTSPOTS_FILE
 from ..spread import Hotspot
 
@@ -21,3 +24,25 @@ def read_hotspots() -> list[Hotspot]:
         )
         for f in collection["features"]
     ]
+
+
+def required_routes(
+    neighbor: Neighbor, at: datetime, refresh: bool = False
+) -> list[tuple[str, Callable[[], Route]]]:
+    """Every route the API can be asked for on behalf of a resident, as (label, how to get it).
+
+    The nearest safe point and every place a coordinator can order the zone to, by car and on foot,
+    and the crew's route. The orders panel lists every place, the ones marked "not safe now"
+    included, so all of them are required, not only the ones that qualify at the scenario time.
+
+    `pnpm data:routes` plans this list and `pnpm check:routes` checks it, so they cannot drift apart.
+    The nearest point comes last: it is one of the places, already planned when `refresh` is set.
+    """
+    routes: list[tuple[str, Callable[[], Route]]] = []
+    for place in evacuation.all_places():
+        for mode in TravelMode:
+            routes.append((f"{place.name}, {mode}", lambda p=place, m=mode: evacuation.route_to(neighbor, p, m, at, refresh)))
+    for mode in TravelMode:
+        routes.append((f"nearest safe point, {mode}", lambda m=mode: evacuation.evacuation_route(neighbor, m, at)))
+    routes.append(("crew route", lambda: evacuation.rescue_route(neighbor, at, refresh)))
+    return routes
