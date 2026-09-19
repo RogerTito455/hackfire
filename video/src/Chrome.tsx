@@ -122,7 +122,7 @@ function Spoken({ line }: { line: TimedLine }) {
   return (
     <span style={text(38, 600, C.ink)}>
       <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 700, color, marginRight: 14, verticalAlign: 4 }}>{who}</span>
-      {line.subtitle}
+      {line.subtitle ?? line.text}
     </span>
   )
 }

@@ -686,294 +686,306 @@
    "id": "call-0",
    "scene": "call",
    "speaker": "agent",
-   "text": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias, por la N cuatrocientos tres.",
-   "subtitle": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-403.",
+   "text": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-403.",
+   "say": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-four-oh-three.",
    "file": "audio/lines/call-0.mp3",
-   "durationMs": 8307,
+   "durationMs": 8202,
    "words": [
     {
-     "text": "Le",
+     "text": "I'm",
      "startMs": 0,
-     "endMs": 197
+     "endMs": 337
     },
     {
-     "text": "llamo",
-     "startMs": 221,
-     "endMs": 499
+     "text": "calling",
+     "startMs": 383,
+     "endMs": 639
     },
     {
-     "text": "de",
-     "startMs": 546,
-     "endMs": 615
+     "text": "from",
+     "startMs": 685,
+     "endMs": 824
     },
     {
-     "text": "la",
-     "startMs": 662,
-     "endMs": 731
+     "text": "the",
+     "startMs": 859,
+     "endMs": 929
     },
     {
-     "text": "coordinación",
-     "startMs": 801,
-     "endMs": 1486
+     "text": "emergency",
+     "startMs": 975,
+     "endMs": 1509
     },
     {
-     "text": "por",
-     "startMs": 1556,
-     "endMs": 1707
+     "text": "coordination",
+     "startMs": 1579,
+     "endMs": 2206
     },
     {
-     "text": "el",
-     "startMs": 1765,
-     "endMs": 1823
+     "text": "about",
+     "startMs": 2252,
+     "endMs": 2461
     },
     {
-     "text": "incendio.",
-     "startMs": 1892,
-     "endMs": 2543
+     "text": "the",
+     "startMs": 2485,
+     "endMs": 2554
     },
     {
-     "text": "Deben",
-     "startMs": 2902,
-     "endMs": 3228
+     "text": "fire.",
+     "startMs": 2589,
+     "endMs": 3019
     },
     {
-     "text": "salir",
-     "startMs": 3286,
-     "endMs": 3611
+     "text": "You",
+     "startMs": 3135,
+     "endMs": 3274
     },
     {
-     "text": "ya",
-     "startMs": 3669,
-     "endMs": 3843
+     "text": "must",
+     "startMs": 3332,
+     "endMs": 3518
     },
     {
-     "text": "hacia",
-     "startMs": 3878,
-     "endMs": 4145
+     "text": "leave",
+     "startMs": 3576,
+     "endMs": 3785
+    },
+    {
+     "text": "now",
+     "startMs": 3831,
+     "endMs": 4029
+    },
+    {
+     "text": "for",
+     "startMs": 4122,
+     "endMs": 4261
     },
     {
      "text": "San",
-     "startMs": 4191,
-     "endMs": 4331
+     "startMs": 4319,
+     "endMs": 4540
     },
     {
      "text": "Martín",
-     "startMs": 4400,
-     "endMs": 4807
+     "startMs": 4609,
+     "endMs": 5062
     },
     {
      "text": "de",
-     "startMs": 4865,
-     "endMs": 4934
+     "startMs": 5143,
+     "endMs": 5271
     },
     {
      "text": "Valdeiglesias,",
-     "startMs": 4992,
-     "endMs": 6002
+     "startMs": 5352,
+     "endMs": 6490
     },
     {
-     "text": "por",
-     "startMs": 6200,
-     "endMs": 6374
+     "text": "on",
+     "startMs": 6583,
+     "endMs": 6780
     },
     {
-     "text": "la",
-     "startMs": 6444,
-     "endMs": 6548
+     "text": "the",
+     "startMs": 6827,
+     "endMs": 6931
     },
     {
-     "text": "N",
-     "startMs": 6653,
-     "endMs": 6699
-    },
-    {
-     "text": "cuatrocientos",
-     "startMs": 6803,
-     "endMs": 7570
-    },
-    {
-     "text": "tres.",
-     "startMs": 7639,
-     "endMs": 8266
+     "text": "N-403.",
+     "startMs": 7024,
+     "endMs": 8173
     }
    ],
-   "hash": "ec6f328fdab8"
+   "hash": "c7e8454266ac"
   },
   {
    "id": "call-1",
    "scene": "call",
    "speaker": "agent",
-   "text": "¿Pueden salir por su cuenta?",
-   "subtitle": "Can you leave on your own?",
+   "text": "Can you leave on your own?",
    "file": "audio/lines/call-1.mp3",
-   "durationMs": 1802,
+   "durationMs": 1489,
    "words": [
     {
-     "text": "¿Pueden",
+     "text": "Can",
      "startMs": 0,
-     "endMs": 372
+     "endMs": 209
     },
     {
-     "text": "salir",
+     "text": "you",
+     "startMs": 267,
+     "endMs": 360
+    },
+    {
+     "text": "leave",
      "startMs": 430,
-     "endMs": 697
+     "endMs": 673
     },
     {
-     "text": "por",
-     "startMs": 755,
-     "endMs": 882
+     "text": "on",
+     "startMs": 731,
+     "endMs": 813
     },
     {
-     "text": "su",
-     "startMs": 940,
-     "endMs": 1033
+     "text": "your",
+     "startMs": 859,
+     "endMs": 987
     },
     {
-     "text": "cuenta?",
-     "startMs": 1080,
-     "endMs": 1765
+     "text": "own?",
+     "startMs": 1057,
+     "endMs": 1440
     }
    ],
-   "hash": "3c30a3725ff8"
+   "hash": "0f0ae553773b"
   },
   {
    "id": "call-2",
    "scene": "call",
    "speaker": "resident",
-   "text": "Yo sí, pero mi madre no puede andar. Somos dos.",
-   "subtitle": "I can, but my mother can't walk. There are two of us.",
+   "text": "I can, but my mother can't walk. There are two of us.",
    "file": "audio/lines/call-2.mp3",
-   "durationMs": 2952,
+   "durationMs": 3344,
    "words": [
     {
-     "text": "Yo",
+     "text": "I",
      "startMs": 0,
-     "endMs": 197
+     "endMs": 93
     },
     {
-     "text": "sí,",
-     "startMs": 244,
-     "endMs": 464
+     "text": "can,",
+     "startMs": 209,
+     "endMs": 569
     },
     {
-     "text": "pero",
-     "startMs": 488,
-     "endMs": 673
-    },
-    {
-     "text": "mi",
-     "startMs": 708,
+     "text": "but",
+     "startMs": 639,
      "endMs": 801
     },
     {
-     "text": "madre",
-     "startMs": 859,
-     "endMs": 1126
+     "text": "my",
+     "startMs": 848,
+     "endMs": 917
     },
     {
-     "text": "no",
-     "startMs": 1184,
-     "endMs": 1254
+     "text": "mother",
+     "startMs": 987,
+     "endMs": 1196
     },
     {
-     "text": "puede",
-     "startMs": 1300,
-     "endMs": 1498
+     "text": "can't",
+     "startMs": 1254,
+     "endMs": 1486
     },
     {
-     "text": "andar.",
+     "text": "walk.",
      "startMs": 1533,
-     "endMs": 1927
+     "endMs": 1904
     },
     {
-     "text": "Somos",
-     "startMs": 1962,
+     "text": "There",
+     "startMs": 2078,
      "endMs": 2276
     },
     {
-     "text": "dos.",
-     "startMs": 2334,
-     "endMs": 2926
+     "text": "are",
+     "startMs": 2310,
+     "endMs": 2392
+    },
+    {
+     "text": "two",
+     "startMs": 2415,
+     "endMs": 2554
+    },
+    {
+     "text": "of",
+     "startMs": 2624,
+     "endMs": 2694
+    },
+    {
+     "text": "us.",
+     "startMs": 2763,
+     "endMs": 3297
     }
    ],
-   "hash": "869e2ec1bd04"
+   "hash": "a88feb9da734"
   },
   {
    "id": "call-3",
    "scene": "call",
    "speaker": "agent",
-   "text": "He avisado de que necesitan ayuda. Quédense juntas, con el teléfono a mano.",
-   "subtitle": "I've reported that you need help. Stay together, with your phone at hand.",
+   "text": "I've reported that you need help. Stay together, with your phone at hand.",
    "file": "audio/lines/call-3.mp3",
-   "durationMs": 5512,
+   "durationMs": 3892,
    "words": [
     {
-     "text": "He",
+     "text": "I've",
      "startMs": 0,
-     "endMs": 151
+     "endMs": 209
     },
     {
-     "text": "avisado",
-     "startMs": 197,
-     "endMs": 720
+     "text": "reported",
+     "startMs": 244,
+     "endMs": 604
     },
     {
-     "text": "de",
-     "startMs": 778,
-     "endMs": 848
+     "text": "that",
+     "startMs": 639,
+     "endMs": 766
     },
     {
-     "text": "que",
-     "startMs": 906,
-     "endMs": 987
+     "text": "you",
+     "startMs": 836,
+     "endMs": 929
     },
     {
-     "text": "necesitan",
-     "startMs": 1045,
-     "endMs": 1625
+     "text": "need",
+     "startMs": 987,
+     "endMs": 1149
     },
     {
-     "text": "ayuda.",
-     "startMs": 1683,
-     "endMs": 2148
+     "text": "help.",
+     "startMs": 1196,
+     "endMs": 1579
     },
     {
-     "text": "Quédense",
-     "startMs": 2554,
-     "endMs": 3111
+     "text": "Stay",
+     "startMs": 1741,
+     "endMs": 1974
     },
     {
-     "text": "juntas,",
+     "text": "together,",
+     "startMs": 2009,
+     "endMs": 2438
+    },
+    {
+     "text": "with",
+     "startMs": 2485,
+     "endMs": 2659
+    },
+    {
+     "text": "your",
+     "startMs": 2694,
+     "endMs": 2810
+    },
+    {
+     "text": "phone",
+     "startMs": 2856,
+     "endMs": 3135
+    },
+    {
+     "text": "at",
      "startMs": 3170,
-     "endMs": 3808
+     "endMs": 3251
     },
     {
-     "text": "con",
-     "startMs": 3971,
-     "endMs": 4133
-    },
-    {
-     "text": "el",
-     "startMs": 4203,
-     "endMs": 4261
-    },
-    {
-     "text": "teléfono",
-     "startMs": 4331,
-     "endMs": 4795
-    },
-    {
-     "text": "a",
-     "startMs": 4841,
-     "endMs": 4865
-    },
-    {
-     "text": "mano.",
-     "startMs": 4911,
-     "endMs": 5480
+     "text": "hand.",
+     "startMs": 3309,
+     "endMs": 3855
     }
    ],
-   "hash": "16d88107d729"
+   "hash": "9c11133bb78f"
   },
   {
    "id": "understood-0",

@@ -366,8 +366,7 @@ function UnderstoodOverlay({ f, s }: { f: number; s: Stage }) {
     <During id="understood" f={f}>
       <div style={{ position: 'absolute', left: Math.min(at[0] + 60, 1100), top: at[1] - 230, ...pop(f - u.start - 18) }}>
         <Card style={{ width: 620 }}>
-          <div style={text(34, 600)}>“Mi madre no puede andar.”</div>
-          <div style={{ ...text(22, 500, C.ink2), marginTop: 4 }}>My mother can't walk.</div>
+          <div style={text(34, 600)}>“My mother can't walk.”</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 18 }}>
             <span style={mono(20, 500, C.agent)}>understood as</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px 6px 10px', borderRadius: 999, background: C.status.needs_rescue, ...text(24, 700, '#fff') }}>
@@ -396,7 +395,7 @@ function RescueOverlay({ f }: { f: number }) {
               <Icon name="lifebuoy" size={30} color={C.status.needs_rescue} />
               <div>
                 <div style={text(26, 700)}>Resident 03, La Atalaya</div>
-                <div style={text(21, 500, C.ink2)}>2 people, madre no puede andar</div>
+                <div style={text(21, 500, C.ink2)}>2 people, mother can't walk</div>
                 <div style={{ ...text(21, 600, C.fire[1]), marginTop: 4 }}>Fire expected in about 3 h</div>
               </div>
             </div>

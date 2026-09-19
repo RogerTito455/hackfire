@@ -1,5 +1,5 @@
 {
-  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed; `subtitle` is what the viewer reads under a Spanish line. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); about 38,000 ha (37,818 provisional, Junta de Castilla y León via Ávilared, 21 Aug) and 229 homes inside the burned area (Idealista's estimate via Ávilared, 31 Jul), see docs/findings/2026-09-19-press-figures.md; 2 seconds is the dashboard's triage refresh; lead time as the team publishes it (DESIGN.md, frontend/src/domain/leadTime.ts): about 6 hours, 5 to 8 depending on the distance (2–5 km), 15:30 to 21:38 at 3 km.",
+  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed, and shown in English: the real agent speaks Spanish, and the screen says so. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); about 38,000 ha (37,818 provisional, Junta de Castilla y León via Ávilared, 21 Aug) and 229 homes inside the burned area (Idealista's estimate via Ávilared, 31 Jul), see docs/findings/2026-09-19-press-figures.md; 2 seconds is the dashboard's triage refresh; lead time as the team publishes it (DESIGN.md, frontend/src/domain/leadTime.ts): about 6 hours, 5 to 8 depending on the distance (2–5 km), 15:30 to 21:38 at 3 km.",
   "voices": {
     "narrator": {
       "id": "G17SuINrv2H9FC6nvetn",
@@ -13,19 +13,19 @@
       }
     },
     "agent": {
-      "id": "Nh2zY9kknu6z4pZy6FhD",
-      "name": "David Martin",
+      "id": "wBXNqKUATyqu0RtYt25i",
+      "name": "Adam",
       "settings": {
         "stability": 0.6,
         "similarity_boost": 0.8,
         "style": 0,
         "use_speaker_boost": true,
-        "speed": 1.08
+        "speed": 1.05
       }
     },
     "resident": {
-      "id": "kvVjNZvtnCv3Sl1Hr70T",
-      "name": "Flavia",
+      "id": "6fZce9LFNG3iEITDfqZZ",
+      "name": "Charlotte",
       "settings": {
         "stability": 0.35,
         "similarity_boost": 0.8,
@@ -112,23 +112,20 @@
       "lines": [
         {
           "speaker": "agent",
-          "text": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias, por la N cuatrocientos tres.",
-          "subtitle": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-403."
+          "text": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-403.",
+          "say": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-four-oh-three."
         },
         {
           "speaker": "agent",
-          "text": "¿Pueden salir por su cuenta?",
-          "subtitle": "Can you leave on your own?"
+          "text": "Can you leave on your own?"
         },
         {
           "speaker": "resident",
-          "text": "Yo sí, pero mi madre no puede andar. Somos dos.",
-          "subtitle": "I can, but my mother can't walk. There are two of us."
+          "text": "I can, but my mother can't walk. There are two of us."
         },
         {
           "speaker": "agent",
-          "text": "He avisado de que necesitan ayuda. Quédense juntas, con el teléfono a mano.",
-          "subtitle": "I've reported that you need help. Stay together, with your phone at hand."
+          "text": "I've reported that you need help. Stay together, with your phone at hand."
         }
       ]
     },

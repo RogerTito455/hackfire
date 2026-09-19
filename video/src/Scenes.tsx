@@ -30,8 +30,9 @@ const Grid = ({ f, color = 'rgba(111,140,255,0.06)' }: { f: number; color?: stri
 
 // ── 01 The alert that only speaks ─────────────────────────────────────────────
 
+// The alert of that day (Ávilared, art. 93357), translated from the Spanish.
 const ALERT_TEXT =
-  'Se procede a confinar las poblaciones de El Tiemblo, Burgohondo y Navaluenga debido al humo. Rogamos que permanezcan en sus domicilios.'
+  'El Tiemblo, Burgohondo and Navaluenga are being confined because of the smoke. Please stay in your homes.'
 
 export function Problem({ f }: { f: number }) {
   const s = scene('problem')
@@ -72,7 +73,7 @@ export function Problem({ f }: { f: number }) {
         ))}
       </div>
       <div style={{ position: 'absolute', left: 900, top: 150, ...pop(f - every - 6), ...mono(22, 500, C.ink2) }}>Same message, every phone in the area. No way to answer.</div>
-      <Source opacity={fade(t - 10, 10)}>Alert text: Ávilared, 23 July 2026</Source>
+      <Source opacity={fade(t - 10, 10)}>Alert text: Ávilared, 23 July 2026, translated from Spanish</Source>
     </Overlay>
   )
 }
@@ -220,7 +221,7 @@ export function Call({ f }: { f: number }) {
           </div>
           <div>
             <div style={text(32, 700)}>Resident 03, La Atalaya</div>
-            <div style={mono(19, 500, C.ink2)}>voice agent on SLNG, in Spanish</div>
+            <div style={mono(19, 500, C.ink2)}>voice agent on SLNG. It speaks Spanish; shown in English</div>
           </div>
           <div style={{ marginLeft: 'auto', ...mono(40, 700, f < answered ? C.ink3 : C.agent) }}>
             {f < answered ? 'calling' : `00:${String(seconds).padStart(2, '0')}`}
@@ -248,10 +249,10 @@ export function Call({ f }: { f: number }) {
         <Panel title="Triage record" style={pop(f - s.start - 18)}>
           <Field label="Status" at={rescueAt} f={f} before="Not called yet" after="Needs rescue" color={C.status.needs_rescue} icon="lifebuoy" />
           <Field label="People" at={rescueAt} f={f} before="Unknown" after="2" />
-          <Field label="Mobility" at={rescueAt} f={f} before="Unknown" after="madre no puede andar" />
+          <Field label="Mobility" at={rescueAt} f={f} before="Unknown" after="mother can't walk" />
         </Panel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, ...mono(20, 500, C.agent) }}>
-          {f >= rescueAt && <div style={pop(f - rescueAt)}>&gt; report_status: needs_rescue, 2 people, "madre no puede andar"</div>}
+          {f >= rescueAt && <div style={pop(f - rescueAt)}>&gt; report_status: needs_rescue, 2 people, "mother can't walk"</div>}
         </div>
       </div>
     </Overlay>
@@ -361,14 +362,12 @@ export function Command({ f }: { f: number }) {
                 ))}
               </div>
             </div>
-            <div style={{ ...text(30, 600), marginTop: 8 }}>“¿Qué rescates tengo y en qué orden?”</div>
-            <div style={text(21, 500, C.ink2)}>Which rescues do I have, and in what order?</div>
+            <div style={{ ...text(30, 600), marginTop: 8 }}>“Which rescues do I have, and in what order?”</div>
           </Panel>
         </div>
         <div style={pop(f - voice - 18)}>
           <Panel title="Agent" style={{ borderColor: 'rgba(95,227,255,0.5)' }}>
-            <div style={text(28, 600, C.ink)}>“Uno: La Atalaya, dos personas. Va la dotación uno; llega en diez minutos.”</div>
-            <div style={text(21, 500, C.ink2)}>One: La Atalaya, two people. Crew 1 is on its way, there in ten minutes.</div>
+            <div style={text(28, 600, C.ink)}>“One: La Atalaya, two people. Crew 1 is on its way, there in ten minutes.”</div>
           </Panel>
         </div>
       </div>

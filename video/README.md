@@ -9,18 +9,18 @@ pnpm video:render    # video/out/hackfire.mp4 (git-ignored)
 
 ## What it says
 
-English narration with word-by-word subtitles; the call is in Spanish, subtitled in English. The script is [`src/script.json`](src/script.json), one entry per line.
+Everything is in English, with word-by-word subtitles. The call is shown in English too, and the screen says the real agent speaks Spanish. The script is [`src/script.json`](src/script.json), one entry per line.
 
 | Chapter | Scenes | Shows |
 |---|---|---|
-| 01 The fire | `open`, `problem` | The real hotspots of 22–23 July on the map; the press figures; the ES-Alert of that day, quoted |
+| 01 The fire | `open`, `problem` | The real hotspots of 22–23 July on the map; the press figures; the ES-Alert of that day, translated |
 | 02 The forecast | `brand`, `forecast`, `leadtime` | HackFire and its pipeline; the rewind to 15:30, the forecast, and the lead time (about 6 hours, as a range) |
 | 03 The call | `order`, `call`, `understood` | The coordinator approves the order; a simulated call with a demo resident; the triage it records |
 | 04 The rescue | `rescue`, `command` | The rescue queue, the crew plan and the cached routes; asking by voice; the Vonage live map |
 | 05 What changes | `compare`, `roadmap` | The day's cost, sourced; what the coordinator knows that day and with HackFire, side by side; the roadmap |
 | 06 Listening back | `close` | ES-Alert speaks, HackFire listens back; the end card |
 
-**Tone rules (CLAUDE.md) hold here too.** The comparison sets what the coordinator knew that day against what HackFire does, measured (the 2 s triage refresh, the replay's lead time, about 6 hours as the team publishes it); it never says what a different warning would have changed. Every figure has a source on screen or in `script.json`'s `about`: the press figures are the ✅ ones in [docs/findings/2026-09-19-press-figures.md](../docs/findings/2026-09-19-press-figures.md), and the ES-Alert text is quoted from Ávilared. The lead time comes with its definition, and says nothing about when anyone was warned. Everything from the order onwards is labelled "Simulation with demo residents", at the demo autopilot's times (`data/demo_timeline.json`).
+**Tone rules (CLAUDE.md) hold here too.** The comparison sets what the coordinator knew that day against what HackFire does, measured (the 2 s triage refresh, the replay's lead time, about 6 hours as the team publishes it); it never says what a different warning would have changed. Every figure has a source on screen or in `script.json`'s `about`: the press figures are the ✅ ones in [docs/findings/2026-09-19-press-figures.md](../docs/findings/2026-09-19-press-figures.md), and the ES-Alert text is translated from Ávilared's quote, and says so. The lead time comes with its definition, and says nothing about when anyone was warned. Everything from the order onwards is labelled "Simulation with demo residents", at the demo autopilot's times (`data/demo_timeline.json`).
 
 ## How it is built
 
@@ -39,4 +39,4 @@ English narration with word-by-word subtitles; the call is in Spanish, subtitled
 | `pnpm video:sfx` | `public/audio/sfx/*.mp3` | The file is missing |
 | `pnpm video:music` | `public/audio/music.mp3` | The file is missing |
 
-Voices: Christopher (narrator), David Martin (agent), Flavia (resident, filtered like a phone line). A line's `say` is a spelling for the voice only (`Burgo-ondo`), with the same number of words as its `text`. The generated audio is committed, so a render needs no key. Whisper was used to check every clip against its text.
+Voices: Christopher (narrator), Adam (agent), Charlotte (resident, filtered like a phone line). A line's `say` is a spelling for the voice only (`Burgo-ondo`, `N-four-oh-three`), with the same number of words as its `text`. The generated audio is committed, so a render needs no key. Whisper was used to check every clip against its text.
