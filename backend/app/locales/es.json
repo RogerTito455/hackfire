@@ -1,5 +1,7 @@
 {
-  "_meta": { "name": "Español" },
+  "_meta": {
+    "name": "Español"
+  },
   "route": {
     "car": "Ve en coche hasta {destination}{way}.",
     "walking": "Ve a pie hasta {destination}{way}.",
@@ -7,9 +9,18 @@
     "then": ", luego por ",
     "length": "Son {distance}, {duration}.",
     "metres": "unos {count} metros",
-    "kilometres": { "one": "{count} kilómetro más o menos", "other": "unos {count} kilómetros" },
-    "minutes": { "one": "{count} minuto más o menos {how}", "other": "unos {count} minutos {how}" },
-    "hours": { "one": "{count} hora más o menos {how}", "other": "unas {count} horas {how}" },
+    "kilometres": {
+      "one": "{count} kilómetro más o menos",
+      "other": "unos {count} kilómetros"
+    },
+    "minutes": {
+      "one": "{count} minuto más o menos {how}",
+      "other": "unos {count} minutos {how}"
+    },
+    "hours": {
+      "one": "{count} hora más o menos {how}",
+      "other": "unas {count} horas {how}"
+    },
     "hoursMinutes": {
       "one": "{count} hora y {minutes} minutos más o menos {how}",
       "other": "unas {count} horas y {minutes} minutos {how}"
@@ -44,7 +55,14 @@
   },
   "crew": {
     "alert": "Rescate necesario en {address}. {details}. Ruta: {link}",
-    "people": { "one": "{count} persona", "other": "{count} personas" },
+    "people": {
+      "one": "{count} persona",
+      "other": "{count} personas"
+    },
     "peopleUnknown": "Número de personas desconocido"
+  },
+  "demo": {
+    "wheelchair": "una persona va en silla de ruedas",
+    "secondCall": "Contestó a la segunda llamada"
   }
 }

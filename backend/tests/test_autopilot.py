@@ -18,7 +18,7 @@ SCRIPT = autopilot.parse(
             {"at": "2026-07-23T14:00:00Z", "position": 1, "status": "evacuating", "people": 2},
             {"at": "2026-07-23T14:15:00Z", "position": 2, "status": "no_answer"},
             {"at": "2026-07-23T14:35:00Z", "position": 3, "status": "needs_rescue", "people": 2, "mobility": "wheelchair"},
-            {"at": "2026-07-23T15:45:00Z", "position": 2, "status": "evacuating", "observation": "second call"},
+            {"at": "2026-07-23T15:45:00Z", "position": 2, "status": "evacuating", "observation": "secondCall"},
             {"at": "2026-07-23T16:00:00Z", "position": 4, "status": "evacuating"},
             {"at": "2026-07-23T16:30:00Z", "position": 99, "status": "needs_rescue"},
         ],

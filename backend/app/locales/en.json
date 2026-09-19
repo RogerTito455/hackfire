@@ -1,5 +1,7 @@
 {
-  "_meta": { "name": "English" },
+  "_meta": {
+    "name": "English"
+  },
   "route": {
     "car": "Drive to {destination}{way}.",
     "walking": "Walk to {destination}{way}.",
@@ -7,9 +9,18 @@
     "then": ", then ",
     "length": "It is {distance}, {duration}.",
     "metres": "about {count} metres",
-    "kilometres": { "one": "about {count} kilometre", "other": "about {count} kilometres" },
-    "minutes": { "one": "around {count} minute {how}", "other": "around {count} minutes {how}" },
-    "hours": { "one": "around {count} hour {how}", "other": "around {count} hours {how}" },
+    "kilometres": {
+      "one": "about {count} kilometre",
+      "other": "about {count} kilometres"
+    },
+    "minutes": {
+      "one": "around {count} minute {how}",
+      "other": "around {count} minutes {how}"
+    },
+    "hours": {
+      "one": "around {count} hour {how}",
+      "other": "around {count} hours {how}"
+    },
     "hoursMinutes": {
       "one": "around {count} hour and {minutes} minutes {how}",
       "other": "around {count} hours and {minutes} minutes {how}"
@@ -44,7 +55,14 @@
   },
   "crew": {
     "alert": "Rescue needed at {address}. {details}. Route: {link}",
-    "people": { "one": "{count} person", "other": "{count} people" },
+    "people": {
+      "one": "{count} person",
+      "other": "{count} people"
+    },
     "peopleUnknown": "Number of people unknown"
+  },
+  "demo": {
+    "wheelchair": "one person uses a wheelchair",
+    "secondCall": "Answered the second call"
   }
 }

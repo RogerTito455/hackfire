@@ -1,5 +1,5 @@
 {
-  "about": "Demo autopilot script, read by backend/app/autopilot.py. A labelled simulation of the coordinator's workflow with the demo residents, not what happened on 23 July 2026. Residents are named by their position in the registry (1 is the first), because the deployed registry has other ids; positions it does not have are skipped. `zone_of` approves the proposed order for that resident's zone. Times are replay moments in UTC, after La Atalaya was first flagged (13:30).",
+  "about": "Demo autopilot script, read by backend/app/autopilot.py. A labelled simulation of the coordinator's workflow with the demo residents, not what happened on 23 July 2026. Residents are named by their position in the registry (1 is the first), because the deployed registry has other ids; positions it does not have are skipped. `mobility` and `observation` are keys of the \"demo\" section in backend/app/locales. `zone_of` approves the proposed order for that resident's zone. Times are replay moments in UTC, after La Atalaya was first flagged (13:30).",
   "orders": [
     { "at": "2026-07-23T13:45:00Z", "zone_of": 1 },
     { "at": "2026-07-23T15:00:00Z", "zone_of": 4 },
@@ -13,7 +13,7 @@
       "position": 3,
       "status": "needs_rescue",
       "people": 2,
-      "mobility": "one person uses a wheelchair"
+      "mobility": "wheelchair"
     },
     { "at": "2026-07-23T15:15:00Z", "position": 4, "status": "evacuating", "people": 3 },
     {
@@ -21,7 +21,7 @@
       "position": 2,
       "status": "evacuating",
       "people": 1,
-      "observation": "Answered the second call"
+      "observation": "secondCall"
     },
     { "at": "2026-07-23T15:30:00Z", "position": 6, "status": "evacuating", "people": 2 },
     { "at": "2026-07-23T16:15:00Z", "position": 5, "status": "evacuating", "people": 4 },

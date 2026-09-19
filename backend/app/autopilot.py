@@ -20,11 +20,23 @@ from functools import cache
 
 from . import orders
 from .config import DATA_DIR
+from .i18n import t
 from .models import Neighbor, OrderDecision, TriageStatus
 from .state import state
 
 TIMELINE_FILE = DATA_DIR / "demo_timeline.json"
 
+
+
+def _note(key: str | None) -> str | None:
+    """A scripted note, named by its key in the "demo" section of backend/app/locales, written in the
+    language of the dashboard that moved the slider. A note that is not a key is kept as written."""
+    if not key:
+        return None
+    try:
+        return t(f"demo.{key}")
+    except KeyError:
+        return key
 
 @dataclass(frozen=True)
 class Outcome:
@@ -157,4 +169,6 @@ def follow(at: datetime) -> None:
             if outcome is None:
                 state.script(neighbor_id, TriageStatus.PENDING, None, None, None, None)
             else:
-                state.script(neighbor_id, outcome.status, outcome.people, outcome.mobility, outcome.observation, outcome.at)
+                state.script(
+                    neighbor_id, outcome.status, outcome.people, _note(outcome.mobility), _note(outcome.observation), outcome.at
+                )
