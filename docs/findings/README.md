@@ -6,6 +6,7 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
+| 2026-09-19 | [Railway configures a pnpm workspace as its frontend package](2026-09-19-railway-pnpm-workspace-import.md) | Deployment |
 | 2026-09-19 | [New Railway services cannot use `railway.toml`](2026-09-19-railway-config-as-code-deprecated.md) | Deployment |
 | 2026-09-19 | [Where La Atalaya is, and how close the hotspots get](2026-09-19-la-atalaya-location.md) | Replay data |
 | 2026-09-19 | [SLNG's catalogue now lists Catalan](2026-09-19-slng-lists-catalan.md) | SLNG |

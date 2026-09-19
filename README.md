@@ -23,7 +23,7 @@ Calls are triggered by the prediction, hours ahead, while cell towers still work
 
 ## Status
 
-Hackathon skeleton. What works today:
+Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app** (one Railway service; see [Deployment](docs/setup/deployment.md)). What works today:
 
 - Backend with the five agent tools, an in-memory triage state and a prioritised rescue queue. `report_status`, `get_rescue_queue` and both routing tools are real; fire status returns a stub marked `"stub": true`.
 - Dashboard with a map of the demo area, resident pins coloured by triage state, live counts and the rescue queue, polling the backend every 2 seconds.

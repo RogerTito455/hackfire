@@ -1,6 +1,6 @@
 # Deployment
 
-**Status:** image built and smoke-tested locally (Docker, `PORT=8080`); Railway service not yet created.
+**Status:** working at https://frontend-production-ae2c.up.railway.app since 2026-09-19. Checked from outside: `/health`, the dashboard and its assets, `report_status` → rescue queue → `POST /api/reset`, and a push to `main` redeploying (the served bundle matched a fresh build of `main`).
 **Issue:** #2
 
 HackFire deploys as **one Railway service**: the FastAPI backend serves the API, the agent tools and the built dashboard, all on one HTTPS URL. Pushing to `main` redeploys it.
@@ -29,15 +29,25 @@ It starts `uvicorn` with a single worker on `$PORT`. The Dockerfile lives at the
 
 ## Setting up the Railway service (once)
 
-Not yet run. Update this section with what actually happened.
+Done on 2026-09-19. Railway's import reads the pnpm workspace and configures the service as if it were the `frontend` package, so several settings have to be corrected by hand. See [the finding](../findings/2026-09-19-railway-pnpm-workspace-import.md).
 
 1. Sign in at https://railway.com with GitHub.
-2. **New Project → Deploy from GitHub repo → `RogerTito455/hackfire`**. Grant the Railway GitHub app access to the repo if asked. Railway finds the root `Dockerfile` and builds it.
-3. In the service settings, under **Networking**, click **Generate Domain**. The app listens on the `PORT` that Railway injects, so accept the detected port.
-4. Under **Deploy**, set the healthcheck path to `/health`. Keep **one replica**: a second replica would hold a second, different triage state.
-5. Check that the source branch is `main` with automatic deploys on. That covers "pushing to `main` redeploys".
-6. Optional: set **watch paths** to `/Dockerfile`, `/backend/**`, `/frontend/**`, `/data/**`, `/package.json` and `/pnpm-lock.yaml`, so a docs-only push does not restart the service and wipe its state.
-7. **Variables:** none are needed for the skeleton. Add keys as the slices that read them land (`DEEPFIRE_CLIENT_ID` and `DEEPFIRE_CLIENT_SECRET` for live mode, then Nebius, ORS and SLNG). Never set `HACKFIRE_NEIGHBORS_FILE` to a laptop path. See [Environment variables](environment.md).
+2. **New Project → Deploy from GitHub repo → `RogerTito455/hackfire`**. Grant the Railway GitHub app access to the repo if asked. Railway names the service `frontend` and builds the root `Dockerfile`.
+3. Correct what the import set, in the service settings:
+
+   | Setting | Set by the import | Set it to |
+   |---|---|---|
+   | Start command | `pnpm --filter frontend dev` | `/bin/sh -c "exec uvicorn app.main:app --host 0.0.0.0 --port $PORT"` (the Dockerfile's `CMD`; clearing the field was not enough) |
+   | Build command | `pnpm --filter frontend build` | Empty; the Dockerfile builder ignores it |
+   | Watch patterns | `/frontend/**` | `/Dockerfile`, `/backend/**`, `/frontend/**`, `/data/**`, `/package.json`, `/pnpm-lock.yaml`. With only `/frontend/**`, a backend-only push never deploys |
+   | Region | `sfo` (US West) | EU West (Amsterdam), next to the demo and to the voice agent |
+   | Healthcheck path | none | `/health` |
+   | Replicas | 1 | Keep 1: a second replica would hold a second, different triage state |
+
+   Apply the staged changes; editing a field does not redeploy by itself.
+4. **Networking → Generate Domain.** Railway does not detect the port; enter `8080`, the `PORT` it injects (the deploy log prints `Uvicorn running on http://0.0.0.0:8080`).
+5. Check that the source branch is `main` with automatic deploys on.
+6. **Variables:** none are needed for the skeleton. Add keys as the slices that read them land (`DEEPFIRE_CLIENT_ID` and `DEEPFIRE_CLIENT_SECRET` for live mode, then Nebius, ORS and SLNG). Never set `HACKFIRE_NEIGHBORS_FILE` to a laptop path. See [Environment variables](environment.md).
 
 Railway's config-as-code file (`railway.toml`) is not an option for this service: new services cannot use it. See [the finding](../findings/2026-09-19-railway-config-as-code-deprecated.md).
 
@@ -56,6 +66,7 @@ With `$B` open in a browser, the `n02` pin turns red at the next poll: within ab
 
 ## Gotchas
 
+- **Memory.** The service must stay well under the plan's RAM limit. On 2026-09-19 the first `/api/fire-area` call pushed the process to ~1.9 GB, Railway killed it, and the request came back as `502 Application failed to respond`. A 502 with that message, followed by a healthy `/health`, means the process died and was restarted, not a Python error (that would be a 500).
 - **Every deploy wipes the triage state.** The state is in memory, so a restart reloads the registry. Nobody pushes to `main` during the demo. If state has to survive a redeploy, see [Supabase](../services/supabase.md).
 - **The real registry is not in the image.** `data/neighbors.local.json` is git-ignored, so the deployed backend serves `neighbors.sample.json`. Getting the team's real numbers onto the server without committing them is part of #12.
 - **A frontend-only change also restarts the backend**, because they are one service.
