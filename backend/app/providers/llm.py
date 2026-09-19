@@ -1,7 +1,7 @@
 """Nebius Token Factory client. The API is OpenAI-compatible.
 
-Set NEBIUS_BASE_URL and NEBIUS_MODEL from https://docs.tokenfactory.nebius.com/quickstart;
-they are deliberately not hard-coded here because we have not confirmed them.
+NEBIUS_BASE_URL is https://api.tokenfactory.nebius.com/v1 (from the quickstart).
+Pick NEBIUS_MODEL from the catalogue at https://tokenfactory.nebius.com.
 """
 
 import httpx
