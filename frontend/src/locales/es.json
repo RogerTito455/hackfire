@@ -240,33 +240,40 @@
     "error": "No se ha podido abrir la cámara. Si necesita ayuda, llame al 112."
   },
   "landing": {
-    "title": "HackFire: llegar a cada vecino antes que el fuego",
+    "title": "HackFire: llamadas de evacuación ante un incendio forestal",
     "home": "Inicio de HackFire",
     "nav": {
       "demo": "Abrir la demo"
     },
     "hero": {
-      "title": "Llegar a cada vecino antes que el fuego",
-      "lead": "Un agente de voz llama a los vecinos que están en la trayectoria prevista de un incendio forestal, le dice a cada uno cómo salir y le pregunta si puede irse por su cuenta. El coordinador de emergencias ve en un mapa quién está evacuando, quién no contesta y quién necesita rescate.",
+      "title": "Llamar a cada vecino en la trayectoria del fuego y saber quién necesita ayuda",
+      "lead": "HackFire predice hacia dónde avanza un incendio forestal, llama a los vecinos que están en su trayectoria con una ruta de salida que evita el fuego y muestra al coordinador de emergencias quién se va, quién no contesta y quién necesita rescate.",
       "cta": "Abrir la demo en directo",
       "how": "Ver cómo funciona",
-      "event": "Hecho en la HackBarna 2026 para el reto «AI for Wildfire» de Norrsken y Deepfire, categoría 4: valores en riesgo."
+      "event": "Hecho en la HackBarna 2026 para el reto AI for Wildfire de Norrsken y Deepfire, categoría 4: valores en riesgo.",
+      "shot": "El panel de HackFire en un móvil durante la reproducción: los focos de satélite, la propagación prevista, los vecinos marcados según su estado y el recuento de cada estado.",
+      "caption": "El panel del coordinador reproduciendo el 23 de julio de 2026, con vecinos de ejemplo."
     },
     "leadTime": {
-      "label": "de antelación para {zone}",
-      "start": "Marcada en la trayectoria prevista del fuego",
+      "start": "{zone}, marcada en la trayectoria prevista del fuego",
       "end": "Primer foco de satélite a menos de {radius} km",
       "body": "Con solo los focos de satélite vistos hasta las {flagged} del 23 de julio de 2026, HackFire situó {zone} en la trayectoria prevista del fuego. El primer foco a menos de {radius} km de la urbanización llegó a las {reached}.",
-      "caveat": "Calculada solo con datos de satélite. No dice nada sobre cuándo avisaron las autoridades."
+      "caveat": "Calculada solo con datos de satélite. No dice nada sobre cuándo se avisó a nadie.",
+      "title": "Unas {hours} horas de antelación",
+      "range": "Entre {min} y {max} horas según la distancia que se tome ({near}–{far} km)",
+      "timeline": "Cronología del 23 de julio de 2026 para {zone}",
+      "window": "Primer foco a menos de {far} km a las {early}; a menos de {near} km, a las {late}",
+      "whyTitle": "Por qué un intervalo",
+      "why": "Un único píxel de satélite, de confianza media, decide el minuto en que el fuego cuenta como llegado, y las constantes de la predicción se ajustaron con este mismo incendio. Todavía no se ha probado con otro."
     },
     "problem": {
       "title": "El incendio que reproducimos",
       "body": "El 23 de julio de 2026 el incendio de Burgohondo, en Ávila, avanzó 3 km en 40 minutos y llegó a la urbanización La Atalaya, en El Tiemblo. Se evacuó de allí a entre 1.200 y 1.300 personas y quedaron destruidas 5 viviendas.",
-      "gap": "Los avisos a la población van en un solo sentido. ES-Alert envía el mismo mensaje a toda una zona y no escucha: el coordinador no sabe quién se ha ido, a quién no le ha llegado el mensaje y quién no puede moverse."
+      "gap": "Los avisos a la población van en un solo sentido. ES-Alert envía un mismo mensaje a toda una zona y no puede escuchar la respuesta: el coordinador no sabe quién se ha ido, a quién no le ha llegado el mensaje y quién no puede moverse."
     },
     "how": {
       "title": "Cómo funciona",
-      "lead": "Un día del incendio real, en veinte segundos.",
+      "lead": "La tarde del 23 de julio de 2026, en un bucle corto. Elige un paso para ir a ese momento.",
       "fireTitle": "El fuego y hacia dónde va",
       "fireBody": "Los focos de satélite de Deepfire, recientes en amarillo y antiguos en rojo, y la propagación prevista a partir de la velocidad y la dirección del frente.",
       "zonesTitle": "Quién está en su camino",
@@ -290,15 +297,14 @@
       "resident": "Vecino",
       "agentLine": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias.",
       "agentAsk": "¿Pueden salir por su cuenta?",
-      "residentLine": "Mi madre no puede andar.",
-      "quote": "Cada vecino que se va por su cuenta es un rescate que los bomberos no tienen que hacer.",
-      "network": "Las llamadas salen de la predicción, horas antes, mientras las antenas todavía funcionan. Que nadie conteste también es una señal: le indica al coordinador adónde mandar una patrulla."
+      "residentLine": "Mi madre no puede andar."
     },
     "outcomes": {
-      "title": "Los tres resultados de una llamada",
+      "title": "Cada llamada termina en uno de tres estados",
       "evacuating": "Se va por su cuenta, con una ruta a un punto seguro que evita el fuego.",
       "no_answer": "Nadie contesta. El agente vuelve a llamar y el coordinador sabe adónde mandar una patrulla.",
-      "needs_rescue": "No puede irse solo. Se ordena por tiempo hasta el fuego y llega a los bomberos con la ruta hasta la puerta."
+      "needs_rescue": "No puede irse solo. Se ordena por tiempo hasta el fuego y llega a los bomberos con la ruta hasta la puerta.",
+      "lead": "Las llamadas salen de la predicción, horas antes, mientras las antenas todavía funcionan."
     },
     "demo": {
       "title": "Prueba la demo",
@@ -306,9 +312,7 @@
       "select": "Toca un vecino en el mapa para ver su ruta de salida, en coche o a pie.",
       "call": "Aprueba la orden de evacuación de su zona y luego atiende la llamada del vecino en el navegador, contestando como si fueras él.",
       "ask": "Pregunta al agente coordinador qué rescates van primero.",
-      "line": "Las llamadas de teléfono necesitan una línea que el proyecto todavía no tiene, así que en la demo la llamada del vecino se atiende en el navegador.",
-      "shot": "El panel de HackFire en un móvil durante la reproducción: los focos de satélite, la propagación prevista, los vecinos marcados según su estado y el recuento de cada estado.",
-      "caption": "El panel del coordinador reproduciendo el 23 de julio de 2026, con vecinos de ejemplo."
+      "line": "Las llamadas de teléfono necesitan una línea que el proyecto todavía no tiene, así que en la demo la llamada del vecino se atiende en el navegador."
     },
     "stack": {
       "title": "Con qué está hecho",

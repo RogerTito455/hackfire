@@ -1,33 +1,41 @@
-/* The landing page at /about. Same signage as the dashboard (DESIGN.md), louder: a night-navy hero
-   with the real fire glowing in it, a fire-coloured band for the lead time, the mini-demo on paper,
-   the three outcomes in their status colours and a civil-protection blue band for the demo.
-   Every colour still means something: warm is fire, blue the way out, purple zones at risk. */
+/* The landing page at /about: a calm product page for emergency services (DESIGN.md, landing).
+   One dark section, the hero; every other section is paper, separated by hairlines. Blue is the
+   one action colour; fire colours appear only inside data (the mini-demo map, the lead-time
+   window) and status colours only for the triage states. */
+
+/* Thin scrollbars come from theme.css, shared with the dashboard. */
+
+body {
+  background: var(--paper);
+}
 
 .landing {
   --gutter: max(16px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
-  --measure: 1180px;
+  --measure: 1120px;
+  --hero: #0f1b3d;
+  --hero-ink-2: #c3cbe8;
+  --hero-ink-3: #98a3ca;
+  --hero-line: rgb(255 255 255 / 28%);
+  --action: #2447d6;
+  --action-hover: #1c39b3;
   --night: #0b1330;
-  --night-2: #141e42;
-  --night-line: #26325c;
-  --night-ink-2: #b9c3e6;
-  --band-fire: #d4361b;
-  --band-blue: #2447d6;
   --way-out-night: #6f8cff;
   --zone-night: #ab47bc;
   --zone-night-ink: #ecc9f3;
-  --route-hover: #1c39b3;
-  --zone-ink: var(--zone);
 
   min-height: 100vh;
   overflow-x: hidden;
+  overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 @media (prefers-color-scheme: dark) {
   .landing {
-    --route-hover: #8ea5ff;
-    --zone-ink: #c98ade;
+    --hero: #0b1330;
+    --action-hover: #3a5ce6;
   }
 }
 
@@ -36,444 +44,587 @@
   text-underline-offset: 3px;
 }
 
-.landing .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+/* Zero specificity, so any class below can set its own margins. */
+:where(.landing) :where(h2, h3, p) {
+  margin: 0;
+}
+
+.landing .wrap {
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+/* --- Buttons: 8 px, solid blue or a hairline outline, no glow ---------------------------------- */
+
+.landing .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out);
+}
+
+.landing .button:active {
+  transform: scale(0.98);
+}
+
+.landing .button.primary {
+  background: var(--action);
+  color: #fff;
+}
+
+.landing .button.secondary {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.landing .button.small {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 15px;
   white-space: nowrap;
 }
 
-/* --- Top bar: night navy, continuous with the hero ------------------------------------------ */
+@media (hover: hover) {
+  .landing .button.primary:hover {
+    background: var(--action-hover);
+  }
+
+  .landing .button.secondary:hover {
+    background: var(--mist);
+  }
+}
+
+/* --- Top bar --------------------------------------------------------------------------------- */
 
 .landing-bar {
   position: sticky;
   top: 0;
   z-index: 10;
+  padding-top: var(--safe-top);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.landing-bar-inner {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
-  padding: calc(var(--safe-top) + 8px) max(var(--gutter), calc((100% - var(--measure)) / 2)) 8px;
-  border-bottom: 1px solid var(--night-line);
-  background: var(--night);
+  min-height: 64px;
 }
 
 .landing .landing-brand {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  min-width: 44px;
   min-height: 44px;
   margin-right: auto;
-  color: #fff;
-  font-size: 19px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .landing-brand .icon {
-  color: var(--fire-2);
+  color: var(--fire-3);
 }
 
 @media (max-width: 359px) {
-  .landing-brand span {
+  .landing-brand span:not(.icon) {
     display: none;
   }
 }
 
-/* --- Buttons ------------------------------------------------------------------------------------ */
-
-.landing .landing-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 56px;
-  padding: 0 26px;
-  border: 2px solid transparent;
-  border-radius: 999px;
-  font-size: 18px;
-  font-weight: 800;
-  text-align: center;
-  text-decoration: none;
-  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out);
-}
-
-.landing .landing-button:active {
-  transform: scale(0.97);
-}
-
-.landing .landing-button.primary {
-  background: var(--band-blue);
-  color: #fff;
-}
-
-/* The one call to action in the hero glows, blue on navy: the way out. */
-.landing .landing-button.glow {
-  box-shadow: 0 0 0 6px rgb(36 71 214 / 30%), 0 10px 40px rgb(111 140 255 / 45%);
-}
-
-.landing .landing-button.ghost {
-  border-color: rgb(255 255 255 / 45%);
-  background: transparent;
-  color: #fff;
-}
-
-.landing .landing-button.inverse {
-  min-height: 60px;
-  padding: 0 32px;
-  background: #fff;
-  color: var(--band-blue);
-  font-size: 19px;
-}
-
-.landing .landing-button.compact {
-  min-height: 44px;
-  padding: 0 16px;
-  font-size: 15px;
-  white-space: nowrap;
-}
-
-@media (hover: hover) {
-  .landing .landing-button.primary:hover {
-    background: #1c39b3;
-  }
-
-  .landing .landing-button.ghost:hover {
-    border-color: #fff;
-  }
-
-  .landing .landing-button.inverse:hover {
-    background: #e6ebff;
-  }
-}
-
-/* --- Hero: night navy with the real fire glowing behind the headline -------------------------- */
+/* --- Hero: the one dark section; the product on the right, never the fire behind text -------- */
 
 .hero {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--night);
+  padding: 56px 0;
+  background: var(--hero);
   color: #fff;
 }
 
-.hero-inner {
-  position: relative;
-  z-index: 1;
-  width: calc(100% - 2 * var(--gutter));
-  max-width: var(--measure);
-  margin: 0 auto;
-  padding: 40px 0 8px;
+.hero-grid {
+  display: grid;
+  gap: 48px;
 }
 
 .hero h1 {
-  max-width: 11ch;
+  max-width: 14em;
   margin: 0;
-  font-size: clamp(44px, 12.5vw, 112px);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.05em;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .hero-lead {
-  max-width: 34em;
-  margin: 24px 0 0;
-  color: var(--night-ink-2);
-  font-size: clamp(17px, 2vw, 20px);
-  line-height: 1.5;
+  max-width: 60ch;
+  margin-top: 20px;
+  color: var(--hero-ink-2);
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .hero-actions {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-top: 30px;
+  margin-top: 32px;
+}
+
+.hero .button.secondary {
+  border-color: var(--hero-line);
+  color: #fff;
+}
+
+@media (hover: hover) {
+  .hero .button.secondary:hover {
+    background: rgb(255 255 255 / 8%);
+  }
+}
+
+.hero :focus-visible {
+  outline-color: #fff;
 }
 
 .hero-event {
-  max-width: 36em;
-  margin: 22px 0 0;
-  color: var(--night-ink-2);
-  font-size: 13px;
+  max-width: 60ch;
+  margin-top: 32px;
+  color: var(--hero-ink-3);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.fire-field {
+.device {
+  width: min(240px, 100%);
+  margin: 0;
+}
+
+.device-body {
+  padding: 8px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 36px;
+  background: #1b2654;
+}
+
+.device img {
   display: block;
-  order: 2;
-  width: 150%;
-  max-width: none;
+  width: 100%;
   height: auto;
-  margin: -24px 0 -16px -30%;
+  border-radius: 28px;
 }
 
-.fire-embers circle {
-  animation: ember-in 700ms var(--ease-out) both;
-}
-
-.fire-glow {
-  opacity: 0.75;
-  animation: fire-breathe 4.5s ease-in-out 2.4s infinite alternate both;
-}
-
-@keyframes ember-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fire-breathe {
-  from {
-    opacity: 0.5;
-  }
-  to {
-    opacity: 0.95;
-  }
+.device figcaption {
+  margin-top: 12px;
+  color: var(--hero-ink-3);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 @media (min-width: 560px) {
-  .hero-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .hero h1 {
+    font-size: 48px;
+  }
+
+  .hero-lead {
+    font-size: 18px;
+  }
+
+  .hero-actions .button {
+    min-width: 200px;
   }
 }
 
 @media (min-width: 960px) {
   .hero {
-    min-height: 640px;
-    min-height: calc(100vh - 61px);
-    justify-content: center;
+    padding: 80px 0;
   }
 
-  .hero-inner {
-    padding: 96px 0 112px;
+  .hero-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 32px;
+    align-items: center;
   }
 
-  .fire-field {
-    position: absolute;
-    top: 50%;
-    right: -14%;
-    width: 84%;
-    margin: 0;
-    transform: translateY(-40%);
-    /* The fire fades into the night on the headline's side, so the text stays readable. */
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 45%);
-    mask-image: linear-gradient(to right, transparent 0, #000 45%);
+  .hero-copy {
+    grid-column: 1 / span 7;
   }
 
-  .hero-lead,
-  .hero-event {
-    max-width: 30em;
+  .device {
+    grid-column: 9 / span 4;
+    width: 280px;
+    justify-self: end;
   }
 }
 
-/* --- Lead-time band: the fire's colour, giant white numerals ---------------------------------- */
+@media (min-width: 1180px) {
+  .hero h1 {
+    font-size: 56px;
+  }
 
-.band-fire {
-  background: var(--band-fire);
-  color: #fff;
+  .hero-lead {
+    font-size: 19px;
+  }
 }
 
-.band-inner {
-  width: calc(100% - 2 * var(--gutter));
-  max-width: var(--measure);
-  margin: 0 auto;
-  padding: 56px 0 48px;
+/* --- Sections: paper, hairlines between them, one rhythm --------------------------------------- */
+
+.section {
+  padding: 56px 0;
+  border-top: 1px solid var(--line);
 }
 
-.sign-title {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
+.hero + .section {
+  border-top: 0;
 }
 
-.sign-figure {
-  font-size: clamp(84px, 25vw, 220px);
-  font-weight: 900;
-  line-height: 0.85;
-  letter-spacing: -0.06em;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.sign-unit {
-  font-size: 0.34em;
-  font-weight: 800;
+.landing h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
   letter-spacing: -0.01em;
 }
 
-.sign-label {
-  font-size: clamp(20px, 3vw, 28px);
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.sign-timeline {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.section-head {
   max-width: 760px;
-  margin: 32px 0 26px;
-  padding: 0;
-  list-style: none;
+  margin-bottom: 32px;
 }
 
-/* The window between the two moments: the time there was to act. */
-.sign-timeline::before {
-  position: absolute;
-  top: 37px;
-  right: 8px;
-  left: 8px;
-  height: 6px;
-  border-radius: 3px;
-  background: #fff;
-  content: '';
-}
-
-.sign-moment {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 26px;
-  font-size: 14px;
-  line-height: 1.35;
-}
-
-.sign-moment::before {
-  position: absolute;
-  top: 32px;
-  width: 16px;
-  height: 16px;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  content: '';
-}
-
-.sign-start::before {
-  left: 0;
-  background: var(--band-blue);
-}
-
-.sign-end {
-  align-items: flex-end;
-  text-align: right;
-}
-
-.sign-end::before {
-  right: 0;
-  background: var(--fire-1);
-}
-
-.sign-time {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  min-height: 24px;
-  font-size: 17px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.sign-body {
-  max-width: 44em;
-  margin: 0 0 12px;
+.section-lead {
+  max-width: 60ch;
+  margin-top: 12px;
+  color: var(--ink-2);
   font-size: 16px;
   line-height: 1.5;
 }
 
-.sign-caveat {
-  max-width: 44em;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+.split {
+  display: grid;
+  gap: 16px 32px;
 }
 
-/* --- Page frame for the quiet sections ---------------------------------------------------------- */
-
-.landing-section,
-.landing-footer > * {
-  width: calc(100% - 2 * var(--gutter));
-  max-width: var(--measure);
-  margin-right: auto;
-  margin-left: auto;
+.prose p {
+  max-width: 64ch;
 }
 
-.landing-section {
-  padding: 48px 0;
+.prose p + p {
+  margin-top: 16px;
 }
 
-.landing-section + .landing-section {
-  border-top: 1px solid var(--line);
-}
+@media (min-width: 720px) {
+  .section {
+    padding: 88px 0;
+  }
 
-.landing h2 {
-  margin: 0 0 18px;
-  font-size: clamp(30px, 7vw, 52px);
-  font-weight: 900;
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-}
+  .landing h2 {
+    font-size: 32px;
+  }
 
-.landing-section p {
-  margin: 0 0 14px;
-}
+  .section-head {
+    margin-bottom: 48px;
+  }
 
-.problem-text {
-  max-width: 40em;
-  font-size: 17px;
-  line-height: 1.55;
-}
-
-@media (min-width: 960px) {
-  .problem {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-    gap: 56px;
-    padding: 72px 0;
+  .section-lead {
+    font-size: 18px;
   }
 }
 
-/* --- How it works: the mini-demo ---------------------------------------------------------------- */
+@media (min-width: 960px) {
+  .split {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
 
-.how {
-  padding: 56px 0 64px;
-  background: var(--mist);
+  .split > :first-child {
+    grid-column: 1 / span 4;
+  }
+
+  .split > :last-child {
+    grid-column: 5 / span 8;
+  }
 }
 
-.how-inner,
-.outcomes-inner,
-.band-blue-inner {
-  width: calc(100% - 2 * var(--gutter));
-  max-width: var(--measure);
-  margin: 0 auto;
+/* --- Lead time: an honest range and the two moments it spans ---------------------------------- */
+
+.landing .lead-time-title {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-.how-lead {
-  margin: -6px 0 24px;
-  color: var(--ink-2);
+@media (min-width: 720px) {
+  .landing .lead-time-title {
+    font-size: 48px;
+  }
+}
+
+.lt {
+  margin: 0;
+  padding: 24px 0 0;
+}
+
+.lt-track {
+  position: relative;
+  height: 24px;
+}
+
+.lt-track::before {
+  position: absolute;
+  top: 11px;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--line);
+  content: '';
+}
+
+.lt-window {
+  position: absolute;
+  top: 4px;
+  height: 16px;
+  border-radius: 4px;
+  background: #ffe3cc;
+  background: rgb(255 122 26 / 26%);
+}
+
+.lt-lead {
+  position: absolute;
+  top: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--route);
+}
+
+.lt-mark {
+  position: absolute;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+}
+
+.lt-mark.flag {
+  background: var(--ink);
+}
+
+.lt-mark.reach {
+  background: var(--fire-3);
+}
+
+.lt-events {
+  display: grid;
+  gap: 16px 32px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lt-event {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lt-time {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
   font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-event:first-child .icon {
+  color: var(--ink-2);
+}
+
+.lt-event:last-child .icon {
+  color: var(--fire-3);
+}
+
+.lt-what {
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.lt-legend {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 16px;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-swatch {
+  flex: none;
+  width: 16px;
+  height: 10px;
+  border-radius: 3px;
+  background: #ffe3cc;
+  background: rgb(255 122 26 / 26%);
+}
+
+.lt-notes {
+  display: grid;
+  gap: 24px 32px;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.lt-notes p {
+  max-width: 60ch;
+}
+
+.lt-notes p + p {
+  margin-top: 12px;
+}
+
+.lt-caveat {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.landing .lt-notes h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.lt-notes div:last-child p {
+  color: var(--ink-2);
+}
+
+@media (min-width: 720px) {
+  .lt-events {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lt-notes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- How it works: the steps beside the mini-demo ---------------------------------------------- */
+
+.mini {
+  display: grid;
+  gap: 24px;
+}
+
+.mini-steps {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mini-step {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 12px 12px 16px;
+  border: 0;
+  border-left: 3px solid var(--line);
+  border-radius: 0 8px 8px 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
+}
+
+.mini-step-number {
+  grid-row: span 2;
+  color: var(--ink-2);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-step-title {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.mini-step-body {
+  margin-top: 4px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.mini-step.active {
+  border-left-color: var(--route);
+}
+
+.mini-step.active .mini-step-number {
+  color: var(--route);
+  font-weight: 700;
+}
+
+.mini-step.active .mini-step-title {
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  .mini-step:hover {
+    background: var(--mist);
+  }
+}
+
+@media (min-width: 1000px) {
+  .mini {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 32px;
+    align-items: start;
+  }
+
+  .mini-steps {
+    grid-column: 1 / span 4;
+  }
+
+  .mini-demo {
+    grid-column: 5 / span 8;
+  }
 }
 
 .mini-stage {
   display: grid;
-  gap: 10px;
-  padding: 10px;
-  border-radius: var(--radius-sheet);
-  background: var(--night-2);
-  color: #fff;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
 }
 
 .mini-map {
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-group);
+  border-radius: 8px;
   background: var(--night);
+  color: #fff;
 }
 
 .mini-map svg {
@@ -487,12 +638,11 @@
   position: absolute;
   bottom: 8px;
   left: 8px;
-  margin: 0;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 4px 8px;
+  border-radius: 6px;
   background: rgb(11 19 48 / 80%);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -510,23 +660,13 @@
 
 .mini-cone.shown {
   opacity: 1;
-  animation: cone-pulse 1.6s ease-in-out infinite alternate;
-}
-
-@keyframes cone-pulse {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .mini-zone polygon {
   fill: var(--zone-night);
   fill-opacity: 0;
   stroke: var(--zone-night-ink);
-  stroke-opacity: 0.25;
+  stroke-opacity: 0.35;
   stroke-width: 3;
   transition: fill-opacity 500ms var(--ease-out), stroke-opacity 500ms var(--ease-out);
 }
@@ -536,8 +676,9 @@
   stroke-opacity: 1;
 }
 
+/* Place names are there from the first frame; the time to impact joins them once flagged. */
 .mini-zone-label {
-  opacity: 0;
+  opacity: 0.6;
   transition: opacity 500ms var(--ease-out);
 }
 
@@ -554,14 +695,14 @@
 
 .mini-zone-label .name {
   fill: #fff;
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 30px;
+  font-weight: 700;
 }
 
 .mini-zone-label .impact {
   fill: var(--zone-night-ink);
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .mini-route {
@@ -584,7 +725,7 @@
 .mini-place text {
   fill: #fff;
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 600;
   paint-order: stroke;
   stroke: var(--night);
   stroke-width: 7px;
@@ -616,21 +757,78 @@
 
 @keyframes pin-pop {
   50% {
-    transform: scale(1.7);
+    transform: scale(1.6);
   }
 }
 
 .mini-side {
   display: grid;
-  gap: 10px;
-  align-content: start;
+  gap: 12px;
+  align-items: start;
+}
+
+.mini-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* As on the dashboard's strip: outlined when empty, filled with the status colour when not. */
+.mini-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 4px 8px 8px;
+  border: 2px solid;
+  border-radius: 8px;
+  background: var(--paper);
+  transition: background-color 250ms var(--ease-out);
+}
+
+.mini-tile.filled {
+  background: currentColor;
+}
+
+.mini-tile-count {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Labels wrap rather than being cut: "Evacuando" must read whole at 320 px. */
+.mini-tile-label {
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.mini-tile.filled .mini-tile-count,
+.mini-tile.filled .mini-tile-label {
+  color: #fff;
+}
+
+/* Amber takes navy ink, as on the dashboard's strip. */
+.mini-tile.filled.no_answer .mini-tile-count,
+.mini-tile.filled.no_answer .mini-tile-label {
+  color: #0f1b3d;
 }
 
 .mini-call {
-  min-height: 236px;
+  min-height: 272px;
   padding: 12px;
-  border-radius: var(--radius-group);
-  background: var(--night);
+  border-radius: 8px;
+  background: var(--mist);
 }
 
 .mini-call-head {
@@ -645,23 +843,25 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--night-line);
+  background: var(--line);
+  color: var(--ink);
 }
 
 .mini-call.live .mini-call-icon {
-  background: var(--status-evacuating, #0e9f6e);
+  background: #0e9f6e;
+  color: #fff;
 }
 
 .mini-call-title {
   flex: 1;
   min-width: 0;
-  color: var(--night-ink-2);
+  color: var(--ink-2);
   font-size: 13px;
-  font-weight: 700;
-  line-height: 1.25;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .mini-wave {
@@ -674,14 +874,14 @@
 
 .mini-wave i {
   display: block;
-  width: 4px;
+  width: 3px;
   height: 6px;
   border-radius: 2px;
-  background: var(--night-ink-2);
+  background: var(--line);
 }
 
 .mini-wave.speaking i {
-  background: #fff;
+  background: var(--route);
   animation: wave 520ms ease-in-out infinite alternate;
 }
 
@@ -706,13 +906,12 @@
     height: 5px;
   }
   to {
-    height: 22px;
+    height: 20px;
   }
 }
 
 .mini-waiting {
-  margin: 0;
-  color: var(--night-ink-2);
+  color: var(--ink-2);
   font-size: 15px;
   line-height: 1.45;
 }
@@ -732,7 +931,7 @@
   gap: 2px;
   max-width: 88%;
   padding: 8px 12px 10px;
-  border-radius: 16px;
+  border-radius: 12px;
   font-size: 15px;
   line-height: 1.35;
 }
@@ -740,82 +939,46 @@
 .mini-bubble.agent {
   align-self: flex-start;
   border-bottom-left-radius: 4px;
-  background: var(--band-blue);
+  background: var(--action);
+  color: #fff;
 }
 
 .mini-bubble.resident {
   align-self: flex-end;
+  border: 1px solid var(--line);
   border-bottom-right-radius: 4px;
-  background: #fff;
-  color: var(--night);
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .mini-who {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   opacity: 0.8;
 }
 
-.mini-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+@media (min-width: 640px) {
+  .mini-side {
+    grid-template-columns: minmax(0, 1fr) 248px;
+    grid-template-areas: 'call strip';
+  }
 
-.mini-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding: 7px 3px 7px 5px;
-  border: 2px solid;
-  border-radius: 10px;
-  background: var(--night);
-  transition: background-color 250ms var(--ease-out);
-}
+  .mini-strip {
+    grid-area: strip;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-.mini-tile.filled {
-  background: currentColor;
-}
-
-.mini-tile-count {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Labels wrap rather than being cut: "Evacuando" must read whole at 320 px. */
-.mini-tile-label {
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-}
-
-.mini-tile.filled .mini-tile-count,
-.mini-tile.filled .mini-tile-label {
-  color: #fff;
-}
-
-/* Amber takes navy ink, as on the dashboard's strip. */
-.mini-tile.filled.no_answer .mini-tile-count,
-.mini-tile.filled.no_answer .mini-tile-label {
-  color: #0f1b3d;
+  .mini-call {
+    grid-area: call;
+    min-height: 224px;
+  }
 }
 
 .mini-controls {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin: 14px 0 18px;
+  margin-top: 12px;
 }
 
 .mini-play {
@@ -823,397 +986,182 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--band-blue);
-  color: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
   cursor: pointer;
+}
+
+@media (hover: hover) {
+  .mini-play:hover {
+    background: var(--mist);
+  }
 }
 
 .mini-honest {
-  margin: 0;
   color: var(--ink-2);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
 }
 
-.mini-steps {
+/* --- The three outcomes: a restrained row in the status colours -------------------------------- */
+
+.outcomes {
   display: grid;
-  gap: 8px;
+  gap: 32px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.mini-step {
-  --tone: var(--fire-2);
-  --tone-soft: rgb(255 122 26 / 12%);
-
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 2px 12px;
-  width: 100%;
-  min-height: 44px;
-  padding: 12px 14px;
-  border: 2px solid var(--line);
-  border-radius: var(--radius-group);
-  background: var(--paper);
-  color: var(--ink);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
+.outcome {
+  padding-top: 20px;
+  border-top: 3px solid;
 }
 
-.mini-step.tone-1 {
-  --tone: var(--zone-ink);
-  --tone-soft: rgb(171 71 188 / 12%);
-}
-
-.mini-step.tone-2 {
-  --tone: var(--route);
-  --tone-soft: rgb(36 71 214 / 12%);
-}
-
-.mini-step.tone-3 {
-  --tone: #e0302a;
-  --tone-soft: rgb(224 48 42 / 12%);
-}
-
-.mini-step-mark {
-  display: inline-flex;
-  grid-row: span 2;
-  gap: 6px;
-  align-items: center;
-  align-self: start;
-  color: var(--tone);
-}
-
-.mini-step-number {
+.outcome-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--tone);
-  border-radius: 50%;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.mini-step-title {
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.mini-step-body {
-  color: var(--ink-2);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.mini-step.active {
-  border-color: var(--tone);
-  background: var(--tone-soft);
-}
-
-.mini-step.active .mini-step-number {
-  background: var(--tone);
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   color: #fff;
 }
 
-@media (min-width: 720px) {
-  .mini-stage {
-    padding: 14px;
-  }
-
-  .mini-steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1000px) {
-  .mini-stage {
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 14px;
-  }
-
-  .mini-call {
-    min-height: 0;
-    flex: 1;
-  }
-
-  .mini-tile-label {
-    font-size: 11px;
-  }
-
-  .mini-side {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .mini-steps {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .mini-step {
-    grid-template-columns: minmax(0, 1fr);
-    align-content: start;
-  }
-
-  .mini-step-mark {
-    grid-row: auto;
-    margin-bottom: 6px;
-  }
-}
-
-/* --- The three outcomes: big tiles in the status colours -------------------------------------- */
-
-.outcomes {
-  padding: 56px 0 64px;
-  background: var(--paper);
-}
-
-.outcome-tiles {
-  display: grid;
-  gap: 12px;
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.outcome-tile {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 3px solid;
-  border-radius: var(--radius-sheet);
-  background: var(--paper);
-}
-
-.outcome-head {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 18px 20px;
-  color: #fff;
-}
-
-.outcome-tile.no_answer .outcome-head {
+.outcome-icon.no_answer {
   color: #0f1b3d;
 }
 
-.outcome-name {
-  font-size: clamp(24px, 3vw, 30px);
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+.landing .outcome h3 {
+  margin: 16px 0 6px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.outcome-body {
-  padding: 16px 20px 20px;
-  font-size: 16px;
-  line-height: 1.45;
-}
-
-.quote {
-  max-width: 30em;
-  margin: 44px 0 14px;
-  padding: 0;
-}
-
-.landing .quote p {
-  margin: 0;
-  font-size: clamp(24px, 4vw, 38px);
-  font-weight: 900;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-}
-
-.network {
-  max-width: 40em;
-  margin: 0;
+.outcome p {
   color: var(--ink-2);
-  font-size: 17px;
-  line-height: 1.5;
 }
 
-@media (min-width: 720px) {
-  .outcome-tiles {
+@media (min-width: 800px) {
+  .outcomes {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
   }
 }
 
-/* --- Try the demo: civil-protection blue, the way in ----------------------------------------- */
+/* --- Try the demo ------------------------------------------------------------------------------- */
 
-.band-blue {
-  padding: 56px 0 0;
-  overflow: hidden;
-  background: var(--band-blue);
-  color: #fff;
-}
-
-.band-blue-inner {
-  display: grid;
-  gap: 36px;
+.demo-line {
+  max-width: 44ch;
+  margin: 12px 0 24px;
+  color: var(--ink-2);
 }
 
 .demo-steps {
-  max-width: 32em;
-  margin: 0 0 18px;
-  padding-left: 1.4em;
-  font-size: 18px;
-  line-height: 1.45;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: demo;
 }
 
 .demo-steps li {
-  margin-bottom: 10px;
-  padding-left: 4px;
+  position: relative;
+  max-width: 64ch;
+  padding: 14px 0 14px 36px;
+  border-top: 1px solid var(--line);
+  counter-increment: demo;
 }
 
-.demo-steps li::marker {
-  font-weight: 900;
+.demo-steps li:last-child {
+  border-bottom: 1px solid var(--line);
 }
 
-.demo-line {
-  max-width: 32em;
-  margin: 0 0 24px;
-  color: #dfe5ff;
-  font-size: 15px;
+.demo-steps li::before {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  color: var(--route);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  content: counter(demo);
 }
 
-.phone {
-  justify-self: center;
-  width: min(280px, 80%);
-  margin: 0;
-}
-
-.phone-body {
-  overflow: hidden;
-  border: 10px solid var(--night);
-  border-bottom: 0;
-  border-radius: 44px 44px 0 0;
-  background: var(--night);
-  box-shadow: 0 30px 80px rgb(11 19 48 / 55%);
-}
-
-.phone img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.phone figcaption {
-  padding: 12px 0 20px;
-  color: #dfe5ff;
-  font-size: 13px;
-}
-
-@media (min-width: 820px) {
-  .band-blue {
-    padding-top: 72px;
-  }
-
-  .band-blue-inner {
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 64px;
-    align-items: end;
-  }
-
-  .demo-text {
-    padding-bottom: 72px;
-  }
-
-  .phone {
-    width: 320px;
-  }
-}
-
-/* --- What it is built on: compact ------------------------------------------------------------- */
+/* --- What it is built on ------------------------------------------------------------------------ */
 
 .stack {
-  display: grid;
-  gap: 0 32px;
   margin: 0;
 }
 
 .stack-row {
-  padding: 12px 0;
+  display: grid;
+  gap: 2px 32px;
+  padding: 14px 0;
   border-top: 1px solid var(--line);
 }
 
+.stack-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
 .stack dt {
-  font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .stack dd {
-  margin: 2px 0 0;
+  max-width: 64ch;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+@media (min-width: 640px) {
+  .stack-row {
+    grid-template-columns: 184px minmax(0, 1fr);
+  }
+}
+
+/* --- A note on the real fire: quiet ------------------------------------------------------------- */
+
+.landing .note h2 {
+  font-size: 18px;
+}
+
+.note p {
+  max-width: 64ch;
   color: var(--ink-2);
   font-size: 15px;
 }
 
 @media (min-width: 720px) {
-  .stack {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .section.note {
+    padding: 56px 0;
   }
 }
 
-/* --- A note on the real fire: quiet ------------------------------------------------------------ */
-
-.note h2 {
-  font-size: 24px;
-  letter-spacing: -0.02em;
-}
-
-.note p {
-  max-width: 40em;
-  color: var(--ink-2);
-  font-size: 16px;
-  line-height: 1.55;
-}
-
-/* --- Footer ------------------------------------------------------------------------------------- */
-
 .landing-footer {
-  padding: 12px 0 calc(var(--safe-bottom) + 20px);
-  background: var(--mist);
+  padding: 24px 0 calc(24px + var(--safe-bottom));
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 14px;
 }
 
-.footer-links {
+.footer-inner {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 24px;
-  align-items: center;
-  margin-top: 0;
-  margin-bottom: 0;
-  color: var(--ink-2);
+  gap: 8px 24px;
+  justify-content: space-between;
 }
-
-.footer-links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-weight: 700;
-}
-
-/* --- Less motion: still frames, no glow breathing, no pulses ---------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .fire-embers circle,
-  .fire-glow,
-  .mini-cone.shown,
-  .mini-pin.done,
-  .mini-wave.speaking i {
+  .mini-wave.speaking i,
+  .mini-pin.done {
     animation: none;
   }
 
-  .mini-cone.shown {
-    opacity: 1;
+  .landing .button:active {
+    transform: none;
   }
 }

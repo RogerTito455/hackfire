@@ -57,29 +57,3 @@ export function usePlayhead(duration: number, playing: boolean, initial = 0) {
   }
   return { time, seek }
 }
-
-/** Counts from 0 to `target` once `start` turns true, in `ms`; returns the current value. */
-export function useCountUp(target: number, start: boolean, ms = 1400): number {
-  const [value, setValue] = useState(() => (prefersReducedMotion() ? target : 0))
-  const done = useRef(false)
-  useEffect(() => {
-    if (!start || done.current) return
-    if (prefersReducedMotion()) {
-      done.current = true
-      setValue(target)
-      return
-    }
-    let frame = 0
-    const begin = performance.now()
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - begin) / ms)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setValue(Math.round(target * eased))
-      if (progress < 1) frame = requestAnimationFrame(tick)
-      else done.current = true
-    }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [start, target, ms])
-  return value
-}

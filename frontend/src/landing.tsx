@@ -4,7 +4,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './ui/theme.css'
-import { PUBLISHED_LEAD_TIME } from './domain/leadTime'
+import { leadTimeRange, PUBLISHED_LEAD_TIME } from './domain/leadTime'
 import { I18nProvider } from './ui/i18n'
 import { Landing } from './ui/landing/Landing'
 
@@ -14,7 +14,7 @@ const DEMO_URL = '/'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <Landing demoUrl={DEMO_URL} leadTime={PUBLISHED_LEAD_TIME} />
+      <Landing demoUrl={DEMO_URL} leadTime={PUBLISHED_LEAD_TIME} leadTimeRange={leadTimeRange(PUBLISHED_LEAD_TIME)} />
     </I18nProvider>
   </StrictMode>,
 )
