@@ -421,25 +421,41 @@ def get_rescue_route(request: RescueRouteRequest) -> Route:
 # origin. Only the dashboard's own paths: a catch-all mount at "/" would swallow the API's 404s
 # and trailing-slash redirects. See docs/setup/deployment.md.
 
-if settings.dashboard_dir:
-    dashboard_dir = Path(settings.dashboard_dir)
-    app.mount("/assets", StaticFiles(directory=dashboard_dir / "assets"), name="dashboard-assets")
 
-    @app.get("/", include_in_schema=False)
+def serve_dashboard(target: FastAPI, dashboard_dir: Path) -> None:
+    """Serve the built frontend: the dashboard at /, the landing page at /about, and their files."""
+    target.mount("/assets", StaticFiles(directory=dashboard_dir / "assets"), name="dashboard-assets")
+
+    @target.get("/", include_in_schema=False)
     def dashboard() -> FileResponse:
         return FileResponse(dashboard_dir / "index.html")
 
     # A resident's video link (#18) opens the same app, which shows the camera page for /v/<link>.
-    @app.get("/v/{link_id}", include_in_schema=False)
+    @target.get("/v/{link_id}", include_in_schema=False)
     def resident_video_page(link_id: str) -> FileResponse:
         return FileResponse(dashboard_dir / "index.html")
 
+    # The landing page for judges and visitors (frontend/about.html). The dashboard stays at /:
+    # crew alert links, the runbook and the pitch all use the root URL.
+    @target.get("/about", include_in_schema=False)
+    def landing() -> FileResponse:
+        return FileResponse(dashboard_dir / "about.html")
+
     # Vite copies frontend/public/ to the root of the build; each file there needs a route here.
-    @app.get("/favicon.svg", include_in_schema=False)
+    @target.get("/favicon.svg", include_in_schema=False)
     def favicon() -> FileResponse:
         return FileResponse(dashboard_dir / "favicon.svg")
 
+    # The landing page's picture of the dashboard.
+    @target.get("/dashboard-phone.webp", include_in_schema=False)
+    def dashboard_picture() -> FileResponse:
+        return FileResponse(dashboard_dir / "dashboard-phone.webp", media_type="image/webp")
+
     # The tile cache's service worker must be served from the root to control the whole page.
-    @app.get("/tile-cache-sw.js", include_in_schema=False)
+    @target.get("/tile-cache-sw.js", include_in_schema=False)
     def tile_cache_worker() -> FileResponse:
         return FileResponse(dashboard_dir / "tile-cache-sw.js", media_type="text/javascript")
+
+
+if settings.dashboard_dir:
+    serve_dashboard(app, Path(settings.dashboard_dir))

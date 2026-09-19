@@ -1,0 +1,616 @@
+/* The landing page at /about. Same signage as the dashboard (DESIGN.md): warm is the fire, blue the
+   way out and what you can do, navy the ink. The lead-time sign is the one loud element. */
+
+.landing {
+  --gutter: max(16px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  --measure: 1120px;
+  /* The sign: a navy panel in both schemes, like a road sign. */
+  --sign: #0f1b3d;
+  --sign-edge: #0f1b3d;
+  --sign-ink: #ffffff;
+  --sign-ink-2: #c3cbe6;
+  --sign-route: #6f8cff;
+  --sign-fire: var(--fire-2);
+  --route-hover: #1c39b3;
+  --zone-ink: var(--zone);
+
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  .landing {
+    --sign: #0b1330;
+    --sign-edge: #33427a;
+    --route-hover: #8ea5ff;
+    --zone-ink: #c98ade;
+  }
+}
+
+.landing a {
+  color: var(--route);
+  text-underline-offset: 3px;
+}
+
+/* --- Top bar ------------------------------------------------------------------------------------ */
+
+.landing-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: calc(var(--safe-top) + 8px) max(var(--gutter), calc((100% - var(--measure)) / 2)) 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.landing .landing-brand {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  margin-right: auto;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.landing-brand .icon {
+  color: var(--fire-3);
+}
+
+.landing-bar .language {
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+/* --- Buttons ------------------------------------------------------------------------------------ */
+
+.landing .landing-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 120ms var(--ease-out);
+}
+
+.landing .landing-button:active {
+  transform: scale(0.97);
+}
+
+.landing .landing-button.primary {
+  background: var(--route);
+  color: var(--route-ink);
+}
+
+.landing .landing-button.secondary {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.landing .landing-button.compact {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+/* Below 360 px the mark alone names the page; the link keeps its accessible name. */
+@media (max-width: 359px) {
+  .landing-brand span {
+    display: none;
+  }
+}
+
+@media (hover: hover) {
+  .landing .landing-button.primary:hover {
+    background: var(--route-hover);
+  }
+
+  .landing .landing-button.secondary:hover {
+    border-color: var(--ink-2);
+  }
+}
+
+/* --- Page frame --------------------------------------------------------------------------------- */
+
+.landing-hero,
+.landing-section,
+.landing-footer > * {
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--measure);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.landing-section {
+  padding: 48px 0;
+  border-top: 1px solid var(--line);
+}
+
+.landing-section h2 {
+  margin: 0 0 20px;
+  font-size: clamp(26px, 6.5vw, 36px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.landing-section p {
+  margin: 0 0 14px;
+}
+
+.landing-meta {
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+/* --- Hero --------------------------------------------------------------------------------------- */
+
+.landing-hero {
+  display: grid;
+  gap: 32px;
+  padding: 28px 0 48px;
+}
+
+.hero h1 {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(38px, 11vw, 68px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.hero-lead {
+  max-width: 36em;
+  margin: 18px 0 0;
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.hero-event {
+  max-width: 36em;
+  margin: 18px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+@media (min-width: 560px) {
+  .hero-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 960px) {
+  .landing-hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 56px;
+    align-items: center;
+    padding: 72px 0 88px;
+  }
+}
+
+/* --- The lead-time sign ------------------------------------------------------------------------- */
+
+.sign {
+  padding: 24px 20px 20px;
+  border: 1px solid var(--sign-edge);
+  border-radius: var(--radius-sheet);
+  background: var(--sign);
+  color: var(--sign-ink-2);
+}
+
+.sign-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.sign-figure {
+  color: var(--sign-fire);
+  font-size: clamp(88px, 27vw, 150px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The units sit small beside the numerals, as on a clock or a road sign. */
+.sign-unit {
+  font-size: 0.34em;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.sign-label {
+  color: var(--sign-ink);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.sign-timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 26px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+/* The window between the two moments: the time to act, so blue. */
+.sign-timeline::before {
+  position: absolute;
+  top: 35px;
+  right: 7px;
+  left: 7px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sign-route);
+  content: '';
+}
+
+.sign-moment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-size: 13px;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.sign-moment::before {
+  position: absolute;
+  top: 31px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  content: '';
+}
+
+.sign-start::before {
+  left: 0;
+  background: var(--sign-route);
+}
+
+.sign-end {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.sign-end::before {
+  right: 0;
+  background: var(--sign-fire);
+}
+
+.sign-time {
+  min-height: 24px;
+  color: var(--sign-ink);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sign-end .icon {
+  color: var(--sign-fire);
+}
+
+.sign-body {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.sign-caveat {
+  margin: 0;
+  font-size: 13px;
+}
+
+.landing .sign a {
+  color: var(--sign-route);
+  font-weight: 600;
+}
+
+@media (min-width: 560px) {
+  .sign {
+    padding: 32px 32px 28px;
+  }
+}
+
+/* --- The problem -------------------------------------------------------------------------------- */
+
+.problem-text {
+  max-width: 40em;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+@media (min-width: 960px) {
+  .problem {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 56px;
+  }
+}
+
+/* --- How it works ------------------------------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  padding: 18px 0 20px;
+  border-top: 1px solid var(--line);
+}
+
+.step-marker {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.step-number {
+  min-width: 1ch;
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.step h3 {
+  margin: 12px 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.step p {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.tone-fire .icon {
+  color: var(--fire-2);
+}
+
+.tone-zone .icon {
+  color: var(--zone-ink);
+}
+
+.tone-route .icon {
+  color: var(--route);
+}
+
+.tone-rescue .icon {
+  color: var(--fire-3);
+}
+
+@media (min-width: 720px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+}
+
+@media (min-width: 1080px) {
+  .steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.outcomes {
+  margin-top: 20px;
+}
+
+.landing-section .outcomes-label {
+  margin-bottom: 10px;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.outcome-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outcome {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px 0 12px;
+  border: 2px solid;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.outcome-icon {
+  display: inline-flex;
+}
+
+.quote {
+  max-width: 34em;
+  margin: 40px 0 16px;
+  padding-left: 18px;
+  border-left: 4px solid var(--route);
+}
+
+.landing-section .quote p {
+  margin: 0;
+  font-size: clamp(21px, 5.2vw, 28px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.landing-section .network {
+  max-width: 40em;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+/* --- Try the demo ------------------------------------------------------------------------------- */
+
+.demo {
+  display: grid;
+  gap: 32px;
+}
+
+.shot {
+  margin: 0;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+  box-shadow: var(--float);
+}
+
+.shot figcaption {
+  max-width: 300px;
+  margin-top: 12px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.demo-steps {
+  max-width: 34em;
+  margin: 0 0 18px;
+  padding-left: 1.4em;
+  font-size: 17px;
+}
+
+.demo-steps li {
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.demo-steps li::marker {
+  color: var(--route);
+  font-weight: 800;
+}
+
+.demo-text .landing-meta {
+  max-width: 34em;
+  margin-bottom: 22px;
+}
+
+@media (min-width: 720px) {
+  .demo {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 48px;
+    align-items: center;
+  }
+}
+
+@media (min-width: 960px) {
+  .demo {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 96px;
+  }
+}
+
+/* --- What it is built on ------------------------------------------------------------------------ */
+
+.stack {
+  margin: 0;
+}
+
+.stack-row {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.stack dt {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.stack dd {
+  max-width: 44em;
+  margin: 4px 0 0;
+  color: var(--ink-2);
+}
+
+@media (min-width: 720px) {
+  .stack-row {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .stack dd {
+    margin: 0;
+  }
+}
+
+/* --- A note on the real fire -------------------------------------------------------------------- */
+
+.note p {
+  max-width: 40em;
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* --- Footer ------------------------------------------------------------------------------------- */
+
+.landing-footer {
+  padding: 16px 0 calc(var(--safe-bottom) + 24px);
+  background: var(--mist);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
+}

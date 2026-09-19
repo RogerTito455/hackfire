@@ -26,6 +26,7 @@ export const ICON_NAMES = [
   'live',
   'logo',
   'pause',
+  'phone',
   'phone-missed',
   'play',
   'replay',

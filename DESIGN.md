@@ -155,6 +155,15 @@ Before merging a UI change, check that it does not bring back:
 - a status shown by colour alone;
 - hard-coded English in a component instead of a locale key.
 
+## Landing page
+
+`/about` (`frontend/about.html`, `src/landing.tsx`, components in `ui/landing/`) presents the project to judges and visitors and sends them to the dashboard at `/`. Same tokens, icons, languages and rules as the dashboard, with two differences:
+
+- **Its one loud element is the lead-time sign:** a navy panel with the figure in fire orange (numerals large, units small) and a bar between the two moments it spans. The bar is the time to act, so it is blue; its end is the fire, so it is warm.
+- **It scrolls.** A sticky top bar keeps **Open the demo** in reach on a phone; the hero repeats it as a full-width button.
+
+The lead time on the page is a copy of the published figure (`PUBLISHED_LEAD_TIME` in `domain/leadTime.ts`); if `pnpm data:lead-time` ever changes it, update both. The dashboard picture is `frontend/public/dashboard-phone.webp`, a 390 × 780 screenshot at 2× of a local run with the sample registry, never the real one.
+
 ## Revisions
 
 - **2026-09-19, mobile redesign.** The earlier idea of a hi-vis yellow accent was dropped: yellow already means *freshly detected hotspot* on the map, and an accent in the same colour would read as fire. Blue took the "act here" role instead. Map mode labels were shortened to *Replay* and *Live* so the top bar fits a 320 px screen.

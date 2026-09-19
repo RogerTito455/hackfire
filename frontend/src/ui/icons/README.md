@@ -86,6 +86,7 @@ The marker colours (`MARKER_OUTLINE_COLOR`, `PLACE_MARKER_INK`) live in `ui/them
 | <img src="live.svg" width="24"> | `live` | Live mode | Map mode toggle | A dot with two broadcast arcs on each side |
 | <img src="logo.svg" width="24"> | `logo` | The HackFire mark | Brand mark; the favicon is a red copy | A flame inside a rounded shield |
 | <img src="pause.svg" width="24"> | `pause` | Pause the replay | Replay controls | Two rounded upright bars |
+| <img src="phone.svg" width="24"> | `phone` | A call to a resident | Landing page, "how it works" | The handset of `phone-missed`, ringing: two sound arcs at the top right instead of the × |
 | <img src="phone-missed.svg" width="24"> | `phone-missed` | Triage status "No answer" | Next to the status label, status marker | A phone handset with a small × at the top right |
 | <img src="play.svg" width="24"> | `play` | Start the replay | Replay controls | A triangle pointing right |
 | <img src="replay.svg" width="24"> | `replay` | Replay mode | Map mode toggle | A clock with hands, its rim an arc with a counter-clockwise arrowhead on the left |
