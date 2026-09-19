@@ -56,6 +56,10 @@ class Settings:
     # The replay moment the calls happen at: routes avoid the fire burned up to then.
     # Default: 23 July 2026, 18:00 CEST: after La Atalaya is first flagged (15:30 CEST, see
     # data/lead_time_la-atalaya.json), with about 4 h to impact and safe ways out still open.
+    # The language of what the voice agents are told (tool answers, call data) and of the crew SMS.
+    # The dashboard picks its own per request (Accept-Language). Any code in app/locales/.
+    agent_locale: str = field(default_factory=lambda: _env("HACKFIRE_AGENT_LOCALE", "en"))
+    crew_locale: str = field(default_factory=lambda: _env("HACKFIRE_CREW_LOCALE", "en"))
     scenario_time: datetime = field(
         default_factory=lambda: datetime.fromisoformat(_env("HACKFIRE_SCENARIO_TIME", "2026-07-23T16:00:00Z"))
     )

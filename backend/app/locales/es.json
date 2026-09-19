@@ -1,0 +1,50 @@
+{
+  "_meta": { "name": "Español" },
+  "route": {
+    "car": "Ve en coche hasta {destination}{way}.",
+    "walking": "Ve a pie hasta {destination}{way}.",
+    "along": " por {roads}",
+    "then": ", luego por ",
+    "length": "Son {distance}, {duration}.",
+    "metres": "unos {count} metros",
+    "kilometres": { "one": "{count} kilómetro más o menos", "other": "unos {count} kilómetros" },
+    "minutes": { "one": "{count} minuto más o menos {how}", "other": "unos {count} minutos {how}" },
+    "hours": { "one": "{count} hora más o menos {how}", "other": "unas {count} horas {how}" },
+    "hoursMinutes": {
+      "one": "{count} hora y {minutes} minutos más o menos {how}",
+      "other": "unas {count} horas y {minutes} minutos {how}"
+    },
+    "byCar": "en coche",
+    "onFoot": "a pie",
+    "avoidsAhead": {
+      "one": "Esta ruta se aleja del fuego y de por donde se espera que avance en la próxima hora.",
+      "other": "Esta ruta se aleja del fuego y de por donde se espera que avance en las próximas {count} horas."
+    },
+    "avoidsBurned": "Esta ruta se aleja de la zona que el fuego ya ha quemado.",
+    "warning": "Atención: ninguna ruta evita la zona quemada.",
+    "none": "No se ha encontrado ninguna ruta que se aleje del fuego. Sigue las instrucciones de los servicios de emergencia en el lugar."
+  },
+  "order": {
+    "leave": "La orden para {zone} es salir ahora hacia {destination}.",
+    "stay": "La orden para {zone} es quedarse en casa hasta que los servicios de emergencia digan lo contrario."
+  },
+  "fire": {
+    "noForecast": "No hay previsión para este momento, así que no se prevé nada para {zone}.",
+    "noImpactMinutes": "No se prevé que el fuego llegue a {zone} en los próximos {count} minutos.",
+    "noImpactHours": {
+      "one": "No se prevé que el fuego llegue a {zone} en la próxima hora.",
+      "other": "No se prevé que el fuego llegue a {zone} en las próximas {count} horas."
+    },
+    "covered": "La zona prevista del incendio ya cubre {zone}.",
+    "reachesMinutes": "Se prevé que el fuego llegue a {zone} en unos {count} minutos.",
+    "reachesHours": {
+      "one": "Se prevé que el fuego llegue a {zone} en aproximadamente una hora.",
+      "other": "Se prevé que el fuego llegue a {zone} en unas {count} horas."
+    }
+  },
+  "crew": {
+    "alert": "Rescate necesario en {address}. {details}. Ruta: {link}",
+    "people": { "one": "{count} persona", "other": "{count} personas" },
+    "peopleUnknown": "Número de personas desconocido"
+  }
+}

@@ -7,7 +7,9 @@ resident waits.
 
 import logging
 
-from . import impact, orders
+from . import i18n, impact, orders
+from .config import settings
+from .i18n import t
 from .models import Neighbor, TravelMode
 from .state import state
 
@@ -33,14 +35,16 @@ def call_variables(neighbor: Neighbor) -> dict[str, str]:
     Besides who and where: the fire and the order (fire_status) and the route by car under that
     order (route). An empty route leaves the agent to ask get_evacuation_route when it needs one.
     """
-    return {
-        "neighbor_id": neighbor.id,
-        "resident_name": neighbor.name,
-        "address": neighbor.address,
-        "zone": neighbor.zone,
-        "fire_status": fire_summary(neighbor.zone, state.minutes_to_impact(neighbor.zone)),
-        "route": _route_by_car(neighbor),
-    }
+    # In the agents' language, whoever starts the call: the dashboard's own language must not leak in.
+    with i18n.using(settings.agent_locale):
+        return {
+            "neighbor_id": neighbor.id,
+            "resident_name": neighbor.name,
+            "address": neighbor.address,
+            "zone": neighbor.zone,
+            "fire_status": fire_summary(neighbor.zone, state.minutes_to_impact(neighbor.zone)),
+            "route": _route_by_car(neighbor),
+        }
 
 
 def _route_by_car(neighbor: Neighbor) -> str:
@@ -55,12 +59,11 @@ def _route_by_car(neighbor: Neighbor) -> str:
     return directions.removeprefix(order.message).strip() if order else directions
 
 
-def _spoken_span(minutes: int) -> str:
-    """"25 minutes" or "3 hours", rounded down: a lead time is never overstated to a resident."""
+def _spoken_span(minutes: int) -> tuple[str, int]:
+    """("minutes", 25) or ("hours", 3), rounded down: a lead time is never overstated to a resident."""
     if minutes < 90:
-        return f"{max(5, 5 * (minutes // 5))} minutes"
-    hours = minutes // 60
-    return f"{hours} hour" if hours == 1 else f"{hours} hours"
+        return "Minutes", max(5, 5 * (minutes // 5))
+    return "Hours", minutes // 60
 
 
 def _fire_line(zone: str, minutes: int | None) -> str:
@@ -68,8 +71,10 @@ def _fire_line(zone: str, minutes: int | None) -> str:
     if minutes is None:
         horizon = impact.remaining_horizon_minutes(state.clock())
         if horizon is None:
-            return f"There is no forecast for this moment, so nothing is predicted for {name}."
-        return f"No predicted impact on {name} in the next {_spoken_span(horizon)}."
+            return t("fire.noForecast", zone=name)
+        unit, count = _spoken_span(horizon)
+        return t(f"fire.noImpact{unit}", zone=name, count=count)
     if minutes == 0:
-        return f"The predicted fire area already covers {name}."
-    return f"The fire is predicted to reach {name} in about {_spoken_span(minutes)}."
+        return t("fire.covered", zone=name)
+    unit, count = _spoken_span(minutes)
+    return t(f"fire.reaches{unit}", zone=name, count=count)

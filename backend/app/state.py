@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from .i18n import t
 from . import impact
 from .config import DATA_DIR, settings
 from .models import AgentFocus, CrewAlert, Neighbor, OrderDecision, ReportStatusRequest, Rescue, TriageStatus
@@ -157,14 +158,19 @@ class TriageState:
         ]
 
 
+def crew_message(neighbor: Neighbor, link: str, locale: str | None = None) -> str:
+    """The crew alert's text; the SMS goes in the crew's language, the dashboard reads it in its own."""
+    people = t("crew.people", locale, count=neighbor.people) if neighbor.people else t("crew.peopleUnknown", locale)
+    details = f"{people}, {neighbor.mobility}" if neighbor.mobility else people
+    return t("crew.alert", locale, address=neighbor.address, details=details, link=link)
+
+
 def _crew_alert(neighbor: Neighbor) -> CrewAlert:
     link = f"{settings.public_url}/?rescue={neighbor.id}"
-    people = f"{neighbor.people} people" if neighbor.people else "Number of people unknown"
-    details = f"{people}, {neighbor.mobility}" if neighbor.mobility else people
     return CrewAlert(
         rescue_id=f"rescue-{neighbor.id}",
         neighbor_id=neighbor.id,
-        message=f"Rescue needed at {neighbor.address}. {details}. Route: {link}",
+        message=crew_message(neighbor, link, settings.crew_locale),
         link=link,
         created_at=datetime.now(UTC),
     )

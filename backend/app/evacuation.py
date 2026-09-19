@@ -9,6 +9,7 @@ so the live demo does not wait on openrouteservice.
 """
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from functools import cache
@@ -19,6 +20,7 @@ from shapely.geometry.base import BaseGeometry
 
 from . import geo, impact, replay
 from .config import DATA_DIR, settings
+from .i18n import t
 from .models import Neighbor, Route, TravelMode
 from .providers import routing
 
@@ -119,17 +121,19 @@ def avoid_polygon(
 
 def _distance_phrase(metres: float) -> str:
     if metres < 1000:
-        return f"about {round(metres, -2):.0f} metres"
-    return f"about {round(metres / 1000):.0f} kilometres"
+        return t("route.metres", count=f"{round(metres, -2):.0f}")
+    return t("route.kilometres", count=round(metres / 1000))
 
 
-def _duration_phrase(seconds: float, how: str) -> str:
+def _duration_phrase(seconds: float, mode: str) -> str:
+    how = t("route.byCar") if mode == TravelMode.CAR else t("route.onFoot")
     minutes = max(1, round(seconds / 60))
     if minutes < 60:
-        return f"around {minutes} minutes {how}"
+        return t("route.minutes", count=minutes, how=how)
     hours, rest = divmod(round(minutes / 10) * 10, 60)
-    unit = "hour" if hours == 1 else "hours"
-    return f"around {hours} {unit} {how}" if rest == 0 else f"around {hours} {unit} and {rest} minutes {how}"
+    if rest == 0:
+        return t("route.hours", count=hours, how=how)
+    return t("route.hoursMinutes", count=hours, minutes=rest, how=how)
 
 
 def _main_roads(steps: list[dict], limit: int = 3) -> list[str]:
@@ -147,23 +151,84 @@ def _main_roads(steps: list[dict], limit: int = 3) -> list[str]:
     return [stretches[i][0] for i in sorted(longest) if stretches[i][1] >= 300]
 
 
-def spoken_directions(feature: dict, mode: TravelMode, destination: str, avoided_fire: bool, ahead_h: float = 0) -> str:
-    """Two or three sentences a person can follow on a phone call."""
+def directions(feature: dict, mode: TravelMode, destination: str, avoided_fire: bool, ahead_h: float = 0) -> dict:
+    """What the directions say, before they are put into words: cached, then written per language."""
     summary = feature["properties"]["summary"]
     steps = [step for segment in feature["properties"]["segments"] for step in segment["steps"]]
-    roads = _main_roads(steps)
-    verb = "Drive" if mode == TravelMode.CAR else "Walk"
-    way = f" along {', then '.join(roads)}" if roads else ""
-    how = "by car" if mode == TravelMode.CAR else "on foot"
-    text = (
-        f"{verb} to {destination}{way}. "
-        f"It is {_distance_phrase(summary.get('distance', 0))}, {_duration_phrase(summary.get('duration', 0), how)}."
-    )
-    if not avoided_fire:
-        return text
-    if ahead_h > 0:
-        return text + " This route keeps away from the fire and from where it is expected to spread in the next hour."
-    return text + " This route keeps away from the area the fire has already burned."
+    return {
+        "mode": str(mode),
+        "destination": destination,
+        "roads": _main_roads(steps),
+        "distance_m": summary.get("distance", 0),
+        "duration_s": summary.get("duration", 0),
+        "avoids": ("ahead" if ahead_h > 0 else "burned") if avoided_fire else None,
+        "ahead_h": ahead_h,
+    }
+
+
+def say(data: dict) -> str:
+    """Two or three sentences a person can follow on a phone call, in the request's language."""
+    if data.get("none"):
+        return t("route.none")
+    roads = data["roads"]
+    way = t("route.along", roads=t("route.then").join(roads)) if roads else ""
+    sentences = [
+        t("route.car" if data["mode"] == TravelMode.CAR else "route.walking", destination=data["destination"], way=way),
+        t("route.length", distance=_distance_phrase(data["distance_m"]), duration=_duration_phrase(data["duration_s"], data["mode"])),
+    ]
+    if data["avoids"] == "ahead":
+        sentences.append(t("route.avoidsAhead", count=round(data["ahead_h"]) or 1))
+    elif data["avoids"] == "burned":
+        sentences.append(t("route.avoidsBurned"))
+    if data.get("warning"):
+        sentences.insert(0, t("route.warning"))
+    return " ".join(sentences)
+
+
+def spoken_directions(feature: dict, mode: TravelMode, destination: str, avoided_fire: bool, ahead_h: float = 0) -> str:
+    """Two or three sentences a person can follow on a phone call."""
+    return say(directions(feature, mode, destination, avoided_fire, ahead_h))
+
+
+# Routes cached before the directions were stored as data carry only the English sentences, written
+# by the template above. They are read back into data once, so they can be said in any language.
+_LEGACY = re.compile(
+    r"^(?P<warning>Warning: no route avoids the burned area\. )?"
+    r"(?P<verb>Drive|Walk) to (?P<destination>.+?)(?: along (?P<roads>.+?))?\. "
+    r"It is .+?, .+?\."
+    r"(?P<ahead> This route keeps away from the fire and from where it is expected to spread in the next hour\.)?"
+    r"(?P<burned> This route keeps away from the area the fire has already burned\.)?$"
+)
+_LEGACY_NONE = "No route that keeps away from the fire was found."
+
+
+def legacy_directions(route: dict) -> dict | None:
+    """The data behind a cached route's English sentences, or None when they do not follow the template."""
+    text = route.get("spoken_directions") or ""
+    if text.startswith(_LEGACY_NONE):
+        return {"none": True}
+    match = _LEGACY.match(text)
+    if match is None or route.get("distance_m") is None or route.get("duration_s") is None:
+        return None
+    data = {
+        "mode": str(TravelMode.CAR if match["verb"] == "Drive" else TravelMode.WALKING),
+        "destination": match["destination"],
+        "roads": match["roads"].split(", then ") if match["roads"] else [],
+        "distance_m": route["distance_m"],
+        "duration_s": route["duration_s"],
+        "avoids": "ahead" if match["ahead"] else "burned" if match["burned"] else None,
+        "ahead_h": 1 if match["ahead"] else 0,
+    }
+    if match["warning"]:
+        data["warning"] = True
+    return data
+
+
+def _from_cache(cached: dict) -> Route:
+    """A cached route, its directions written in the request's language when their data is known."""
+    route = Route(**cached)
+    data = cached.get("directions") or legacy_directions(cached)
+    return route.model_copy(update={"spoken_directions": say(data)}) if data else route
 
 
 # --- Planning and cache --------------------------------------------------------
@@ -200,9 +265,9 @@ def plan(
     cached = None if refresh else _memory.get(key) or _disk_cache().get(key)
     if cached is not None:
         _memory[key] = cached
-        return Route(**cached)
+        return _from_cache(cached)
     avoid = avoid_polygon(start, end, at, ahead_h)
-    warning = ""
+    warning = False
     try:
         with httpx.Client(timeout=TIMEOUT_SECONDS) as client:
             try:
@@ -211,28 +276,25 @@ def plan(
                 if not crew:
                     raise
                 feature = routing.route_avoiding(client, start, end, mode, None)
-                avoid, warning = None, "Warning: no route avoids the burned area. "
+                avoid, warning = None, True
     except routing.NoRouteFound:
-        route = Route(
-            mode=mode,
-            spoken_directions=(
-                "No route that keeps away from the fire was found. "
-                "Follow the instructions of the emergency services on site."
-            ),
-        )
+        data = {"none": True}
+        route = Route(mode=mode, spoken_directions=say(data))
     except httpx.HTTPError as error:
         raise RoutingUnavailable(str(error)) from error
     else:
         summary = feature["properties"]["summary"]
+        data = directions(feature, mode, destination, avoided_fire=avoid is not None, ahead_h=ahead_h)
+        if warning:
+            data["warning"] = True
         route = Route(
             mode=mode,
             distance_m=summary.get("distance"),
             duration_s=summary.get("duration"),
-            spoken_directions=warning
-            + spoken_directions(feature, mode, destination, avoided_fire=avoid is not None, ahead_h=ahead_h),
+            spoken_directions=say(data),
             geometry=feature["geometry"],
         )
-    _memory[key] = route.model_dump(mode="json")
+    _memory[key] = {**route.model_dump(mode="json"), "directions": data}
     return route
 
 

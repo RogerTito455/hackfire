@@ -1,0 +1,50 @@
+{
+  "_meta": { "name": "English" },
+  "route": {
+    "car": "Drive to {destination}{way}.",
+    "walking": "Walk to {destination}{way}.",
+    "along": " along {roads}",
+    "then": ", then ",
+    "length": "It is {distance}, {duration}.",
+    "metres": "about {count} metres",
+    "kilometres": { "one": "about {count} kilometre", "other": "about {count} kilometres" },
+    "minutes": { "one": "around {count} minute {how}", "other": "around {count} minutes {how}" },
+    "hours": { "one": "around {count} hour {how}", "other": "around {count} hours {how}" },
+    "hoursMinutes": {
+      "one": "around {count} hour and {minutes} minutes {how}",
+      "other": "around {count} hours and {minutes} minutes {how}"
+    },
+    "byCar": "by car",
+    "onFoot": "on foot",
+    "avoidsAhead": {
+      "one": "This route keeps away from the fire and from where it is expected to spread in the next hour.",
+      "other": "This route keeps away from the fire and from where it is expected to spread in the next {count} hours."
+    },
+    "avoidsBurned": "This route keeps away from the area the fire has already burned.",
+    "warning": "Warning: no route avoids the burned area.",
+    "none": "No route that keeps away from the fire was found. Follow the instructions of the emergency services on site."
+  },
+  "order": {
+    "leave": "The order for {zone} is to leave now for {destination}.",
+    "stay": "The order for {zone} is to stay indoors until the emergency services say otherwise."
+  },
+  "fire": {
+    "noForecast": "There is no forecast for this moment, so nothing is predicted for {zone}.",
+    "noImpactMinutes": "No predicted impact on {zone} in the next {count} minutes.",
+    "noImpactHours": {
+      "one": "No predicted impact on {zone} in the next {count} hour.",
+      "other": "No predicted impact on {zone} in the next {count} hours."
+    },
+    "covered": "The predicted fire area already covers {zone}.",
+    "reachesMinutes": "The fire is predicted to reach {zone} in about {count} minutes.",
+    "reachesHours": {
+      "one": "The fire is predicted to reach {zone} in about {count} hour.",
+      "other": "The fire is predicted to reach {zone} in about {count} hours."
+    }
+  },
+  "crew": {
+    "alert": "Rescue needed at {address}. {details}. Route: {link}",
+    "people": { "one": "{count} person", "other": "{count} people" },
+    "peopleUnknown": "Number of people unknown"
+  }
+}

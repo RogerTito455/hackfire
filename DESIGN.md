@@ -134,11 +134,13 @@ Every word the dashboard shows lives in [`frontend/src/locales/`](frontend/src/l
 - **Adding a language:**
   1. Copy `en.json` to `<code>.json` and set `_meta` (`name` in that language, `intl` as a BCP 47 tag such as `ca-ES`).
   2. Translate every value and keep the placeholders.
-  3. Run `pnpm check`.
+  3. Do the same for the backend's sentences in `backend/app/locales/` (no `intl` there).
+  4. Run `pnpm check`.
 
   The new language appears in the picker with no code change.
 - **`pnpm check` fails** (via [`scripts/check-locales.mjs`](frontend/scripts/check-locales.mjs)) when a locale misses a key or changes a placeholder, or when the code uses a key that `en.json` lacks.
-- **Not translated:** text the backend generates is data, not interface: the spoken directions, crew alert messages, the lead-time definition, resident names and mobility notes. It arrives in the language the backend wrote it in.
+- **Sentences the backend writes** (route directions, evacuation orders, the fire line the agents say, crew alerts) live in `backend/app/locales/<code>.json` and are read with `i18n.t()` (`backend/app/i18n.py`). Every dashboard request sends `Accept-Language` from `<html lang>`, so they arrive in the dashboard's language; routes are cached as data and put into words per request. The voice agents and the crew SMS keep their own language (`HACKFIRE_AGENT_LOCALE`, `HACKFIRE_CREW_LOCALE`, English by default), whatever the dashboard shows. `tests/test_i18n.py` checks that the backend locales match.
+- **Not translated:** data rather than interface: the lead-time definition, resident names, and the mobility notes the LLM extracts from what residents say.
 
 ## Checklist against generic design
 
