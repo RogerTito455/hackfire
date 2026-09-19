@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 
 from app import campaign
 from app.main import app
-from app.models import Neighbor
 from app.providers import voice
 
 client = TestClient(app)
@@ -21,12 +20,11 @@ class FakeLine:
         # Residents whose call status SLNG fails to return once.
         self.status_errors: set[str] = set()
 
-    def dial(self, neighbor: Neighbor) -> str:
-        if neighbor.id in self.refused:
+    def dial(self, phone: str, arguments: dict[str, str]) -> str:
+        if arguments["neighbor_id"] in self.refused:
             raise voice.VoiceUnavailable("503 from SLNG")
-        # What SLNG would receive: the phone and the agent's call variables.
-        self.dialled.append((neighbor.phone, voice.call_variables(neighbor)))
-        return f"call-{neighbor.id}"
+        self.dialled.append((phone, arguments))
+        return f"call-{arguments['neighbor_id']}"
 
     def ended(self, call_id: str) -> bool:
         neighbor_id = call_id.removeprefix("call-")
@@ -71,6 +69,8 @@ def test_nothing_is_dialled_before_the_zones_order_is_approved(line: FakeLine) -
 
 def test_an_approved_zone_dials_each_of_its_residents_once(line: FakeLine) -> None:
     approve("la-atalaya")
+    # The agent opens with what it would otherwise look up mid-call: the fire, the order, the route.
+    fire_status = client.post("/tools/get_fire_status", json={"zone": "la-atalaya"}).json()["summary"]
 
     response = client.post("/api/campaigns/la-atalaya")
 
@@ -79,12 +79,15 @@ def test_an_approved_zone_dials_each_of_its_residents_once(line: FakeLine) -> No
     assert sorted(arguments["neighbor_id"] for _, arguments in line.dialled) == sorted(n["id"] for n in residents)
     for phone, arguments in line.dialled:
         resident = next(n for n in residents if n["id"] == arguments["neighbor_id"])
+        route = client.get(f"/api/routes/{resident['id']}", params={"mode": "car"}).json()["spoken_directions"]
         assert phone.startswith("+")
         assert arguments == {
             "neighbor_id": resident["id"],
             "resident_name": resident["name"],
             "address": resident["address"],
             "zone": "la-atalaya",
+            "fire_status": fire_status,
+            "route": route,
         }
         # The dashboard URL is public and the registry holds real numbers.
         assert phone not in response.text
@@ -126,7 +129,7 @@ def test_a_call_that_cannot_be_placed_counts_as_no_answer(line: FakeLine) -> Non
 def test_without_a_phone_line_nothing_is_dialled(monkeypatch: pytest.MonkeyPatch) -> None:
     dialled = []
     monkeypatch.setattr(voice, "phone_calls_configured", lambda: False)
-    monkeypatch.setattr(voice, "call_resident", lambda neighbor: dialled.append(neighbor.id) or "call")
+    monkeypatch.setattr(voice, "call_resident", lambda phone, arguments: dialled.append(phone) or "call")
     approve("la-atalaya")
 
     response = client.post("/api/campaigns/la-atalaya")

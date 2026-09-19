@@ -22,7 +22,6 @@ agents:
     think: reasoning
     speak: nestor
     tools:
-      - get_fire_status
       - get_evacuation_route
       - report_status
       - end_call
@@ -52,8 +51,8 @@ models:
       provider: slng
       model: "deepgram/aura:2"
       voice: "aura-2-nestor-es"
-      # Aura's speech rate, 0.7 to 1.5. The first test call felt slow at 1.0.
-      speed: 1.15
+      # Aura's speech rate, 0.7 to 1.5. Test calls felt slow at 1.0 and still at 1.15.
+      speed: 1.3
   listen:
     transcriber:
       description: Soniox real-time v5 through SLNG, Spanish
@@ -90,9 +89,18 @@ variables:
     source: call_start
     default: la-atalaya
     description: The at-risk zone id the backend knows. An identifier, never spoken.
+  fire_status:
+    type: str
+    source: call_start
+    default: "The predicted fire area already covers La Atalaya. The order for La Atalaya is to leave now for San Martín de Valdeiglesias."
+    description: The fire at the zone and the coordinator's approved order, as get_fire_status would answer. The backend sends it with every call.
+  route:
+    type: str
+    source: call_start
+    default: "Drive to San Martín de Valdeiglesias along Carretera Toledo a Valladolid, N-403. It is about 6 kilometres, around 9 minutes by car."
+    description: The resident's route by car under the approved order. Empty when the backend has none; the agent then asks get_evacuation_route.
 
 tools:
-  - get_fire_status
   - get_evacuation_route
   - report_status
   - end_call

@@ -11,8 +11,8 @@ import logging
 import threading
 import time
 
-from . import orders
-from .models import CampaignCall, TriageStatus
+from . import briefing, evacuation, orders
+from .models import CampaignCall, Neighbor, TravelMode, TriageStatus
 from .providers import voice
 from .state import state
 
@@ -25,6 +25,27 @@ WATCH_SECONDS = 15 * 60
 # Calls in progress: neighbor id to SLNG call id.
 _active: dict[str, str] = {}
 _active_lock = threading.Lock()
+
+
+def call_variables(neighbor: Neighbor) -> dict[str, str]:
+    """The resident agent's call variables (voice/resident/agent.yaml), for a call or a web session.
+
+    Besides who and where, the agent starts knowing the fire, the order and the route by car, so it
+    opens with them instead of calling a tool while the resident waits. An empty route leaves the
+    agent to ask for one (get_evacuation_route) when it is needed.
+    """
+    try:
+        route = orders.route_for(neighbor, TravelMode.CAR).spoken_directions
+    except evacuation.RoutingUnavailable:
+        route = ""
+    return {
+        "neighbor_id": neighbor.id,
+        "resident_name": neighbor.name,
+        "address": neighbor.address,
+        "zone": neighbor.zone,
+        "fire_status": briefing.fire_summary(neighbor.zone),
+        "route": route,
+    }
 
 
 class NotApproved(Exception):
@@ -48,7 +69,7 @@ def start(zone: str) -> list[CampaignCall]:
             if resident.id in _active:
                 continue
         try:
-            call_id = voice.call_resident(resident)
+            call_id = voice.call_resident(resident.phone, call_variables(resident))
         except voice.VoiceUnavailable as error:
             logger.warning("SLNG refused the call to %s: %s", resident.id, error)
             state.no_answer_if_pending(resident.id)

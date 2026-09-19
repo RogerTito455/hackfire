@@ -21,9 +21,21 @@ AGENT_DIR = REPO_ROOT / "voice" / "resident"
 pytestmark = pytest.mark.skipif(not llm.configured(), reason="needs SLNG_API_KEY")
 
 
+# The call variables the backend sends (campaign.call_variables), for a resident of La Atalaya.
+CALL = {
+    "resident_name": "Carmen López",
+    "address": "calle del Pinar 3, La Atalaya",
+    "fire_status": "The fire is predicted to reach La Atalaya in about 45 minutes. "
+    "The order for La Atalaya is to leave now for San Martín de Valdeiglesias.",
+    "route": "Drive to San Martín de Valdeiglesias along the N-403. It is about 6 kilometres, around 9 minutes by car.",
+}
+
+
 def _system_prompt() -> str:
     prompt = (AGENT_DIR / "instructions.md").read_text(encoding="utf-8")
-    return prompt.replace("{{resident_name}}", "Carmen López").replace("{{address}}", "calle del Pinar 3, La Atalaya")
+    for name, value in CALL.items():
+        prompt = prompt.replace(f"{{{{{name}}}}}", value)
+    return prompt
 
 
 def _tool(name: str, parameters: dict) -> dict:

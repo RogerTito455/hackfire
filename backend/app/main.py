@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import campaign, evacuation, impact, live, orders, replay, text_triage
+from . import briefing, campaign, evacuation, impact, live, orders, replay, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -191,7 +191,7 @@ def start_web_session(neighbor_id: str) -> WebSession:
     if not voice.web_sessions_configured():
         raise HTTPException(status_code=503, detail="The voice agent is not configured (SLNG_API_KEY)")
     try:
-        return voice.web_session(resident)
+        return voice.web_session(campaign.call_variables(resident), participant_name=resident.name)
     except voice.VoiceUnavailable as error:
         raise HTTPException(status_code=503, detail="The voice agent is unavailable right now") from error
 
@@ -267,34 +267,8 @@ def get_fire_status(request: FireStatusRequest) -> FireStatus:
         zone=request.zone,
         at_risk=minutes is not None,
         minutes_to_impact=minutes,
-        summary=_with_order(request.zone, _fire_summary(request.zone, minutes)),
+        summary=briefing.fire_summary(request.zone),
     )
-
-
-def _with_order(zone: str, summary: str) -> str:
-    """Append the coordinator's approved order for the zone, the one thing every resident must hear."""
-    order = orders.approved_order(zone)
-    return f"{summary} {order.message}" if order else summary
-
-
-def _spoken_span(minutes: int) -> str:
-    """"25 minutes" or "3 hours", rounded down: a lead time is never overstated to a resident."""
-    if minutes < 90:
-        return f"{max(5, 5 * (minutes // 5))} minutes"
-    hours = minutes // 60
-    return f"{hours} hour" if hours == 1 else f"{hours} hours"
-
-
-def _fire_summary(zone: str, minutes: int | None) -> str:
-    name = impact.zone_name(zone)
-    if minutes is None:
-        horizon = impact.remaining_horizon_minutes(state.clock())
-        if horizon is None:
-            return f"There is no forecast for this moment, so nothing is predicted for {name}."
-        return f"No predicted impact on {name} in the next {_spoken_span(horizon)}."
-    if minutes == 0:
-        return f"The predicted fire area already covers {name}."
-    return f"The fire is predicted to reach {name} in about {_spoken_span(minutes)}."
 
 
 def _route_or_503(plan) -> Route:
