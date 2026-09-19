@@ -6,10 +6,9 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
-| 2026-09-19 | [The lead time for La Atalaya: 6 h 8 min, and how it was computed](2026-09-19-lead-time.md) | Pitch figure |
-| 2026-09-19 | [The replay spread is a cone from the front's velocity, and how it behaves on 23 July](2026-09-19-spread-cone-model.md) | Predicted spread |
 | 2026-09-19 | [Railway configures a pnpm workspace as its frontend package](2026-09-19-railway-pnpm-workspace-import.md) | Deployment |
 | 2026-09-19 | [New Railway services cannot use `railway.toml`](2026-09-19-railway-config-as-code-deprecated.md) | Deployment |
+| 2026-09-19 | [Sending everyone to one safe point walked some residents into the fire](2026-09-19-evacuation-destinations.md) | Routes |
 | 2026-09-19 | [Where La Atalaya is, and how close the hotspots get](2026-09-19-la-atalaya-location.md) | Replay data |
 | 2026-09-19 | [SLNG's catalogue now lists Catalan](2026-09-19-slng-lists-catalan.md) | SLNG |
 | 2026-09-19 | [The Deepfire spread API cannot simulate a past date](2026-09-19-deepfire-no-historical-simulation.md) | Deepfire |

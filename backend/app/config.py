@@ -15,8 +15,7 @@ load_dotenv(REPO_ROOT / ".env")
 
 
 def _env(name: str, default: str = "") -> str:
-    """The variable, or the default when it is unset or empty (`.env.example` ships empty values)."""
-    return os.environ.get(name, "").strip() or default
+    return os.environ.get(name, default).strip()
 
 
 def _origins(name: str, default: str) -> list[str]:
@@ -53,11 +52,6 @@ class Settings:
     nebius_model: str = field(default_factory=lambda: _env("NEBIUS_MODEL"))
 
     ors_api_key: str = field(default_factory=lambda: _env("ORS_API_KEY"))
-
-    # Public Overpass instances come and go; set OVERPASS_URL to another one if this refuses connections.
-    overpass_url: str = field(
-        default_factory=lambda: _env("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
-    )
 
 
 settings = Settings()

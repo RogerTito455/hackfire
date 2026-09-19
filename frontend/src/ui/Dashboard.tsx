@@ -1,21 +1,19 @@
-import type { FireForecast } from '../hooks/useFireForecast'
 import type { FireReplay } from '../hooks/useFireReplay'
-import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
+import type { Spread } from '../hooks/useSpread'
 import type { Triage } from '../hooks/useTriage'
-import { CrewAlerts } from './CrewAlerts'
-import { LeadTimeCard } from './LeadTimeCard'
 import { LiveStatus } from './LiveStatus'
+import { CrewAlerts } from './CrewAlerts'
+import { Icon } from './Icon'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
 import { RoutePanel } from './RoutePanel'
-import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
-import { ZonesAtRisk } from './ZonesAtRisk'
+import { ZonesPanel } from './ZonesPanel'
 import './dashboard.css'
 
 interface DashboardProps {
@@ -25,77 +23,73 @@ interface DashboardProps {
   onModeChange: (mode: MapMode) => void
   live: LiveMode
   selection: SelectedRoute
-  forecast: FireForecast
-  leadTime: LeadTimeView
+  spread: Spread
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
-export function Dashboard({
-  triage,
-  replay,
-  mode,
-  onModeChange,
-  live,
-  selection,
-  forecast,
-  leadTime,
-}: DashboardProps) {
+export function Dashboard({ triage, replay, mode, onModeChange, live, selection, spread }: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   return (
     <div className="layout">
       <aside className="panel">
         <header>
-          <h1>HackFire</h1>
+          <h1 className="brand">
+            <Icon name="logo" size={28} />
+            HackFire
+          </h1>
           <p className={online ? 'conn ok' : 'conn down'}>
             {online ? 'Backend connected' : 'Backend unreachable'}
           </p>
         </header>
 
         <section>
+          <h2 className="icon-button">
+            <Icon name="flame" size={16} />
+            Fire's path
+          </h2>
+          <ZonesPanel
+            status={spread.status}
+            risk={spread.risk}
+            motion={spread.cone?.motion ?? null}
+            enabled={mode === 'replay'}
+          />
+        </section>
+
+        <section>
           <h2>Triage</h2>
           <StatusCounts counts={counts} />
         </section>
 
-        {mode === 'replay' && (
-          <>
-            <section>
-              <h2>Lead time</h2>
-              <LeadTimeCard view={leadTime} />
-            </section>
-
-            <section>
-              <h2>Where the fire is heading</h2>
-              {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
-              <ZonesAtRisk
-                status={forecast.status}
-                zones={forecast.zonesAtRisk}
-                hasForecast={forecast.issuedAt !== null}
-              />
-            </section>
-          </>
-        )}
-
         <section>
-          <h2>Evacuation route</h2>
+          <h2 className="icon-button">
+            <Icon name="route" size={16} />
+            Evacuation route
+          </h2>
           <RoutePanel
             neighbor={selected}
             mode={selection.mode}
             route={selection.route}
             status={selection.status}
-            avoidsUntil={selection.fireArea?.properties.until ?? null}
+            avoids={selection.fireArea}
             onModeChange={selection.setMode}
             onClose={() => selection.select(null)}
           />
         </section>
 
         <section>
-          <h2>Rescue queue</h2>
+          <h2 className="icon-button">
+            <Icon name="lifebuoy" size={16} />
+            Rescue queue
+          </h2>
           <RescueQueue rescues={rescues} />
         </section>
 
         <section>
-          <h2>Crew alerts</h2>
+          <h2 className="icon-button">
+            <Icon name="bell" size={16} />
+            Crew alerts
+          </h2>
           <CrewAlerts
             alerts={alerts}
             onShowRoute={(neighborId) => {
@@ -105,7 +99,8 @@ export function Dashboard({
           />
         </section>
 
-        <button type="button" className="reset" onClick={reset}>
+        <button type="button" className="reset icon-button" onClick={reset}>
+          <Icon name="reset" size={16} />
           Reset demo
         </button>
       </aside>
@@ -118,10 +113,12 @@ export function Dashboard({
           live={live.data}
           selectedNeighborId={selection.neighborId}
           route={selection.route}
+          routeKind={selection.mode}
           fireArea={selection.fireArea}
+          cone={mode === 'replay' ? spread.cone : null}
+          zones={mode === 'replay' ? spread.shapes : null}
+          risk={mode === 'replay' ? spread.risk : null}
           onSelectNeighbor={selection.select}
-          spread={forecast.spread}
-          zones={forecast.zonesAtRisk}
         />
         <ModeToggle mode={mode} onChange={onModeChange} />
         {mode === 'replay' ? (
