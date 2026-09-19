@@ -2,6 +2,7 @@
 
 import os
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,6 +33,11 @@ class Settings:
     # The built dashboard (frontend/dist). Set in the Dockerfile; empty locally, where Vite serves it.
     dashboard_dir: str = field(default_factory=lambda: _env("HACKFIRE_DASHBOARD_DIR"))
     crew_phone: str = field(default_factory=lambda: _env("HACKFIRE_CREW_PHONE"))
+    # The replay moment the calls happen at: routes avoid the fire burned up to then.
+    # Default: 23 July 2026, 20:30 CEST, when the front was ~4 km from La Atalaya.
+    scenario_time: datetime = field(
+        default_factory=lambda: datetime.fromisoformat(_env("HACKFIRE_SCENARIO_TIME", "2026-07-23T18:30:00Z"))
+    )
 
     deepfire_client_id: str = field(default_factory=lambda: _env("DEEPFIRE_CLIENT_ID"))
     deepfire_client_secret: str = field(default_factory=lambda: _env("DEEPFIRE_CLIENT_SECRET"))

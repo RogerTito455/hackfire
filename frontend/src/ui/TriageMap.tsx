@@ -13,14 +13,16 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
-import type { Neighbor } from '../domain/triage'
+import type { FireArea, Neighbor, Route } from '../domain/triage'
 import type { MapMode } from '../hooks/useMapMode'
 import {
+  FIRE_AREA_COLOR,
   formatSpanishTime,
   HOTSPOT_AGE_COLORS,
   HOTSPOT_RADIUS_BY_FRP,
   LIVE_RADIUS_BY_HOURS,
   LIVE_RECENCY_COLORS,
+  ROUTE_COLOR,
   STATUS_COLOR,
   STATUS_LABEL,
 } from './theme'
@@ -55,8 +57,12 @@ const OSM_STYLE: StyleSpecification = {
 
 const HOTSPOTS = 'hotspots'
 const LIVE_FIRES = 'live-fires'
+const FIRE_AREA = 'fire-area'
+const ROUTE = 'route'
+const EMPTY: GeoJSONData = { type: 'FeatureCollection', features: [] }
 
 type GeoJSONData = Parameters<GeoJSONSource['setData']>[0]
+type GeoJSONGeometry = Extract<GeoJSONData, { type: 'Feature' }>['geometry']
 
 // Feature times are minutes since the first hotspot: small numbers keep map expressions exact.
 function toFeatureCollection(hotspots: readonly Hotspot[], origin: number): GeoJSONData {
@@ -120,13 +126,32 @@ interface TriageMapProps {
   /** Replay time in epoch milliseconds: hotspots observed after it are hidden. */
   time: number | null
   live: LiveFires | null
+  selectedNeighborId: string | null
+  route: Route | null
+  /** The area the route avoids; drawn only while a route is shown. */
+  fireArea: FireArea | null
+  onSelectNeighbor: (neighborId: string) => void
 }
 
-export function TriageMap({ mode, neighbors, hotspots, time, live }: TriageMapProps) {
+export function TriageMap({
+  mode,
+  neighbors,
+  hotspots,
+  time,
+  live,
+  selectedNeighborId,
+  route,
+  fireArea,
+  onSelectNeighbor,
+}: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<Map<string, Marker>>(new Map())
   const [styleReady, setStyleReady] = useState(false)
+  const onSelect = useRef(onSelectNeighbor)
+  useEffect(() => {
+    onSelect.current = onSelectNeighbor
+  }, [onSelectNeighbor])
 
   useEffect(() => {
     if (!container.current || map.current) return
@@ -138,6 +163,20 @@ export function TriageMap({ mode, neighbors, hotspots, time, live }: TriageMapPr
     })
     instance.addControl(new NavigationControl(), 'top-left')
     instance.on('load', () => {
+      // Under the hotspots: the burned area the routes avoid.
+      instance.addSource(FIRE_AREA, { type: 'geojson', data: EMPTY })
+      instance.addLayer({
+        id: FIRE_AREA,
+        type: 'fill',
+        source: FIRE_AREA,
+        paint: { 'fill-color': FIRE_AREA_COLOR, 'fill-opacity': 0.12 },
+      })
+      instance.addLayer({
+        id: `${FIRE_AREA}-outline`,
+        type: 'line',
+        source: FIRE_AREA,
+        paint: { 'line-color': FIRE_AREA_COLOR, 'line-width': 1.5, 'line-dasharray': [2, 2] },
+      })
       instance.addSource(HOTSPOTS, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -173,6 +212,22 @@ export function TriageMap({ mode, neighbors, hotspots, time, live }: TriageMapPr
           'circle-stroke-width': 1,
           'circle-stroke-color': '#fff',
         },
+      })
+      // Over everything: the selected resident's route out.
+      instance.addSource(ROUTE, { type: 'geojson', data: EMPTY })
+      instance.addLayer({
+        id: `${ROUTE}-casing`,
+        type: 'line',
+        source: ROUTE,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#fff', 'line-width': 8 },
+      })
+      instance.addLayer({
+        id: ROUTE,
+        type: 'line',
+        source: ROUTE,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': ROUTE_COLOR, 'line-width': 5 },
       })
       instance.on('click', LIVE_FIRES, (event) => {
         const feature = event.features?.[0]
@@ -221,17 +276,53 @@ export function TriageMap({ mode, neighbors, hotspots, time, live }: TriageMapPr
     map.current.fitBounds(mode === 'live' ? IBERIA_BOUNDS : DEMO_BOUNDS, { padding: 24, duration: 800 })
   }, [styleReady, mode])
 
+  // The route and the area it avoids belong to the replay; live mode hides them.
+  const showRoute = mode === 'replay' && route?.geometry != null
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    const instance = map.current
+    instance.getSource<GeoJSONSource>(ROUTE)?.setData(
+      showRoute ? { type: 'Feature', geometry: route!.geometry!, properties: {} } : EMPTY,
+    )
+    instance.getSource<GeoJSONSource>(FIRE_AREA)?.setData(
+      showRoute && fireArea ? { type: 'Feature', geometry: fireArea.geometry as GeoJSONGeometry, properties: {} } : EMPTY,
+    )
+    if (showRoute) {
+      const coordinates = route!.geometry!.coordinates
+      const lons = coordinates.map(([lon]) => lon)
+      const lats = coordinates.map(([, lat]) => lat)
+      instance.fitBounds(
+        [
+          [Math.min(...lons), Math.min(...lats)],
+          [Math.max(...lons), Math.max(...lats)],
+        ],
+        { padding: { top: 80, right: 80, bottom: 150, left: 80 }, duration: 800, maxZoom: 14 },
+      )
+    }
+  }, [styleReady, showRoute, route, fireArea])
+
+  // Markers are rebuilt only when what they show changes, so a click is never lost to a poll.
+  const drawn = useRef<Map<string, string>>(new Map())
+
   useEffect(() => {
     if (!map.current) return
     for (const neighbor of neighbors) {
-      markers.current.get(neighbor.id)?.remove()
-      const marker = new Marker({ color: STATUS_COLOR[neighbor.status] })
-        .setLngLat([neighbor.lon, neighbor.lat])
-        .setPopup(new Popup({ offset: 24 }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
-        .addTo(map.current)
-      markers.current.set(neighbor.id, marker)
+      const look = `${neighbor.status}|${neighbor.lon}|${neighbor.lat}|${neighbor.name}`
+      let marker = markers.current.get(neighbor.id)
+      if (marker === undefined || drawn.current.get(neighbor.id) !== look) {
+        marker?.remove()
+        marker = new Marker({ color: STATUS_COLOR[neighbor.status] })
+          .setLngLat([neighbor.lon, neighbor.lat])
+          .setPopup(new Popup({ offset: 24 }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
+          .addTo(map.current)
+        marker.getElement().addEventListener('click', () => onSelect.current(neighbor.id))
+        markers.current.set(neighbor.id, marker)
+        drawn.current.set(neighbor.id, look)
+      }
+      marker.getElement().classList.toggle('selected', neighbor.id === selectedNeighborId)
     }
-  }, [neighbors])
+  }, [neighbors, selectedNeighborId])
 
   return <div ref={container} className="map" />
 }

@@ -25,13 +25,13 @@ Calls are triggered by the prediction, hours ahead, while cell towers still work
 
 Hackathon skeleton. What works today:
 
-- Backend with the five agent tools, an in-memory triage state and a prioritised rescue queue. `report_status` and `get_rescue_queue` are real; fire status and routing return stubs marked `"stub": true`.
+- Backend with the five agent tools, an in-memory triage state and a prioritised rescue queue. `report_status`, `get_rescue_queue` and both routing tools are real; fire status returns a stub marked `"stub": true`.
 - Dashboard with a map of the demo area, resident pins coloured by triage state, live counts and the rescue queue, polling the backend every 2 seconds.
 - Replay of the fire: 7,068 Deepfire satellite hotspots from 22–24 July 2026, cached in `data/`, on a time slider with play and pause. Hotspots are coloured by age and sized by fire radiative power.
-
 - Live mode: a toggle switches the map to Deepfire's active fire clusters right now, refreshed every minute. If Deepfire is down, the page shows a message and the replay keeps working.
+- Evacuation routes: `get_evacuation_route` and `get_rescue_route` are real. Routes avoid the area burned up to the scenario time and send residents to the safe point farthest from the fire. Click a resident on the map to see their route by car or on foot, and the directions the agent reads them. Demo routes are cached in `data/`.
 
-Still to build: the predicted spread and zones at risk, lead time, routing, the voice agent and outbound calls, crew notifications. See [PLAN.md](PLAN.md) and the issues.
+Still to build: the predicted spread and zones at risk, lead time, the voice agent and outbound calls, crew notifications. See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 

@@ -12,6 +12,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `HACKFIRE_DASHBOARD_DIR` | The deployed backend serving the built dashboard | Set in the `Dockerfile` to `/repo/frontend/dist`. Leave empty locally, where `pnpm dev:web` serves it. See [Deployment](deployment.md) |
 | `HACKFIRE_NEIGHBORS_FILE` | Demo with the real registry (#12) | Path to `data/neighbors.local.json`. Empty uses the sample registry |
 | `HACKFIRE_CREW_PHONE` | Crew notification for each new rescue (#9) | A team member's phone, shared privately |
+| `HACKFIRE_SCENARIO_TIME` | The replay moment the calls happen at: routes avoid the fire burned up to then | ISO 8601. Empty means `2026-07-23T18:30:00Z` (20:30 CEST), when the front was ~4 km from La Atalaya. After changing it, run `pnpm data:routes` |
 | `DEEPFIRE_CLIENT_ID` | Hotspots, live fires, spread (#3, #4, #11) | https://app.deepfire.co → Settings → API clients → Create |
 | `DEEPFIRE_CLIENT_SECRET` | Same | Shown once when the API client is created |
 | `SLNG_API_KEY` | Voice agent, calls, SMS (#7, #8, #9, #10) | https://app.slng.ai → Projects → Generate key |
@@ -19,7 +20,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `NEBIUS_API_KEY` | LLM for the agent and the triage (#7) | https://tokenfactory.nebius.com |
 | `NEBIUS_BASE_URL` | Same | `https://api.tokenfactory.nebius.com/v1` |
 | `NEBIUS_MODEL` | Same | A model id from the catalogue; see [Nebius](../services/nebius.md) |
-| `ORS_API_KEY` | Evacuation and rescue routes (#6) | https://openrouteservice.org/dev/#/signup |
+| `ORS_API_KEY` | Evacuation and rescue routes (#6); only needed to plan routes that are not in `data/routes_cache.json` | https://openrouteservice.org/dev/#/signup |
 
 ## Frontend (`frontend/.env.local`)
 
