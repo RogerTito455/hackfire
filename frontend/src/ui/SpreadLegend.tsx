@@ -1,4 +1,4 @@
-import { formatReplayTime, SPREAD_HOUR_COLORS } from './theme'
+import { formatSpanishTime, SPREAD_HOUR_COLORS } from './theme'
 
 interface SpreadLegendProps {
   /** When the forecast in force was issued, epoch ms; null when there is none. */
@@ -13,7 +13,7 @@ export function SpreadLegend({ issuedAt }: SpreadLegendProps) {
       <span className="replay-ramp" style={{ background: `linear-gradient(to right, ${gradient})` }} />
       <span>now → 6 h ahead</span>
       <span className="issued">
-        {issuedAt === null ? 'No forecast at this time' : `Forecast from ${formatReplayTime(issuedAt)}`}
+        {issuedAt === null ? 'No forecast at this time' : `Forecast from ${formatSpanishTime(issuedAt)}`}
       </span>
     </div>
   )

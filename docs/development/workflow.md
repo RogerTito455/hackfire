@@ -32,7 +32,7 @@ Extensions (#17 Norma, #18 Vonage, #19 Devin) start only after checkpoint 2 at 1
 
 ## Branches and commits
 
-- Short-lived branch per slice: `slice-2-hotspot-replay`, `fix-cors`. Merge to `main` the same afternoon; `main` deploys.
+- Short-lived branch per slice: `slice-2-hotspot-replay`, `fix-cors`. Merge to `main` the same afternoon; `main` deploys. Every deploy restarts the backend and wipes the triage state, so nobody pushes during the demo. See [Deployment](../setup/deployment.md).
 - Commit messages in English, imperative mood: "Render hotspots as a MapLibre layer".
 - Reference the issue: `Closes #3` in the pull request, or `Refs #3` for partial work.
 - `pnpm check` passes before every commit.

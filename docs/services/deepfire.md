@@ -1,7 +1,7 @@
 # Deepfire
 
 **Used for:** step 1 (hotspots, live fires) and step 2 (predicted spread). Slices 2, 3 and 10 (#3, #4, #11).
-**Status:** hotspots working (7,068 cached for the replay, served at `GET /api/hotspots`); replay spread done with our own cone, not with this API (see below); simulation for live mode not started
+**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`); replay spread done with our own cone, not with this API (see below); the Deepfire simulation is not used yet
 **Owners:** Bryan (hotspots, live mode), Rosa (spread)
 
 ## Access
@@ -26,6 +26,12 @@ pnpm data:hotspots     # writes data/hotspots_2026-07-22_24.geojson
 ```
 
 First run on 2026-09-19: about a minute, 7,068 hotspots, one cluster, no 3-hour window near the cap. The pipeline keeps only what the replay needs (`observed_at`, `fire_radiative_power`, `confidence`, `source`, `cluster_id`), rounds coordinates to 5 decimals and sorts by time: 2.2 MB on disk, ~250 KB gzipped over the wire. Sources: MTG (geostationary, every 10 minutes) 62%, VIIRS 29%, MODIS 5%, Sentinel-3 5%.
+
+### Live mode
+
+`backend/app/live.py` asks for active clusters (`filter=active = true`) over `-9.6,35.8,4.4,44.0`, which covers Iberia plus bits of southern France and northern Algeria. Clusters are bare points: `id`, `first_observed`, `last_observed`, `active`, with no country and no name. On 2026-09-19 at 16:17 CEST there were 116, returned in 0.6 s.
+
+The backend caches the answer for 60 s and reuses one token for the life of the process. If Deepfire fails, it serves the last good answer marked `stale: true`; with nothing cached, it returns a 503, which the dashboard shows as a message. The dashboard polls every 60 s, only while live mode is on.
 
 ### Spread simulation
 

@@ -86,7 +86,7 @@ It is computed from satellite data only. It claims nothing about when the author
 | LLM | Nebius Token Factory (OpenAI-compatible API) | Structured extraction from the call, and the agent's reasoning |
 | Backend | FastAPI (Python) | One service; state in SQLite or in memory |
 | Dashboard | React + MapLibre GL or Leaflet | Updates by polling every 2 s, or SSE |
-| Deployment | Frontend on Vercel, backend on Fly / Railway / Render | The demo runs against the public URL |
+| Deployment | One Railway service: FastAPI serves the API, the agent tools and the built dashboard, from the root `Dockerfile` | The demo runs against the public URL. Why not Vercel or Cloudflare Workers: `docs/setup/deployment.md` |
 
 ### Agent tool contract
 

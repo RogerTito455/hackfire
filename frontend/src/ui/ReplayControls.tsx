@@ -1,6 +1,6 @@
 import type { LoadStatus } from '../hooks/useFireReplay'
 import { MINUTE, type TimeRange } from '../domain/hotspots'
-import { formatReplayTime, HOTSPOT_AGE_COLORS } from './theme'
+import { formatSpanishTime, HOTSPOT_AGE_COLORS } from './theme'
 
 interface ReplayControlsProps {
   status: LoadStatus
@@ -45,7 +45,7 @@ export function ReplayControls({
       </button>
       <div className="replay-body">
         <div className="replay-head">
-          <strong>{formatReplayTime(time)}</strong>
+          <strong>{formatSpanishTime(time)}</strong>
           <span>{observedCount.toLocaleString('en-GB')} hotspots so far</span>
         </div>
         <input

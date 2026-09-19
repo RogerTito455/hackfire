@@ -1,0 +1,115 @@
+# HackFire resident agent (slice 6, issue #7).
+#
+# One outbound call to one registered resident of a zone the predicted fire is
+# heading for: say who is calling, give the fire status and the exit route, ask
+# three questions, and record the answer with report_status so the resident's
+# pin changes on the coordinator's dashboard.
+#
+# Prerequisites, placeholders and open questions: ../README.md.
+version: 1
+
+# Deploys as `hackfire-resident-slng`: the package name joined to the target
+# name. An SLNG name is unique per organisation and a push replaces the agent
+# it matches, so rename it here only on purpose.
+name: hackfire-resident
+entry_agent: evacuation_assistant
+
+agents:
+  evacuation_assistant:
+    # Spanish on purpose: the agent only speaks Castilian Spanish, and a prompt
+    # in the language of the call keeps the model from drifting into English.
+    instructions: instructions.md
+    think: reasoning
+    speak: elena
+    tools:
+      - get_fire_status
+      - get_evacuation_route
+      - report_status
+      - end_call
+
+# No `secrets:` block: on the slng target the package reads no environment
+# variable. `unmute deploy` takes SLNG_API_KEY from the shell, and SLNG holds
+# the Nebius key in its BYOK vault. See .env.example.
+
+models:
+  think:
+    reasoning:
+      description: Nebius Token Factory model, registered in SLNG as a BYOK LLM client model
+      # PLACEHOLDER(voice): no Nebius model is chosen yet, and SLNG does not
+      # document the model string a BYOK client model is selected by. Register
+      # Nebius in SLNG's BYOK vault first (../README.md), then write here the
+      # exact model string the dashboard's Think dropdown or the agent's JSON
+      # shows for it.
+      #
+      # No `provider:` on purpose. The slng driver sends `provider/model`, but
+      # sends `model` exactly as written when there is no provider, which is
+      # what a BYOK name needs. The Nebius key never goes in this package or in
+      # .env: SLNG reads it from its own BYOK vault.
+      model: "PLACEHOLDER-nebius-model-id"
+  speak:
+    elena:
+      description: Fish S2.1 Pro hosted by SLNG, Castilian voice Elena
+      provider: slng
+      model: "slng/fish/tts:s2.1-pro"
+      voice: "566359628f6a4d5fabf902f6f64ecec1"
+  listen:
+    transcriber:
+      description: Soniox real-time v5 through SLNG, Spanish
+      provider: slng
+      model: "soniox/speech-ai:rt-v5"
+      language: es
+
+# Call-start values. The call campaign (#8) sends all four as `arguments` when
+# it dispatches a call.
+#
+# TEST DEFAULTS(voice): the defaults are sample resident n01 from
+# data/neighbors.sample.json, only because the dashboard's Test agent panel
+# cannot pass arguments and SLNG refuses a session missing a required
+# variable. A real dispatch must always send all four, or the call reports on
+# n01. Remove the defaults once calls come from the campaign.
+variables:
+  neighbor_id:
+    type: str
+    source: call_start
+    default: n01
+    description: The resident's id in the HackFire registry. Never spoken.
+  resident_name:
+    type: str
+    source: call_start
+    default: Resident 01
+    description: The resident's name as it should be said aloud, spoken in the greeting.
+  address:
+    type: str
+    source: call_start
+    default: PLACEHOLDER street 1, La Atalaya, El Tiemblo
+    description: The resident's home address, as the registry holds it.
+  zone:
+    type: str
+    source: call_start
+    default: la-atalaya
+    description: The at-risk zone id the backend knows. An identifier, never spoken.
+
+tools:
+  - get_fire_status
+  - get_evacuation_route
+  - report_status
+  - end_call
+
+conversation:
+  greeting:
+    speaks_first: agent
+    text: "Hola, buenas. ¿Hablo con {{resident_name}}?"
+  interruption:
+    enabled: true
+
+# Browser audio only. On SLNG a package declares no carrier: outbound phone
+# calls use a SIP trunk attached to the deployed agent (see ../README.md).
+channels:
+  web:
+    kind: realtime_audio
+
+# A guess for the demo, not a measurement: a campaign of eight to ten residents.
+capacity:
+  peak_sessions: 5
+  max_sessions: 10
+  avg_session_duration: 3m

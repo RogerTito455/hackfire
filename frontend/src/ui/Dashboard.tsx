@@ -1,10 +1,17 @@
 import type { FireForecast } from '../hooks/useFireForecast'
 import type { FireReplay } from '../hooks/useFireReplay'
 import type { LeadTimeView } from '../hooks/useLeadTime'
+import type { LiveMode } from '../hooks/useLiveFires'
+import type { MapMode } from '../hooks/useMapMode'
+import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Triage } from '../hooks/useTriage'
-import { ReplayControls } from './ReplayControls'
+import { CrewAlerts } from './CrewAlerts'
 import { LeadTimeCard } from './LeadTimeCard'
+import { LiveStatus } from './LiveStatus'
+import { ModeToggle } from './ModeToggle'
+import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
+import { RoutePanel } from './RoutePanel'
 import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
@@ -14,13 +21,27 @@ import './dashboard.css'
 interface DashboardProps {
   triage: Triage
   replay: FireReplay
+  mode: MapMode
+  onModeChange: (mode: MapMode) => void
+  live: LiveMode
+  selection: SelectedRoute
   forecast: FireForecast
   leadTime: LeadTimeView
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
-export function Dashboard({ triage, replay, forecast, leadTime }: DashboardProps) {
-  const { neighbors, rescues, counts, online, reset } = triage
+export function Dashboard({
+  triage,
+  replay,
+  mode,
+  onModeChange,
+  live,
+  selection,
+  forecast,
+  leadTime,
+}: DashboardProps) {
+  const { neighbors, rescues, alerts, counts, online, reset } = triage
+  const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   return (
     <div className="layout">
       <aside className="panel">
@@ -36,18 +57,35 @@ export function Dashboard({ triage, replay, forecast, leadTime }: DashboardProps
           <StatusCounts counts={counts} />
         </section>
 
-        <section>
-          <h2>Lead time</h2>
-          <LeadTimeCard view={leadTime} />
-        </section>
+        {mode === 'replay' && (
+          <>
+            <section>
+              <h2>Lead time</h2>
+              <LeadTimeCard view={leadTime} />
+            </section>
+
+            <section>
+              <h2>Where the fire is heading</h2>
+              {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
+              <ZonesAtRisk
+                status={forecast.status}
+                zones={forecast.zonesAtRisk}
+                hasForecast={forecast.issuedAt !== null}
+              />
+            </section>
+          </>
+        )}
 
         <section>
-          <h2>Where the fire is heading</h2>
-          {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
-          <ZonesAtRisk
-            status={forecast.status}
-            zones={forecast.zonesAtRisk}
-            hasForecast={forecast.issuedAt !== null}
+          <h2>Evacuation route</h2>
+          <RoutePanel
+            neighbor={selected}
+            mode={selection.mode}
+            route={selection.route}
+            status={selection.status}
+            avoidsUntil={selection.fireArea?.properties.until ?? null}
+            onModeChange={selection.setMode}
+            onClose={() => selection.select(null)}
           />
         </section>
 
@@ -56,27 +94,49 @@ export function Dashboard({ triage, replay, forecast, leadTime }: DashboardProps
           <RescueQueue rescues={rescues} />
         </section>
 
+        <section>
+          <h2>Crew alerts</h2>
+          <CrewAlerts
+            alerts={alerts}
+            onShowRoute={(neighborId) => {
+              onModeChange('replay')
+              selection.showRescue(neighborId)
+            }}
+          />
+        </section>
+
         <button type="button" className="reset" onClick={reset}>
           Reset demo
         </button>
       </aside>
       <div className="map-area">
         <TriageMap
+          mode={mode}
           neighbors={neighbors}
           hotspots={replay.hotspots}
           time={replay.time}
+          live={live.data}
+          selectedNeighborId={selection.neighborId}
+          route={selection.route}
+          fireArea={selection.fireArea}
+          onSelectNeighbor={selection.select}
           spread={forecast.spread}
           zones={forecast.zonesAtRisk}
         />
-        <ReplayControls
-          status={replay.status}
-          range={replay.range}
-          time={replay.time}
-          observedCount={replay.observedCount}
-          playing={replay.playing}
-          onTimeChange={replay.setTime}
-          onTogglePlay={replay.togglePlay}
-        />
+        <ModeToggle mode={mode} onChange={onModeChange} />
+        {mode === 'replay' ? (
+          <ReplayControls
+            status={replay.status}
+            range={replay.range}
+            time={replay.time}
+            observedCount={replay.observedCount}
+            playing={replay.playing}
+            onTimeChange={replay.setTime}
+            onTogglePlay={replay.togglePlay}
+          />
+        ) : (
+          <LiveStatus {...live} />
+        )}
       </div>
     </div>
   )

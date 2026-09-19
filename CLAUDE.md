@@ -36,8 +36,10 @@ frontend/src/services/     Backend client — the only place that knows URLs and
 frontend/src/hooks/        State and polling; returns plain data
 frontend/src/ui/           Presentational components, theme.ts, CSS
 frontend/src/App.tsx       Composition root only: hook → UI
+voice/                     Unmute packages for the SLNG voice agents; `unmute validate` inside each
 data/                      Static demo data (registry, cached hotspots and spread)
 docs/                      Setup, one page per service, workflow, findings log. Update it as you go
+Dockerfile                 The one deployed image, backend plus built dashboard (docs/setup/deployment.md)
 ```
 
 ## Commands
@@ -51,6 +53,7 @@ pnpm data:hotspots   # download Deepfire hotspots into data/
 pnpm data:zones      # download towns, care homes, schools, health centres and roads from OSM into data/
 pnpm data:spread     # rebuild the predicted spread from the cached hotspots (no network)
 pnpm data:lead-time  # recompute La Atalaya's lead time from the cached files (no network)
+pnpm data:routes     # plan and cache every demo route (openrouteservice) into data/
 ```
 
 Run `pnpm check` before every commit.

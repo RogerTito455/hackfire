@@ -53,6 +53,7 @@ Project skills live in `.claude/skills/` and load automatically. Claude picks on
 | `maplibre-source-wiring` | [maplibre/maplibre-agent-skills](https://github.com/maplibre/maplibre-agent-skills) | A layer that does not render, `source-layer` mismatches, `setFeatureState` doing nothing |
 | `agent-prompt` | [slng-ai/skills](https://github.com/slng-ai/skills) | Drafting the greeting, system prompt, variables and tools for the SLNG Agent Builder (#7) |
 | `agents` | [slng-ai/skills](https://github.com/slng-ai/skills) | Creating SLNG agents and dispatching calls through the API (#8, #10). Reads `VOICEAI_API_KEY` |
+| `unmute`, `unmute-deploy`, `unmute-manifest` | The `unmute` CLI, v0.5.5 | Writing and validating the voice agents in `voice/` (`unmute`), pushing them to SLNG (`unmute-deploy`). `unmute-manifest` is for organisation contracts, which we do not use |
 
 Built into Claude Code and worth using: `/code-review` on a branch before merging, and `/simplify` after a slice lands.
 
@@ -69,10 +70,11 @@ pnpm dlx skills@latest remove -s <skill> -y                                     
 
 Commit `.claude/skills/` and `skills-lock.json` together. Skills run with Claude's full permissions: read a skill's `SKILL.md` before adding it.
 
+The Unmute skills are the exception: they ship inside the `unmute` binary, not through the `skills` CLI, so they are not in `skills-lock.json`. The text lives in `.agents/skills/unmute*/` and `.claude/skills/unmute*/SKILL.md` only points there. After updating the CLI, refresh them from the repo root with `unmute skill install` (it refuses to overwrite local edits without `--force`), and commit both folders.
+
 ### Installed later, only when needed
 
 - **`norma-workflow`** (from [qualityclouds/norma-mcp](https://github.com/qualityclouds/norma-mcp)): makes Claude run Norma's checks on *every* file it touches while the `norma` server is connected. Right for extension 1 at 22:00; it would slow the core build before then. See [Norma](../services/norma.md).
-- **`unmute`**: `unmute skill install`, only if the voice track adopts Unmute. See [SLNG](../services/slng.md#unmute-the-agent-as-files-in-the-repo).
 
 ### What we chose not to install, and why
 

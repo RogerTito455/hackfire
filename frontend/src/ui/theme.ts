@@ -45,7 +45,7 @@ const replayTimeFormat = new Intl.DateTimeFormat('en-GB', {
   timeZoneName: 'short',
 })
 
-export function formatReplayTime(epochMs: number): string {
+export function formatSpanishTime(epochMs: number): string {
   return replayTimeFormat.format(epochMs)
 }
 
@@ -75,8 +75,8 @@ export const ZONE_KIND_LABEL: Record<ZoneKind, string> = {
   road: 'Road',
 }
 
-/** "45 min", "4 h" or "4 h 30 min". */
-export function formatDuration(minutes: number): string {
+/** "45 min", "4 h" or "4 h 30 min", from minutes. (formatDuration below takes seconds.) */
+export function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} min`
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
@@ -85,5 +85,42 @@ export function formatDuration(minutes: number): string {
 
 /** "now" or a duration: how the panel says when the fire arrives. */
 export function formatMinutesToImpact(minutes: number): string {
-  return minutes <= 0 ? 'now' : formatDuration(minutes)
+  return minutes <= 0 ? 'now' : formatMinutes(minutes)
+}
+
+// Live fires: colour by hours since the last detection, radius by hours burning.
+export const LIVE_RECENCY_COLORS: readonly (readonly [hours: number, color: string])[] = [
+  [0, '#ff5a1f'],
+  [6, '#d93025'],
+  [24, '#7a2a1d'],
+]
+
+export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: number])[] = [
+  [0, 4],
+  [6, 7],
+  [24, 10],
+  [72, 14],
+]
+
+export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const
+
+export const ROUTE_KIND_LABEL = { car: 'By car', walking: 'On foot', rescue: 'Crew route' } as const
+
+export const ROUTE_COLOR = '#1a73e8'
+export const FIRE_AREA_COLOR = '#d93025'
+
+export function formatDistance(metres: number): string {
+  return metres < 1000 ? `${Math.round(metres / 10) * 10} m` : `${(metres / 1000).toFixed(1)} km`
+}
+
+export function formatDuration(seconds: number): string {
+  const minutes = Math.max(1, Math.round(seconds / 60))
+  return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`
+}
+
+const clockFormat = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+/** Wall-clock time for things happening now, such as crew alerts. */
+export function formatClock(iso: string): string {
+  return clockFormat.format(Date.parse(iso))
 }

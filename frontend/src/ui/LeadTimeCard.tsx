@@ -1,5 +1,5 @@
 import type { LeadTimeView } from '../hooks/useLeadTime'
-import { formatDuration, formatReplayTime } from './theme'
+import { formatMinutes, formatSpanishTime } from './theme'
 
 interface LeadTimeCardProps {
   view: LeadTimeView
@@ -17,12 +17,12 @@ export function LeadTimeCard({ view }: LeadTimeCardProps) {
   return (
     <div className="lead">
       <p className="lead-figure">
-        <strong>{formatDuration(leadTime.minutes)}</strong> lead time
+        <strong>{formatMinutes(leadTime.minutes)}</strong> lead time
       </p>
       <p>
-        {leadTime.zone_name} was flagged at {formatReplayTime(Date.parse(leadTime.flagged_at))}, using only
+        {leadTime.zone_name} was flagged at {formatSpanishTime(Date.parse(leadTime.flagged_at))}, using only
         the hotspots seen up to then. In the recorded satellite data the first hotspot within{' '}
-        {leadTime.radius_km} km of it came at {formatReplayTime(Date.parse(leadTime.reached_at))}.
+        {leadTime.radius_km} km of it came at {formatSpanishTime(Date.parse(leadTime.reached_at))}.
       </p>
       <details>
         <summary>How it is computed</summary>

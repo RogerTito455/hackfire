@@ -1,6 +1,6 @@
 """Deepfire API client. Request shapes follow https://docs.deepfire.co/llms.txt.
 
-Not yet run against the live API: nobody on the team had a token when it was written.
+Hotspots and active clusters verified against the live API on 2026-09-19.
 """
 
 from datetime import datetime
@@ -28,6 +28,17 @@ def get_token(client: httpx.Client) -> str:
     )
     response.raise_for_status()
     return response.json()["access_token"]
+
+
+_token: str | None = None
+
+
+def cached_token(client: httpx.Client) -> str:
+    """A token reused for the life of the process: they last 180 days."""
+    global _token
+    if _token is None:
+        _token = get_token(client)
+    return _token
 
 
 def _items(client: httpx.Client, token: str, collection: str, bbox: str, cql: str) -> list[dict]:

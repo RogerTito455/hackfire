@@ -81,3 +81,14 @@ class Rescue(BaseModel):
 
 class RescueRouteRequest(BaseModel):
     rescue_id: str
+
+
+class CrewAlert(BaseModel):
+    """What the fire crew is told when a resident becomes needs_rescue."""
+
+    rescue_id: str
+    neighbor_id: str
+    message: str
+    link: str = Field(description="Opens the dashboard on this rescue with the crew's route drawn")
+    created_at: datetime
+    sent_by_sms: bool = Field(default=False, description="False: shown on the dashboard only")

@@ -1,11 +1,15 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 
-from . import impact, replay
+from . import evacuation, impact, live, replay
 from .config import settings
 from .models import (
+    CrewAlert,
     EvacuationRouteRequest,
     FireStatus,
     FireStatusRequest,
@@ -100,6 +104,45 @@ def set_replay_time(request: ReplayTimeRequest) -> dict:
     return {"at": request.at}
 
 
+@app.get("/api/live/fires")
+def list_live_fires() -> dict:
+    """Deepfire's active fire clusters over Iberia, cached for a minute."""
+    try:
+        return live.active_fires()
+    except live.LiveUnavailable as error:
+        raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
+
+
+@app.get("/api/routes/{neighbor_id}")
+def neighbor_route(neighbor_id: str, mode: TravelMode = TravelMode.CAR) -> Route:
+    """The resident's evacuation route, for the dashboard to draw."""
+    neighbor = state.get(neighbor_id)
+    if neighbor is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    return _route_or_503(lambda: evacuation.evacuation_route(neighbor, mode))
+
+
+@app.get("/api/rescue-routes/{neighbor_id}")
+def neighbor_rescue_route(neighbor_id: str) -> Route:
+    """The crew's route from the fire station to the resident, for the dashboard to draw."""
+    neighbor = state.get(neighbor_id)
+    if neighbor is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    return _route_or_503(lambda: evacuation.rescue_route(neighbor))
+
+
+@app.get("/api/alerts")
+def list_alerts() -> list[CrewAlert]:
+    """Crew alerts for new rescues, newest first."""
+    return state.alerts()
+
+
+@app.get("/api/fire-area")
+def fire_area() -> dict:
+    """The area routes avoid: everything burned up to the scenario time."""
+    return evacuation.fire_area()
+
+
 @app.post("/api/reset")
 def reset() -> dict:
     """Reload the registry. Used to restart the demo."""
@@ -143,16 +186,20 @@ def _fire_summary(zone: str, minutes: int | None) -> str:
     return f"The fire is predicted to reach {name} in about {_spoken_span(minutes)}."
 
 
+def _route_or_503(plan) -> Route:
+    try:
+        return plan()
+    except evacuation.RoutingUnavailable as error:
+        raise HTTPException(status_code=503, detail="Routing is unavailable right now") from error
+
+
 @app.post("/tools/get_evacuation_route")
 def get_evacuation_route(request: EvacuationRouteRequest) -> Route:
-    # TODO(map): call openrouteservice with avoid_polygons set to the predicted
-    # fire polygon, clipped to the 15 km demo box (ORS limit: 20 km extent).
-    profile = "by car" if request.mode == TravelMode.CAR else "on foot"
-    return Route(
-        mode=request.mode,
-        spoken_directions=f"Route {profile} from {request.address} is not available yet.",
-        stub=True,
-    )
+    """Route from a registered resident's home to the safe point farthest from the fire."""
+    neighbor = state.find_by_address(request.address)
+    if neighbor is None:
+        raise HTTPException(status_code=404, detail=f"Address not in the registry: {request.address}")
+    return _route_or_503(lambda: evacuation.evacuation_route(neighbor, request.mode))
 
 
 @app.post("/tools/report_status")
@@ -160,7 +207,9 @@ def report_status(request: ReportStatusRequest) -> Neighbor:
     neighbor = state.report(request)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
-    # TODO(voice): when status is needs_rescue, notify the fire crew by SMS or call.
+    # New rescues become crew alerts in state (shown on the dashboard).
+    # TODO(voice): also send each new alert to settings.crew_phone by SMS through
+    # providers/voice.notify_crew, once SLNG/Twilio can send messages, and set sent_by_sms.
     return neighbor
 
 
@@ -174,9 +223,23 @@ def get_rescue_route(request: RescueRouteRequest) -> Route:
     rescue = next((r for r in state.rescue_queue() if r.rescue_id == request.rescue_id), None)
     if rescue is None:
         raise HTTPException(status_code=404, detail=f"Unknown rescue {request.rescue_id}")
-    # TODO(map): same routing call as get_evacuation_route, from the crew base.
-    return Route(
-        mode=TravelMode.CAR,
-        spoken_directions=f"Route to {rescue.neighbor.address} is not available yet.",
-        stub=True,
-    )
+    return _route_or_503(lambda: evacuation.rescue_route(rescue.neighbor))
+
+
+# --- Dashboard ---------------------------------------------------------------
+# Deployed, this process also serves the built dashboard, which then calls the API on its own
+# origin. Only the dashboard's own paths: a catch-all mount at "/" would swallow the API's 404s
+# and trailing-slash redirects. See docs/setup/deployment.md.
+
+if settings.dashboard_dir:
+    dashboard_dir = Path(settings.dashboard_dir)
+    app.mount("/assets", StaticFiles(directory=dashboard_dir / "assets"), name="dashboard-assets")
+
+    @app.get("/", include_in_schema=False)
+    def dashboard() -> FileResponse:
+        return FileResponse(dashboard_dir / "index.html")
+
+    # Vite copies frontend/public/ to the root of the build; each file there needs a route here.
+    @app.get("/favicon.svg", include_in_schema=False)
+    def favicon() -> FileResponse:
+        return FileResponse(dashboard_dir / "favicon.svg")

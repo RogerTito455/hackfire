@@ -54,7 +54,7 @@ export function useFireForecast(time: number | null): FireForecast {
   }, [])
 
   // The replay opens on its first hotspot, which is before any forecast: until the coordinator
-  // moves the slider the backend keeps answering for the demo moment (HACKFIRE_DEMO_TIME).
+  // moves the slider the backend keeps answering for the demo moment (HACKFIRE_SCENARIO_TIME).
   const openedAt = useRef<number | null>(null)
   const moved = useRef(false)
   const lastSync = useRef(0)

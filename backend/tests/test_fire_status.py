@@ -70,7 +70,7 @@ def test_there_is_no_forecast_before_the_replay_starts_issuing_them() -> None:
     assert "no forecast" in status["summary"].lower()
 
 
-def test_before_the_dashboard_sets_a_time_the_agent_answers_for_the_demo_moment() -> None:
+def test_before_the_dashboard_sets_a_time_the_agent_answers_for_the_scenario_moment() -> None:
     assert fire_status("la-atalaya")["at_risk"] is True
 
 
