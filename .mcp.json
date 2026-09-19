@@ -8,10 +8,6 @@
       "type": "http",
       "url": "https://docs.slng.ai/mcp"
     },
-    "nebius-docs": {
-      "type": "http",
-      "url": "https://docs.tokenfactory.nebius.com/mcp"
-    },
     "deepwiki": {
       "type": "http",
       "url": "https://mcp.deepwiki.com/mcp"

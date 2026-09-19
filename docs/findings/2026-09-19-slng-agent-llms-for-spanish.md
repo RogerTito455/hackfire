@@ -20,7 +20,7 @@ Not verified. The documented ids lack the `:latest` suffix the API now requires,
 
 ## What we do about it
 
-For #7: the team dropped Nebius for the agent, and it runs on Nemotron Super 3. Nano 3 is the switch if turns feel slow once we measure them (#14). Our Nebius code (`providers/llm.py`, `pnpm eval:triage`) stays for a key, if one turns up.
+For #7: the team dropped Nebius for the agent, and it runs on Nemotron Super 3. Nano 3 is the switch if turns feel slow once we measure them (#14). Later the same day the team dropped Nebius from the whole stack: `providers/llm.py` and `pnpm eval:triage` now reach this same model through SLNG's Context Router.
 
 ## Sources
 

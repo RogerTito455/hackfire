@@ -1,8 +1,9 @@
 """How the resident agent's model classifies what a resident says, without voice.
 
-The real prompt (voice/resident/instructions.md) and the real report_status description go to
-Nebius; each case is a call that has reached the three questions, and the model must record the
-right triage status. Not part of `pnpm check`: it calls Nebius, and a model's answer can vary.
+The real prompt (voice/resident/instructions.md) and the real report_status description go to the
+model the agent thinks with, through SLNG's Context Router; each case is a call that has reached the
+three questions, and the model must record the right triage status. Not part of `pnpm check`: it
+calls SLNG, and a model's answer can vary.
 Run it with `pnpm eval:triage` after changing the prompt, the tool description or the model.
 """
 
@@ -12,14 +13,12 @@ import httpx
 import pytest
 import yaml
 
-from app.config import REPO_ROOT, settings
+from app.config import REPO_ROOT
 from app.providers import llm
 
 AGENT_DIR = REPO_ROOT / "voice" / "resident"
 
-pytestmark = pytest.mark.skipif(
-    not (settings.nebius_api_key and settings.nebius_model), reason="needs NEBIUS_API_KEY and NEBIUS_MODEL"
-)
+pytestmark = pytest.mark.skipif(not llm.configured(), reason="needs SLNG_API_KEY")
 
 
 def _system_prompt() -> str:
@@ -84,7 +83,9 @@ def _call_up_to_the_answer(answer: str) -> list[dict]:
 )
 def test_the_model_classifies_the_answer(answer: str, expected: str) -> None:
     with httpx.Client(timeout=60) as client:
-        message = llm.complete(client, _call_up_to_the_answer(answer), tools=TOOLS, temperature=0)
+        message = llm.complete(
+            client, _call_up_to_the_answer(answer), agent_id="hackfire-eval-triage", tools=TOOLS, temperature=0
+        )
 
     calls = [c["function"] for c in message.get("tool_calls") or []]
     reports = [json.loads(c["arguments"]) for c in calls if c["name"] == "report_status"]

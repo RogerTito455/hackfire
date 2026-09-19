@@ -1,7 +1,7 @@
 # SLNG
 
 **Used for:** step 3 (the agent calls residents) and step 4 (crew notification, the coordinator's voice query). Slices 6–9 (#7, #8, #9, #10), latency numbers (#14).
-**Status:** in progress. The three API Request tools the resident agent needs are published in SLNG. The agent itself (`voice/resident/`) validates but is not deployed: it waits on a Nebius key. `backend/app/providers/voice.py` is a stub
+**Status:** working. The resident agent (`voice/resident/`) is deployed on SLNG with its three API Request tools, and a real browser conversation changed a pin on the deployed dashboard (checkpoint 1, #7). No phone number yet (#8). `backend/app/providers/voice.py` is a stub
 **Owner:** Roger
 
 ## Access
@@ -22,10 +22,10 @@ The Agent Builder can do everything slice 6 needs:
 
 - **Call our five `/tools` endpoints** as "API Request" tools. The URL must be **HTTPS**, so the agent talks to the **deployed** backend (#2), or to a tunnel to your laptop. Auth: none, bearer, or HMAC through the Vault. Timeout 1–60 s. A tool must pass a test before it can be published and attached.
 - **Attach the Deepfire MCP** over Streamable HTTP or SSE.
-- **Use Nebius as the LLM** through bring-your-own-key ("LLM providers" tab): model id, `NEBIUS_API_KEY`, endpoint `https://api.tokenfactory.nebius.com/v1`. Nebius is not named in SLNG's docs; it should work as an OpenAI-compatible endpoint, but that is not yet tested.
+- **Think with an LLM SLNG serves**: for Spanish in its EU regions that means NVIDIA Nemotron Super 3 or Nano 3 ([finding](../findings/2026-09-19-slng-agent-llms-for-spanish.md)). The backend reaches the same model through SLNG's OpenAI-compatible Context Router (`providers/llm.py`). The team dropped Nebius from the stack on 2026-09-19.
 - `tool_refs` and `mcp_refs` cannot be changed with `PATCH`; recreate or edit in the UI.
 
-If by the end of the timebox it cannot call our tools or route to Nebius, switch to plan B: our own STT → LLM → TTS pipeline on the SLNG gateway.
+If by the end of the timebox it cannot call our tools, switch to plan B: our own STT → LLM → TTS pipeline on the SLNG gateway.
 
 ## Outbound calls (#8)
 
@@ -80,7 +80,7 @@ What writing it taught us (v0.5.5, released 2026-09-18, so expect changes):
 | | SLNG target | Pipecat target |
 |---|---|---|
 | Our `/tools` endpoints | **Refused as `webhook:` tools.** Create them as API Request tools in the SLNG dashboard first, then reference them by name as hosted tools (`slng: report_status`). `inject:` pins an argument to a call variable | Allowed as `webhook:` tools. Hosted tools only compile with a mirror fetched by `unmute pull` |
-| Nebius as the LLM | **Not configured in the package.** The Context Router binding (`openai-compat` upstream, key from `NEBIUS_API_KEY`) is refused on this target. Register Nebius in SLNG's BYOK vault as an LLM provider, then name that model in `agent.yaml`. Which string names it is still open | `provider: nebius` with `endpoint_env: NEBIUS_BASE_URL`, reading `NEBIUS_API_KEY`; or the Context Router with an `openai-compat` upstream |
+| The LLM | One SLNG serves, named in `agent.yaml` without a `provider:` (`bedrock-mantle/nvidia.nemotron-super-3-120b:latest`) | `provider: slng` through the Context Router, reading `SLNG_API_KEY` |
 | Region | `deployment_region` in `targets.yaml`: one of `eu-west`, `eu-north`, … | `params.world_part` on SLNG speech models picks the gateway |
 | Turn detection | SLNG's own; a `turn:` model is refused | A `turn:` model is required |
 | Deepfire MCP | Validates with an explicit `mcp.tools` list, once the server is registered in the SLNG organisation. Left out of the resident agent; see `voice/README.md` | Allowed |
@@ -92,7 +92,7 @@ What writing it taught us (v0.5.5, released 2026-09-18, so expect changes):
 The route that keeps the 45-minute timebox honest:
 
 1. Create `get_fire_status`, `get_evacuation_route` and `report_status` as API Request tools in the SLNG dashboard, pointing at the deployed backend (#2). The coordinator agent (#10) will need the other two.
-2. Register Nebius in the BYOK vault and put its model name in `voice/resident/agent.yaml`.
+2. Name an LLM SLNG serves in `voice/resident/agent.yaml`.
 3. `unmute deploy` to the SLNG target, and check the agent from the SLNG dashboard's browser test. That is checkpoint 1 (#7).
 4. If the SLNG target fights back when the timebox runs out, build the Pipecat variant. `unmute dev` gives a browser voice loop that doubles as the push-to-talk fallback. It still beats hand-writing an STT → LLM → TTS pipeline.
 

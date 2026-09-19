@@ -12,7 +12,7 @@ import json
 import httpx
 from pydantic import BaseModel, Field, ValidationError
 
-from .config import REPO_ROOT, settings
+from .config import REPO_ROOT
 from .models import ReportStatusRequest, TriageStatus
 from .providers import llm
 
@@ -64,12 +64,12 @@ class ClassifierUnavailable(Exception):
 
 
 def available() -> bool:
-    return bool(settings.nebius_api_key and settings.nebius_model)
+    return llm.configured()
 
 
 def classify(text: str) -> Classification:
     if not available():
-        raise ClassifierUnavailable("NEBIUS_API_KEY and NEBIUS_MODEL are not set")
+        raise ClassifierUnavailable("SLNG_API_KEY is not set")
     schema = Classification.model_json_schema()
     schema["properties"]["status"] = {"type": "string", "enum": ["evacuating", "no_answer", "needs_rescue"]}
     try:
@@ -77,6 +77,7 @@ def classify(text: str) -> Classification:
             content = llm.chat(
                 client,
                 [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": text}],
+                agent_id="hackfire-text-triage",
                 temperature=0,
                 response_format={
                     "type": "json_schema",

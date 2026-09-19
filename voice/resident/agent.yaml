@@ -28,14 +28,13 @@ agents:
       - end_call
 
 # No `secrets:` block: on the slng target the package reads no environment
-# variable. `unmute deploy` takes SLNG_API_KEY from the shell, and SLNG holds
-# the Nebius key in its BYOK vault. See .env.example.
+# variable. `unmute deploy` takes SLNG_API_KEY from the shell. See .env.example.
 
 models:
   think:
     reasoning:
       description: NVIDIA Nemotron Super 3 (120B) on Bedrock, served by SLNG without a key of our own
-      # The team dropped Nebius for the agent on 2026-09-19. For Spanish in an EU region, SLNG's
+      # SLNG serves the LLM; the team dropped Nebius on 2026-09-19. For Spanish in an EU region, SLNG's
       # agents accept only the two Nemotron models, and only with the `:latest` suffix; Groq's
       # gpt-oss-120b is refused for `es` in eu-north and eu-west. Super over Nano 3 (30B): the
       # triage must be right before it is fast. Nano is the switch if a turn feels slow (#14).

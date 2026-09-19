@@ -2,7 +2,7 @@
 
 HackBarna 2026 · 19–20 September · Norrsken House Barcelona
 Main challenge: **Norrsken / Deepfire "AI for Wildfire", track 4 "Values at risk"**
-Core sponsors: **SLNG** (voice) and **Nebius Token Factory** (LLM)
+Core sponsor: **SLNG** (voice, and the LLM through it). Nebius Token Factory, the other core sponsor, was dropped from the stack on 2026-09-19
 Team: 2 developers + 1 ML / data profile
 
 This document records what the team agreed during Saturday's decision session. It is the source of truth for scope: anything not listed under "Core" does not get built until the core works end to end.
@@ -81,9 +81,9 @@ It is computed from satellite data only. It claims nothing about when the author
 | Predicted spread | **Replay:** cone from the front's velocity over the last hours of hotspots (ML, ~2 h). **Live mode:** Deepfire fire-spread simulation | The documented simulation API seeds from at most 168 hours back and has no start-time field, so it cannot replay 23 July unless the Deepfire mentors offer another way. See `docs/findings/2026-09-19-deepfire-no-historical-simulation.md` |
 | At-risk zones | OSM via Overpass, precomputed; shapely / geopandas | Time to impact = distance to front / rate of spread |
 | Routing | openrouteservice, `avoid_polygons`, `driving-car` and `foot-walking` profiles | Max 200 km² and 20 km in height or width per polygon: clip the fire to a square of at most 14 km around the route. See `docs/findings/2026-09-19-ors-avoid-polygon-limit.md` |
-| Voice | SLNG Agent Builder + Deepfire MCP + our own tools | 45-minute timebox; if it cannot call our tools or route to Nebius, build our own STT → LLM → TTS pipeline on the SLNG gateway |
+| Voice | SLNG Agent Builder + Deepfire MCP + our own tools | 45-minute timebox; if it cannot call our tools, build our own STT → LLM → TTS pipeline on the SLNG gateway |
 | Calls and SMS | SLNG does not supply numbers: outbound calls need our own SIP trunk (e.g. Twilio) and SMS needs Twilio. Ask the mentors what they can lend us | Likely fallback: push-to-talk on the web, and crew notifications shown on the dashboard. Agent tools must be reachable over HTTPS, so deploy early. See `docs/findings/2026-09-19-slng-bring-your-own-number.md` |
-| LLM | Nebius Token Factory (OpenAI-compatible API) | Structured extraction from the call, and the agent's reasoning |
+| LLM | NVIDIA Nemotron Super 3, served by SLNG: to the agents directly, to the backend through SLNG's OpenAI-compatible Context Router | The agent's reasoning, and triage of typed answers. Nebius was dropped on 2026-09-19; see `docs/findings/2026-09-19-slng-agent-llms-for-spanish.md` |
 | Backend | FastAPI (Python) | One service; state in SQLite or in memory |
 | Dashboard | React + MapLibre GL or Leaflet | Updates by polling every 2 s, or SSE |
 | Deployment | One Railway service: FastAPI serves the API, the agent tools and the built dashboard, from the root `Dockerfile` | The demo runs against the public URL. Why not Vercel or Cloudflare Workers: `docs/setup/deployment.md` |
@@ -104,8 +104,8 @@ This is the interface between voice and everything else. Fix it in the first hou
 
 | Time | What | Who |
 |---|---|---|
-| 14:00–15:00 | Public repo, deployed skeleton, keys (Deepfire, SLNG, Nebius, ORS). Download 22–24 July hotspots for the box `-4.85,40.30,-4.40,40.50` and commit them. Run one Deepfire simulation for 23 July and cache the result. Fix the tool contract and the work split | Everyone |
-| 15:00–18:00 | **Map track:** map, time slider, hotspot and cone layers, pins with the three states, routes. **Voice track:** SLNG agent (45-min timebox), backend with the five tools, LLM on Nebius, outbound call. **Data track:** spread, at-risk zones from OSM, time to impact, rescue priority, lead-time calculation | In parallel |
+| 14:00–15:00 | Public repo, deployed skeleton, keys (Deepfire, SLNG, ORS). Download 22–24 July hotspots for the box `-4.85,40.30,-4.40,40.50` and commit them. Run one Deepfire simulation for 23 July and cache the result. Fix the tool contract and the work split | Everyone |
+| 15:00–18:00 | **Map track:** map, time slider, hotspot and cone layers, pins with the three states, routes. **Voice track:** SLNG agent (45-min timebox), backend with the five tools, LLM through SLNG, outbound call. **Data track:** spread, at-risk zones from OSM, time to impact, rescue priority, lead-time calculation | In parallel |
 | **18:00** | **Checkpoint 1:** a real call changes a pin on the deployed dashboard. If not, the whole team focuses on that | Everyone |
 | 18:00–19:30 | Coordinator's voice query, rescue queue, mock registry of 8–10 residents with real La Atalaya addresses and the team's own phones. Crew notification for each new rescue (30 min max). Live mode with Deepfire's active fires (45 min max) | Everyone |
 | **19:30** | **Checkpoint 2:** do all four steps work end to end? Yes → start Vonage. No → Vonage is dropped, no discussion | Everyone |
@@ -160,6 +160,7 @@ This is the interface between voice and everything else. Fix it in the first hou
 - One project can enter several challenges at once.
 - Crew notification for every new rescue, and a live mode in addition to the replay.
 - Code submission is Sunday at 11:00.
+- Nebius is out of the stack (19 September, afternoon). The agents and the backend use the LLM SLNG serves.
 - All project documentation is written in English.
 
 **Adopted on recommendation, not yet confirmed — review them in five minutes**
@@ -217,7 +218,7 @@ Official Catalan channels (the Bombers map refreshed every 10 minutes, the Pla A
 
 - Challenges and criteria: https://www.hackbarna.com/en/events/aisummit26 · https://deepfire.co/hackbarna
 - Deepfire API: https://docs.deepfire.co/llms.txt · MCP without a token: `https://api.deepfire.co/mcp`
-- SLNG: https://docs.slng.ai/llms.txt · Nebius: https://docs.tokenfactory.nebius.com/quickstart
+- SLNG: https://docs.slng.ai/llms.txt
 - openrouteservice, `avoid_polygons`: https://giscience.github.io/openrouteservice/api-reference/endpoints/directions/routing-options
 - Norma (MCP): https://github.com/qualityclouds/norma-mcp
 - Watch Duty: https://www.watchduty.org/how-it-works/overview · https://en.wikipedia.org/wiki/Watch_Duty

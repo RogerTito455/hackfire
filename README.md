@@ -56,7 +56,7 @@ backend/app/
   spread.py    Predicted spread: a cone from the front's velocity
   impact.py    Which zones the predicted spread reaches, and when
   config.py    Every key, URL and path, read from the environment in one place
-  providers/   One module per external service: Deepfire, openrouteservice, Nebius, SLNG
+  providers/   One module per external service: Deepfire, openrouteservice, SLNG, Twilio
   pipelines/   One-off data downloads that write to data/
 data/          Static demo data: resident registry, cached hotspots and spread
 ```
@@ -67,7 +67,7 @@ The UI is independent of the logic: redesigning the dashboard means touching `ui
 |---|---|
 | Fire data and spread | [Deepfire API](https://docs.deepfire.co/llms.txt) |
 | Voice, calls and SMS | [SLNG](https://docs.slng.ai/llms.txt) |
-| LLM | [Nebius Token Factory](https://docs.tokenfactory.nebius.com/quickstart) |
+| LLM | NVIDIA Nemotron Super 3, served by [SLNG](https://docs.slng.ai/llms.txt) to the voice agents and, through its Context Router, to the backend |
 | Routing | [openrouteservice](https://openrouteservice.org/) with `avoid_polygons` |
 | Places at risk | OpenStreetMap via Overpass |
 
@@ -135,7 +135,7 @@ pnpm check      # backend tests, then frontend type-check and build
 
 ## Documentation
 
-[docs/](docs/README.md) holds everything beyond this page: setup, one page per external service (Deepfire, SLNG, Nebius, openrouteservice and the sponsor extensions), Claude Code with the project's MCP servers and skills, the development workflow, and a dated log of findings. [PLAN.md](PLAN.md) remains the source of truth for scope and decisions.
+[docs/](docs/README.md) holds everything beyond this page: setup, one page per external service (Deepfire, SLNG, openrouteservice and the sponsor extensions), Claude Code with the project's MCP servers and skills, the development workflow, and a dated log of findings. [PLAN.md](PLAN.md) remains the source of truth for scope and decisions.
 
 ## A note on the real fire
 

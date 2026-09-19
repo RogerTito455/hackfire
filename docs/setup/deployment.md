@@ -47,7 +47,7 @@ Done on 2026-09-19. Railway's import reads the pnpm workspace and configures the
    Apply the staged changes; editing a field does not redeploy by itself.
 4. **Networking → Generate Domain.** Railway does not detect the port; enter `8080`, the `PORT` it injects (the deploy log prints `Uvicorn running on http://0.0.0.0:8080`).
 5. Check that the source branch is `main` with automatic deploys on.
-6. **Variables:** none are needed for the skeleton. Add keys as the slices that read them land (`DEEPFIRE_CLIENT_ID` and `DEEPFIRE_CLIENT_SECRET` for live mode, then Nebius, ORS and SLNG). Never set `HACKFIRE_NEIGHBORS_FILE` to a laptop path. See [Environment variables](environment.md).
+6. **Variables:** none are needed for the skeleton. Add keys as the slices that read them land (`DEEPFIRE_CLIENT_ID` and `DEEPFIRE_CLIENT_SECRET` for live mode, `SLNG_API_KEY` for typed answers on the dashboard, then ORS). Never set `HACKFIRE_NEIGHBORS_FILE` to a laptop path. See [Environment variables](environment.md).
 
 Railway's config-as-code file (`railway.toml`) is not an option for this service: new services cannot use it. See [the finding](../findings/2026-09-19-railway-config-as-code-deprecated.md).
 

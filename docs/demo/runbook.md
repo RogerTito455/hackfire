@@ -15,7 +15,7 @@ Everything the story needs is served from `data/`: hotspots, forecasts, zones, l
 
 | Failure | What to do |
 |---|---|
-| The voice agent does not answer, or the room is too loud | Click the resident's pin → **Typed answer (backup)**. Type what the resident says ("Mi madre no puede andar") and press *Classify and record*: the LLM triages it with the voice agent's rules and the pin, rescue queue and crew alert react as after a call. Needs `NEBIUS_API_KEY` and `NEBIUS_MODEL` |
+| The voice agent does not answer, or the room is too loud | Click the resident's pin → **Typed answer (backup)**. Type what the resident says ("Mi madre no puede andar") and press *Classify and record*: the LLM triages it with the voice agent's rules and the pin, rescue queue and crew alert react as after a call. Needs `SLNG_API_KEY` on the backend, Railway included |
 | No LLM either | The three buttons under the text box (*Evacuating*, *No answer*, *Needs rescue*) set the status directly, through the same `report_status` path |
 | Deepfire is down (live mode) | Live mode shows "Deepfire is unavailable right now. The replay still works." Stay in replay |
 | openrouteservice is down | Demo routes are cached; a route never planned before answers 503 "Routing is unavailable right now" |

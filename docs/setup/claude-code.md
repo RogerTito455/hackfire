@@ -18,7 +18,6 @@ The first time you run `claude` in the repo it asks you to approve these. `/mcp`
 |---|---|---|---|
 | `deepfire` | `https://api.deepfire.co/mcp` | None | Search reported fires worldwide (`deepfire_search_fires`, `deepfire_get_fire`). Not raw hotspots, not spread runs |
 | `slng-docs` | `https://docs.slng.ai/mcp` | None | Search the SLNG docs. Undocumented endpoint, found working on 2026-09-19 |
-| `nebius-docs` | `https://docs.tokenfactory.nebius.com/mcp` | None | Search the Nebius Token Factory docs. Undocumented endpoint, found working on 2026-09-19 |
 | `deepwiki` | `https://mcp.deepwiki.com/mcp` | None | Ask questions about any public GitHub repo (MapLibre, openrouteservice, FastAPI) |
 | `norma` | `https://api.qualityclouds.ai/mcp` | OAuth (browser, first use) | Extension 1: code-quality rules and findings. See [Norma](../services/norma.md) |
 
@@ -27,7 +26,6 @@ They were added with commands, not by editing the file:
 ```bash
 claude mcp add --scope project --transport http deepfire https://api.deepfire.co/mcp
 claude mcp add --scope project --transport http slng-docs https://docs.slng.ai/mcp
-claude mcp add --scope project --transport http nebius-docs https://docs.tokenfactory.nebius.com/mcp
 claude mcp add --scope project --transport http deepwiki https://mcp.deepwiki.com/mcp
 claude mcp add --scope project --transport http norma https://api.qualityclouds.ai/mcp
 ```

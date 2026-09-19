@@ -20,9 +20,8 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `DEEPFIRE_CLIENT_SECRET` | Same | Shown once when the API client is created |
 | `SLNG_API_KEY` | Voice agent, calls, SMS (#7, #8, #9, #10) | https://app.slng.ai → Projects → Generate key |
 | `SLNG_BASE_URL` | Same | See [SLNG](../services/slng.md) |
-| `NEBIUS_API_KEY` | LLM for the agent and the triage (#7) | https://tokenfactory.nebius.com |
-| `NEBIUS_BASE_URL` | Same | `https://api.tokenfactory.nebius.com/v1` |
-| `NEBIUS_MODEL` | Same | A model id from the catalogue; see [Nebius](../services/nebius.md) |
+| `SLNG_LLM_URL` | The backend's LLM: typed answers on the dashboard and `pnpm eval:triage`, with `SLNG_API_KEY` | SLNG's Context Router. Default `https://eu-north.context-router.slng.ai/v1` |
+| `SLNG_LLM_MODEL` | Same | Default `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, the model the voice agents think with |
 | `ORS_API_KEY` | Evacuation and rescue routes (#6); only needed to plan routes that are not in `data/routes_cache.json` | https://openrouteservice.org/dev/#/signup |
 | `OVERPASS_URL` | `pnpm data:zones` (#4); optional, no key | Empty uses `https://overpass-api.de/api/interpreter`. See [Overpass](../services/overpass.md) if it refuses connections |
 

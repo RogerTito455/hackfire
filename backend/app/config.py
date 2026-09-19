@@ -56,9 +56,14 @@ class Settings:
     slng_api_key: str = field(default_factory=lambda: _env("SLNG_API_KEY"))
     slng_base_url: str = field(default_factory=lambda: _env("SLNG_BASE_URL"))
 
-    nebius_api_key: str = field(default_factory=lambda: _env("NEBIUS_API_KEY"))
-    nebius_base_url: str = field(default_factory=lambda: _env("NEBIUS_BASE_URL"))
-    nebius_model: str = field(default_factory=lambda: _env("NEBIUS_MODEL"))
+    # The backend's LLM (typed answers, pnpm eval:triage): SLNG's OpenAI-compatible Context Router,
+    # with SLNG_API_KEY and the model the voice agents think with.
+    slng_llm_url: str = field(
+        default_factory=lambda: _env("SLNG_LLM_URL", "https://eu-north.context-router.slng.ai/v1").rstrip("/")
+    )
+    slng_llm_model: str = field(
+        default_factory=lambda: _env("SLNG_LLM_MODEL", "bedrock-mantle/nvidia.nemotron-super-3-120b:latest")
+    )
 
     ors_api_key: str = field(default_factory=lambda: _env("ORS_API_KEY"))
 

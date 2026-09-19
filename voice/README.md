@@ -65,10 +65,9 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
    | `report_status` | `<backend>/tools/report_status` | `neighbor_id` string, required; `status` string, enum `evacuating`, `no_answer`, `needs_rescue`, required; `people` integer; `mobility` string; `observation` string | `{"neighbor_id": "n01", "status": "evacuating", "people": 2}` |
 
    `zone`, `address` and `neighbor_id` must be declared as plain strings: the agent pins them, and SLNG only pins a parameter whose type is one scalar. The descriptions the model reads come from `resident/tools/*.yaml` and replace whatever the dashboard says. The fire status and route tools are read-only; the `report_status` test run changes n01's pin, so reset the demo afterwards (`POST /api/reset`).
-3. **Register Nebius** in SLNG's bring-your-own-key vault: Project Vault → BYOK → Manage in SLNG Vault → LLM providers → Add key. Model: the Nebius model id; API key: the value of `NEBIUS_API_KEY`; Endpoint URL: `https://api.tokenfactory.nebius.com/v1`; Provider: Auto-detect or `openai-compat`. Then write the model string SLNG shows for it into `models.think.reasoning.model` in `agent.yaml`.
-4. **Deploy:** `unmute deploy --dry-run`, then `unmute deploy`. Check first with `voiceai agents list` that `hackfire-resident-slng` is free, because a push replaces the agent with that name.
-5. **Test in the browser:** open the agent in the SLNG dashboard → Test agent → Web session. The panel cannot pass arguments, so the session uses the test defaults: sample resident `n01`. Checkpoint 1 is n01's pin changing on the deployed dashboard.
-6. **Trunk for real calls** (#1, #8). SLNG provides no numbers: an admin adds an outbound SIP trunk in Telephony and attaches it to the agent. A push does not detach it. Then `unmute deploy --call +34…` or Test agent → Outbound call rings a phone, and the call campaign dispatches calls with all four variables in `arguments` (`neighbor_id`, `resident_name`, `address`, `zone`).
+3. **Deploy:** `unmute deploy --dry-run`, then `unmute deploy`. Check first with `voiceai agents list` that `hackfire-resident-slng` is free, because a push replaces the agent with that name.
+4. **Test in the browser:** open the agent in the SLNG dashboard → Test agent → Web session. The panel cannot pass arguments, so the session uses the test defaults: sample resident `n01`. Checkpoint 1 is n01's pin changing on the deployed dashboard.
+5. **Trunk for real calls** (#1, #8). SLNG provides no numbers: an admin adds an outbound SIP trunk in Telephony and attaches it to the agent. A push does not detach it. Then `unmute deploy --call +34…` or Test agent → Outbound call rings a phone, and the call campaign dispatches calls with all four variables in `arguments` (`neighbor_id`, `resident_name`, `address`, `zone`).
 
 ## The coordinator agent (`coordinator/`, #10)
 
@@ -90,11 +89,10 @@ To deploy, in order:
 
 ## Checking the model's triage without voice
 
-`pnpm eval:triage` sends `instructions.md` and the `report_status` description to Nebius with four answers at the point of the three questions: no car, road cut and a mother who cannot walk must come back as `needs_rescue`, leaving now by car as `evacuating`. It needs `NEBIUS_API_KEY` and `NEBIUS_MODEL` (skipped otherwise), and is not part of `pnpm check`, because a model's answer can vary. Run it after changing the prompt, the tool description or the model.
+`pnpm eval:triage` sends `instructions.md` and the `report_status` description to the agent's own model, through SLNG's Context Router, with four answers at the point of the three questions: no car, road cut and a mother who cannot walk must come back as `needs_rescue`, leaving now by car as `evacuating`. It needs `SLNG_API_KEY` (skipped otherwise), and is not part of `pnpm check`, because a model's answer can vary. Run it after changing the prompt, the tool description or the model.
 
 ## Placeholders and open questions
 
-- **PLACEHOLDER: the Nebius model.** `model: "PLACEHOLDER-nebius-model-id"` in `agent.yaml`. Nobody has a Nebius key yet. SLNG's docs do not say which string selects a BYOK client model in an agent: probably the model name registered in step 3, possibly `slng/auto` (the Context Router's route to the organisation's registered model). Check what the dashboard's Think dropdown or `voiceai agents get <id> --json` shows. Unmute's docs report that Nebius answers `400` to a request carrying `reasoning_effort`, so do not add one. Pick a fast model with tool calling ([Nebius](../docs/services/nebius.md)).
 - **TEST DEFAULTS: the call variables.** All four default to sample resident `n01`, only so the dashboard test works. A dispatch that forgets a variable would silently report on n01. Remove the defaults once calls come from the campaign, unless SLNG refuses to attach the trunk without them; Unmute says it does for inbound trunks.
 - **Where a confinement order comes from: resolved.** The coordinator approves one order per zone in the dashboard (#36): leave for a safe point, or stay indoors. `get_fire_status` appends it to `summary` ("The order for El Tiemblo is to stay indoors until the emergency services say otherwise.") and `get_evacuation_route` starts with it, so the prompt's existing rule for passing on a stay-inside order applies without a contract change.
 - **No triage state for "confined at home".** A resident who stays inside and is fine is reported as `evacuating`, with the observation saying so. A resident who refuses to leave is reported as `needs_rescue`. Both are the prompt's choices; the team should confirm them.
@@ -113,8 +111,8 @@ Pipecat runs the agent locally and `unmute dev` opens a browser voice loop (it n
 
 1. **Turn detection.** Pipecat requires a `turn:` model (`provider: local`, `model: silero`), and the SLNG target refuses any `turn:` section. A target override in `targets.yaml` can only replace an entry that already exists, so it cannot add one.
 2. **Tools.** Pipecat builds a hosted (`slng:`) tool from a mirror that only `unmute pull` can fetch, with an SLNG key, after step 2 above. The simpler route is `webhook:` tools, which the SLNG target refuses: `webhook: {url_env: HACKFIRE_API_URL, path: /tools/report_status}` plus an `input:` schema per tool, the same as the parameters table above. `inject:` works the same way.
-3. **The LLM.** No BYOK vault: `provider: nebius`, the model id, and `endpoint_env: NEBIUS_BASE_URL`. Pipecat then reads `NEBIUS_BASE_URL` and `NEBIUS_API_KEY`, the names already in the root `.env.example`. SLNG's Context Router with an `openai-compat` upstream is the other option, and it is refused on the SLNG target.
-4. `secrets:` must list `SLNG_API_KEY`, `NEBIUS_API_KEY`, `NEBIUS_BASE_URL` and `HACKFIRE_API_URL`, and `targets.yaml` needs `pipecat: {provider: pipecat, version: "1.10.0"}`.
+3. **The LLM.** `provider: slng` with the same model id, through SLNG's Context Router; Pipecat then reads `SLNG_API_KEY`.
+4. `secrets:` must list `SLNG_API_KEY` and `HACKFIRE_API_URL`, and `targets.yaml` needs `pipecat: {provider: pipecat, version: "1.10.0"}`.
 
 A throwaway copy with those four changes validated for `pipecat` on 2026-09-19. Run it with:
 

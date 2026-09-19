@@ -51,7 +51,7 @@ pnpm dev:api         # http://localhost:8000, docs at /docs
 pnpm dev:web         # http://localhost:5173
 pnpm check           # backend tests, icon format check, then frontend type-check and build
 pnpm data:hotspots   # download Deepfire hotspots into data/
-pnpm eval:triage     # resident agent's triage against Nebius; needs NEBIUS_API_KEY, not in pnpm check
+pnpm eval:triage     # resident agent's triage against its real model via SLNG; needs SLNG_API_KEY, not in pnpm check
 pnpm data:zones      # download towns, care homes, schools, health centres and roads from OSM into data/
 pnpm data:spread     # rebuild the predicted spread from the cached hotspots (no network)
 pnpm data:lead-time  # recompute La Atalaya's lead time from the cached files (no network)
