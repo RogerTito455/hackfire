@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import cache
 
-from shapely.geometry import MultiPoint
+import shapely
 from shapely.geometry.base import BaseGeometry
 
 from . import geo
@@ -45,4 +45,6 @@ def burned_area_m(until: datetime) -> BaseGeometry:
     """
     times, points = _hotspot_times_and_points()
     seen = [geo.point_m(lon, lat) for (lon, lat), t in zip(points, times, strict=True) if t <= until]
-    return MultiPoint(seen).buffer(HOTSPOT_RADIUS_M).simplify(100)
+    # One buffer per hotspot, then a tree union: buffering the MultiPoint in one pass peaked at
+    # ~1.9 GB and 17 s, enough for Railway to kill the process.
+    return shapely.union_all(shapely.buffer(seen, HOTSPOT_RADIUS_M)).simplify(100)
