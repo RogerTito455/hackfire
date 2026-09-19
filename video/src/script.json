@@ -1,0 +1,177 @@
+{
+  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed; `subtitle` is what the viewer reads under a Spanish line. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); lead time from data/lead_time_la-atalaya.json.",
+  "voices": {
+    "narrator": {
+      "id": "G17SuINrv2H9FC6nvetn",
+      "name": "Christopher",
+      "settings": {
+        "stability": 0.55,
+        "similarity_boost": 0.8,
+        "style": 0.1,
+        "use_speaker_boost": true,
+        "speed": 1.1
+      }
+    },
+    "agent": {
+      "id": "Nh2zY9kknu6z4pZy6FhD",
+      "name": "David Martin",
+      "settings": {
+        "stability": 0.6,
+        "similarity_boost": 0.8,
+        "style": 0,
+        "use_speaker_boost": true,
+        "speed": 1.08
+      }
+    },
+    "resident": {
+      "id": "kvVjNZvtnCv3Sl1Hr70T",
+      "name": "Flavia",
+      "settings": {
+        "stability": 0.35,
+        "similarity_boost": 0.8,
+        "style": 0.3,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "scenes": [
+    {
+      "id": "open",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "On the twenty-third of July, the Burgohondo fire reached La Atalaya, in El Tiemblo.",
+          "say": "On the twenty-third of July, the Burgo-ondo fire reached La Atalaya, in El Tiemblo."
+        },
+        {
+          "speaker": "narrator",
+          "text": "About thirteen hundred people were evacuated, and five homes burned."
+        }
+      ]
+    },
+    {
+      "id": "problem",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "The warning was an ES-Alert: one message, sent to every phone."
+        },
+        {
+          "speaker": "narrator",
+          "text": "It couldn't say who had left, who couldn't move, or who never got it."
+        }
+      ]
+    },
+    {
+      "id": "brand",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "HackFire calls every resident, and listens."
+        }
+      ]
+    },
+    {
+      "id": "forecast",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "It reads Deepfire's satellite hotspots, and forecasts where the fire is heading."
+        },
+        {
+          "speaker": "narrator",
+          "text": "At half past three, the forecast put La Atalaya in its path."
+        }
+      ]
+    },
+    {
+      "id": "leadtime",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "The first hotspot within three kilometres came at nine thirty-eight that night."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Six hours and eight minutes of lead time, from satellite data alone."
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "A coordinator approves the order. Then a voice agent calls every registered resident."
+        }
+      ]
+    },
+    {
+      "id": "call",
+      "lines": [
+        {
+          "speaker": "agent",
+          "text": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias, por la N cuatrocientos tres.",
+          "subtitle": "I'm calling from the emergency coordination about the fire. You must leave now for San Martín de Valdeiglesias, on the N-403."
+        },
+        {
+          "speaker": "agent",
+          "text": "¿Pueden salir por su cuenta?",
+          "subtitle": "Can you leave on your own?"
+        },
+        {
+          "speaker": "resident",
+          "text": "Yo sí, pero mi madre no puede andar. Somos dos.",
+          "subtitle": "I can, but my mother can't walk. There are two of us."
+        },
+        {
+          "speaker": "agent",
+          "text": "He avisado de que necesitan ayuda. Quédense juntas, con el teléfono a mano.",
+          "subtitle": "I've reported that you need help. Stay together, with your phone at hand."
+        }
+      ]
+    },
+    {
+      "id": "understood",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "She can't leave on her own. The agent understood it from what she said, not from a keyword."
+        }
+      ]
+    },
+    {
+      "id": "rescue",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "Every rescue is queued by how soon the fire reaches it, and shared out between the crews, each with its route."
+        }
+      ]
+    },
+    {
+      "id": "command",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "The coordinator can ask the agent by voice, and with Vonage, share the live map with every crew."
+        }
+      ]
+    },
+    {
+      "id": "close",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "HackFire doesn't replace ES-Alert. It listens back.",
+          "say": "HackFire doesn't replace E.S.-Alert. It listens back."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Every resident who leaves on their own is a rescue the firefighters don't have to make."
+        }
+      ]
+    }
+  ]
+}

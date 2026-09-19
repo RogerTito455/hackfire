@@ -16,6 +16,8 @@ __pycache__/
 # Node
 node_modules/
 dist/
+# Rendered videos (video/README.md)
+video/out/
 *.tsbuildinfo
 
 # Claude Code worktrees for background agents
