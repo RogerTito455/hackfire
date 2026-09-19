@@ -17,8 +17,9 @@ RUN pnpm build
 # --- API -----------------------------------------------------------------------
 FROM ghcr.io/astral-sh/uv:0.11-python3.12-trixie-slim
 WORKDIR /repo/backend
+# PYTHONFAULTHANDLER: if native code (GEOS, numpy) crashes the process, print where to the logs.
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy PATH="/repo/backend/.venv/bin:$PATH" \
-    HACKFIRE_DASHBOARD_DIR=/repo/frontend/dist
+    HACKFIRE_DASHBOARD_DIR=/repo/frontend/dist PYTHONFAULTHANDLER=1
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --locked --no-dev
 COPY backend/app app
