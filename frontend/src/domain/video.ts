@@ -32,3 +32,12 @@ export type CameraState = 'joining' | 'live' | 'used' | 'error'
 
 /** The coordinator's view of one resident: link sent and waiting, or watching them live. */
 export type WatchState = 'waiting' | 'live' | 'ended' | 'error'
+
+/** The crews' room: the link crews open, and the command post's token to share its screen. */
+export interface CrewRoom {
+  link: string
+  access: VideoAccess
+}
+
+export type RoomState = 'idle' | 'starting' | 'live' | 'error'
+

@@ -54,3 +54,52 @@ export async function watchCamera(
   await connect(session, access.token)
   return { end: () => void session.disconnect() }
 }
+
+function publish(session: { publish: (p: never, done: (error?: Error) => void) => unknown }, publisher: unknown) {
+  return new Promise<void>((resolve, reject) =>
+    session.publish(publisher as never, (error) => (error ? reject(error) : resolve())),
+  )
+}
+
+/** The command post: its screen (the map and panels) and its microphone, with captions. It hears the crews. */
+export async function shareScreen(access: VideoAccess, onEnded: () => void): Promise<VideoCall> {
+  const OT = await sdk()
+  const session = OT.initSession(access.application_id, access.session_id)
+  const hidden = document.createElement('div')
+  session.on('streamCreated', (event) => {
+    session.subscribe(event.stream, hidden, { insertMode: 'append', subscribeToVideo: false })
+  })
+  await connect(session, access.token)
+  const screen = OT.initPublisher(hidden, { videoSource: 'screen', publishCaptions: true, insertMode: 'append' })
+  screen.on('streamDestroyed', () => onEnded()) // stopped from the browser's "Stop sharing"
+  await publish(session, screen)
+  return { end: () => void session.disconnect() }
+}
+
+/** A crew's phone: the command post's screen in `target`, its own microphone, and each caption. */
+export async function joinCrewRoom(
+  access: VideoAccess,
+  target: HTMLElement,
+  onCaption: (text: string) => void,
+): Promise<VideoCall> {
+  const OT = await sdk()
+  const session = OT.initSession(access.application_id, access.session_id)
+  const hidden = document.createElement('div')
+  session.on('streamCreated', (event) => {
+    const screen = event.stream.videoType === 'screen'
+    const subscriber = session.subscribe(event.stream, screen ? target : hidden, {
+      insertMode: 'append',
+      width: '100%',
+      height: '100%',
+      fitMode: 'contain',
+      subscribeToVideo: screen,
+      subscribeToCaptions: true,
+    })
+    subscriber.on('captionReceived', (caption) => onCaption(caption.caption))
+  })
+  await connect(session, access.token)
+  const microphone = OT.initPublisher(hidden, { videoSource: null, publishCaptions: true, insertMode: 'append' })
+  await publish(session, microphone)
+  return { end: () => void session.disconnect() }
+}
+

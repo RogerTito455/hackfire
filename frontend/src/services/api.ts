@@ -10,7 +10,7 @@ import type { TextClassification } from '../domain/textTriage'
 import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
 import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voice'
-import type { RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
+import type { CrewRoom, RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
 import type { CrewPlan } from '../domain/crewPlan'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
@@ -105,3 +105,5 @@ export async function joinVideo(linkId: string): Promise<VideoAccess | 'used' | 
   return response.json() as Promise<VideoAccess>
 }
 export const fetchCrewPlan = (crews: number) => request<CrewPlan>(`/api/crew-plan?crews=${crews}`)
+export const openCrewRoom = () => request<CrewRoom>('/api/crew-room', { method: 'POST' })
+export const joinCrewRoomAccess = (roomId: string) => request<VideoAccess>(`/api/crew-room/${encodeURIComponent(roomId)}`)

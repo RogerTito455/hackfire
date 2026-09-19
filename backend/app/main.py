@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, crew_plan, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
+from . import autopilot, briefing, campaign, crew_plan, crew_room, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -18,6 +18,7 @@ from .models import (
     AutopilotRequest,
     CampaignCall,
     CrewPlan,
+    CrewRoom,
     RescueVideo,
     RescueVideoLink,
     VideoCapabilities,
@@ -308,6 +309,26 @@ def join_rescue_video(link_id: str) -> VideoAccess:
         raise HTTPException(status_code=503, detail="Live video is unavailable right now") from error
 
 
+@app.post("/api/crew-room")
+def open_crew_room() -> CrewRoom:
+    """The command post opens the crews' room to share its map and voice; the link goes to the crews."""
+    try:
+        return crew_room.open_room()
+    except vonage.VonageUnavailable as error:
+        raise HTTPException(status_code=503, detail="Video is unavailable right now") from error
+
+
+@app.get("/api/crew-room/{room_id}")
+def join_crew_room(room_id: str) -> VideoAccess:
+    """A crew's phone joins the room with the link it was sent."""
+    try:
+        return crew_room.join(room_id)
+    except crew_room.UnknownRoom as error:
+        raise HTTPException(status_code=404, detail="Unknown or closed room") from error
+    except vonage.VonageUnavailable as error:
+        raise HTTPException(status_code=503, detail="Video is unavailable right now") from error
+
+
 @app.get("/api/crew-plan")
 def get_crew_plan(crews: int | None = None) -> CrewPlan:
     """Which crew goes to which rescue, in order, and whether it gets there before the fire."""
@@ -376,6 +397,7 @@ def reset() -> dict:
     state.replay_time = None
     campaign.forget()
     rescue_video.forget()
+    crew_room.forget()
     return {"status": "reset", "neighbors": len(state.neighbors())}
 
 
@@ -476,6 +498,11 @@ def serve_dashboard(target: FastAPI, dashboard_dir: Path) -> None:
     # A resident's video link (#18) opens the same app, which shows the camera page for /v/<link>.
     @target.get("/v/{link_id}", include_in_schema=False)
     def resident_video_page(link_id: str) -> FileResponse:
+        return FileResponse(dashboard_dir / "index.html")
+
+    # A crew's link to the crews' room opens the same app too, on the room page.
+    @target.get("/crew/{room_id}", include_in_schema=False)
+    def crew_room_page(room_id: str) -> FileResponse:
         return FileResponse(dashboard_dir / "index.html")
 
     # The landing page for judges and visitors (frontend/about.html). The dashboard stays at /:

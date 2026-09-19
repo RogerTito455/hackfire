@@ -126,6 +126,13 @@ class RescueVideo(BaseModel):
     access: VideoAccess | None = Field(default=None, description="A subscriber token, once the resident has joined")
 
 
+class CrewRoom(BaseModel):
+    """The crews' room: the link the crews open, and the command post's token to share its screen."""
+
+    link: str
+    access: VideoAccess
+
+
 class VideoCapabilities(BaseModel):
     video: bool = Field(description="Vonage is configured: the coordinator can ask a resident for live video")
     sms: bool = Field(description="The video link can be texted; otherwise the coordinator passes it on")

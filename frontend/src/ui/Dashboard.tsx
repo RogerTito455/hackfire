@@ -12,6 +12,7 @@ import type { Conversations, CoordinatorConversation } from '../hooks/useConvers
 import type { VoiceCapabilities } from '../domain/voice'
 import type { RescueVideoControl } from '../hooks/useRescueVideo'
 import type { CrewPlanView } from '../hooks/useCrewPlan'
+import type { CrewRoomHost } from '../hooks/useCrewRoom'
 import type { Triage } from '../hooks/useTriage'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
@@ -27,6 +28,7 @@ import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
 import { CrewPlanPanel } from './CrewPlanPanel'
+import { ShareWithCrewsPanel } from './ShareWithCrewsPanel'
 import { RoutePanel } from './RoutePanel'
 import { TalkPanel } from './TalkPanel'
 import { AskAgentPanel } from './AskAgentPanel'
@@ -54,6 +56,7 @@ interface DashboardProps {
   rescueVideo: RescueVideoControl
   autopilot: AutopilotControl
   crewPlan: CrewPlanView
+  crewRoom: CrewRoomHost
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -75,6 +78,7 @@ export function Dashboard({
   rescueVideo,
   autopilot,
   crewPlan,
+  crewRoom,
 }: DashboardProps) {
   const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
@@ -218,6 +222,13 @@ export function Dashboard({
             <Icon name="fire-truck" size={18} />
             {t('section.crewPlan')}
           </h2>
+          <ShareWithCrewsPanel
+            available={rescueVideo.capabilities.video}
+            state={crewRoom.state}
+            link={crewRoom.link}
+            onShare={crewRoom.start}
+            onStop={crewRoom.stop}
+          />
           <CrewPlanPanel
             plan={crewPlan.plan}
             crews={crewPlan.crews}

@@ -301,5 +301,17 @@
     "late": "Arrives {time} after the fire",
     "noRoute": "No route from the fire station",
     "noForecast": "The fire is not forecast to reach it"
+  },
+  "crewRoom": {
+    "title": "Crews' room",
+    "share": "Share the map with the crews",
+    "starting": "Opening the crews' room…",
+    "sharing": "Sharing your screen and voice with the crews.",
+    "linkForCrews": "Link for the crews:",
+    "stop": "Stop sharing",
+    "failed": "Could not open the crews' room.",
+    "idle": "The command post is not sharing right now.",
+    "live": "You see the command post's map live. Speak to talk to them.",
+    "error": "Could not join the crews' room. Call the command post."
   }
 }

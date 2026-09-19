@@ -301,5 +301,17 @@
     "late": "Llega {time} después del fuego",
     "noRoute": "Sin ruta desde el parque de bomberos",
     "noForecast": "No se prevé que el fuego llegue"
+  },
+  "crewRoom": {
+    "title": "Sala de los equipos",
+    "share": "Compartir el mapa con los equipos",
+    "starting": "Abriendo la sala de los equipos…",
+    "sharing": "Compartiendo tu pantalla y tu voz con los equipos.",
+    "linkForCrews": "Enlace para los equipos:",
+    "stop": "Dejar de compartir",
+    "failed": "No se ha podido abrir la sala de los equipos.",
+    "idle": "El puesto de mando no está compartiendo ahora.",
+    "live": "Ves el mapa del puesto de mando en directo. Habla para comunicarte con ellos.",
+    "error": "No se ha podido entrar en la sala. Llama al puesto de mando."
   }
 }

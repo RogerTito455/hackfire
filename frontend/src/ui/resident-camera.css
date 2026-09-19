@@ -26,3 +26,13 @@
   font-weight: 600;
   color: var(--alert);
 }
+
+.crew-room-caption {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #000;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
