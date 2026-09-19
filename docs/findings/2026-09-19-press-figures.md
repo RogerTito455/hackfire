@@ -13,6 +13,11 @@ CLAUDE.md and #15 require every press figure to be checked against its original 
 | About 250 people sheltered in El Barraco's sports hall | ✅ | Ávilared: "en torno a 250 se van a albergar en el polideportivo municipal de El Barraco" |
 | More than 300 firefighters and staff | ✅ | Both: "más de 300 efectivos" |
 | ES-Alert ordered **confinement** of El Tiemblo, Burgohondo and Navaluenga "due to the smoke" | ✅ | Ávilared (art. 93357), alert text: "Se procede a confinar las poblaciones de El Tiemblo, Burgohondo y Navaluenga debido al humo. Rogamos que permanezcan en sus domicilios." |
+| 37,818 ha affected in Ávila (provisional) | ✅ | Ávilared (art. 93917), 21 Aug 2026, from the Junta de Castilla y León's Consejería de Medio Ambiente, measured on Sentinel images: "ha afectado provisionalmente a 37.818 hectáreas en la provincia de Ávila". Ávila only; the first estimate of 50,000 was revised down |
+| 229 homes inside the burned perimeter, €47.5M market value, up to €21.4M to repair | ✅ as an estimate | Ávilared (art. 93518), 31 Jul 2026, "según estimaciones de Idealista" (Copernicus images crossed with the Catastro): "229 viviendas […] dentro del perímetro calcinado, aunque por el momento se desconoce el estado real"; "En el peor de los escenarios […] 21,4 millones de euros". Say "inside the burned area" and "worst case", never "destroyed" |
+| €4M from the Junta for the area's environmental recovery | ✅ | Tribuna de Ávila, 3 Sep 2026: "eleva a 4 millones de euros el montante total destinado por el Gobierno Autonómico a la recuperación ambiental de la zona" |
+| Tourism collapsed in high season | ✅ qualitative only | Ávilared (art. 93648), 10 Aug 2026, a local business owner: "un desplome de la actividad en plena temporada alta". No figure in euros or cancellations |
+| People injured | ❌ Not verified | Not in the four articles checked. Do not state a number, or that there were none |
 | 16 municipalities lost mobile coverage *in this fire* | ⚠️ Not as stated | The Objective, 29 Jul: "16 municipios y unos 40 núcleos de población quedaron inicialmente sin cobertura móvil o fija", in an article covering fires in Almería, Madrid and Ávila, with no breakdown by fire |
 | "The largest fire in Spain" | ❌ Not found | Not in any of the four sources |
 | A care home evacuated at night | ❌ Not found | Not in any of the four sources |
@@ -26,6 +31,11 @@ CLAUDE.md and #15 require every press figure to be checked against its original 
 - For the coverage objection, say "in the late-July fires, 16 municipalities lost coverage, according to The Objective", not "in this fire".
 
 ## Sources
+
+- https://avilared.com/art/93917/balance-incendio-burgohondo-37800-hectareas-afectadas-avila
+- https://avilared.com/art/93518/incendio-burgohondo-riesgo-229-viviendas-valor-mercado-47-millones
+- https://www.tribunaavila.com/noticias/457525/dos-millones-para-recuperar-las-zonas-afectadas-por-el-incendio-de-burgohondo
+- https://avilared.com/art/93648/impacto-incendio-burgohondo-turismo-economia-el-burguillo
 
 - https://www.tribunaavila.com/noticias/453214/el-incendio-de-burgohondo-deja-1-500-evacuados-y-arrasa-gran-parte-del-valle-iruelas
 - https://avilared.com/art/93361/incendio-devastador-burgohondo-iruelas-1500-evacuados-cinco-casas-quemadas

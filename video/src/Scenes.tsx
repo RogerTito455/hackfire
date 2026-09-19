@@ -455,3 +455,124 @@ export function Close({ f }: { f: number }) {
   )
 }
 
+
+// ── 05 What changes ───────────────────────────────────────────────────────────
+
+// The day's figures, each with its source (docs/findings/2026-09-19-press-figures.md).
+const THE_DAY: [string, string, string][] = [
+  ['37,818 ha', 'burned in Ávila, provisional', 'Junta de Castilla y León'],
+  ['1,500', 'people evacuated', 'Tribuna de Ávila'],
+  ['5', 'homes destroyed', 'Tribuna de Ávila'],
+  ['229', 'homes inside the burned area', "Idealista's estimate"],
+]
+
+// What the coordinator knows, and when. Left: the day, sourced. Right: what HackFire does, measured.
+const SIDE_BY_SIDE: [string, string, string][] = [
+  ['The warning', 'One alert to every phone', 'An order per zone, said to each household'],
+  ['Answers', "None: an alert can't hear back", 'Leaving, needs rescue or no answer, per call'],
+  ["Who can't leave", 'Not known from the alert', 'On the map within 2 s, queued by the fire'],
+  ['The way out', 'The same message for every road', 'A route per home, around the fire and cut roads'],
+  ['Time to act', '', '6 h 8 min on La Atalaya, from satellites alone'],
+]
+
+export function Compare({ f }: { f: number }) {
+  const s = scene('compare')
+  const cards = [beat('compare-0', 'thirty'), beat('compare-0', 'thirty') + 8, beat('compare-0', 'thirty') + 16, beat('compare-0', 'two')]
+  const table = line('compare-1').at + 6
+  const k = ease((f - table + 4) / 16)
+  const quick = beat('compare-1', 'two')
+  return (
+    <Overlay id="compare" f={f}>
+      <Grid f={f} />
+      <div style={{ position: 'absolute', left: 90, right: 90, top: 150 - 20 * k, opacity: 1 - 0.55 * k, transform: `scale(${1 - 0.28 * k})`, transformOrigin: 'top left' }}>
+        <div style={{ ...mono(22, 700, C.ink2), marginBottom: 16, ...pop(f - s.start - 4) }}>23 July 2026, what it cost</div>
+        <div style={{ display: 'flex', gap: 22 }}>
+          {THE_DAY.map(([figure, label], i) => (
+            <div key={label} style={{ flex: 1, ...pop(f - cards[i]) }}>
+              <div style={{ borderRadius: 18, border: `1px solid ${C.line}`, background: 'rgba(20,30,66,0.9)', padding: '18px 24px' }}>
+                <div style={{ ...text(58, 800, i === 3 ? C.fire[0] : C.fire[1]), fontVariantNumeric: 'tabular-nums' }}>{figure}</div>
+                <div style={text(22, 500, C.ink2)}>{label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {f >= table && (
+        <div style={{ position: 'absolute', left: 90, right: 90, top: 330 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr 1fr', columnGap: 22, rowGap: 12, alignItems: 'stretch' }}>
+            <div />
+            <div style={{ ...mono(22, 700, C.ink3), ...pop(f - table) }}>23 July 2026</div>
+            <div style={{ ...mono(22, 700, C.agent), display: 'flex', alignItems: 'center', gap: 8, ...pop(f - table) }}>
+              <Icon name="logo" size={24} color={C.fire[1]} />
+              With HackFire
+            </div>
+            {SIDE_BY_SIDE.map(([what, day, ours], i) => {
+              const t = f - table - 10 - i * 7
+              const lit = i === 2 && f >= quick
+              return [
+                <div key={`w${i}`} style={{ ...text(24, 700, C.ink2), padding: '14px 0', ...pop(t) }}>{what}</div>,
+                <div key={`d${i}`} style={{ ...text(25, 500, C.ink3), padding: '14px 20px', borderRadius: 14, border: `1px solid ${C.line}`, ...pop(t) }}>{day || '—'}</div>,
+                <div key={`o${i}`} style={{ ...text(25, 600, C.ink), padding: '14px 20px', borderRadius: 14, border: `1px solid ${lit ? C.agent : 'rgba(95,227,255,0.35)'}`, background: lit ? 'rgba(95,227,255,0.14)' : 'rgba(95,227,255,0.05)', ...pop(t) }}>{ours}</div>,
+              ]
+            })}
+          </div>
+        </div>
+      )}
+      <Source opacity={fade(f - cards[0], 10) * (1 - 0.4 * k)}>
+        Junta de Castilla y León via Ávilared, 21 Aug (provisional); Tribuna de Ávila, 23 Jul; Idealista's estimate via Ávilared, 31 Jul
+      </Source>
+    </Overlay>
+  )
+}
+
+const ROADMAP: [string, string, string, [string, string][]][] = [
+  ['Now', 'Built this weekend', C.status.evacuating, [
+    ['satellite', 'Forecast from satellite hotspots'],
+    ['phone', 'Calls in Spanish, triage, rescue queue'],
+    ['fire-truck', 'Crew plan, road closures, live map'],
+  ]],
+  ['Next', 'Pilot', C.route, [
+    ['phone', 'Real phone lines (SIP)'],
+    ['mic', 'Handover to a person at the control post'],
+    ['home', 'One municipality, voluntary registry'],
+  ]],
+  ['Then', 'Scale', C.agent, [
+    ['route', 'More regions, more languages'],
+    ['fire-truck', "Inside 112 and the crews' dispatch"],
+    ['flame', 'Devin retrains the forecast on every fire'],
+  ]],
+]
+
+export function Roadmap({ f }: { f: number }) {
+  const s = scene('roadmap')
+  const at = [s.start + 4, line('roadmap-0').at, beat('roadmap-1', 'then')]
+  return (
+    <Overlay id="roadmap" f={f}>
+      <Grid f={f} />
+      <div style={{ position: 'absolute', left: 90, top: 150, ...mono(22, 700, C.ink2), ...pop(f - s.start) }}>Roadmap</div>
+      <div style={{ position: 'absolute', left: 90, right: 90, top: 214, height: 4, borderRadius: 2, background: C.line }}>
+        <div style={{ width: `${ease((f - s.start) / (s.end - s.start - 20)) * 100}%`, height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${C.status.evacuating}, ${C.route}, ${C.agent})` }} />
+      </div>
+      <div style={{ position: 'absolute', left: 90, right: 90, top: 250, display: 'flex', gap: 26 }}>
+        {ROADMAP.map(([when, tag, color, items], i) => (
+          <div key={when} style={{ flex: 1, ...pop(f - at[i]) }}>
+            <div style={{ borderRadius: 20, border: `2px solid ${color}`, background: 'rgba(20,30,66,0.92)', padding: '22px 26px', height: 470, boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+                <span style={text(46, 800, color)}>{when}</span>
+                <span style={mono(20, 500, C.ink2)}>{tag}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 26 }}>
+                {items.map(([icon, label], j) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14, ...pop(f - at[i] - 6 - j * 5) }}>
+                    <Icon name={icon} size={30} color={color} />
+                    <span style={text(27, 600)}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Overlay>
+  )
+}

@@ -1304,6 +1304,445 @@
    "hash": "fb4688ca88c5"
   },
   {
+   "id": "compare-0",
+   "scene": "compare",
+   "speaker": "narrator",
+   "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area.",
+   "file": "audio/lines/compare-0.mp3",
+   "durationMs": 7001,
+   "words": [
+    {
+     "text": "That",
+     "startMs": 0,
+     "endMs": 232
+    },
+    {
+     "text": "day,",
+     "startMs": 290,
+     "endMs": 546
+    },
+    {
+     "text": "the",
+     "startMs": 580,
+     "endMs": 650
+    },
+    {
+     "text": "fire",
+     "startMs": 708,
+     "endMs": 964
+    },
+    {
+     "text": "burned",
+     "startMs": 1010,
+     "endMs": 1289
+    },
+    {
+     "text": "about",
+     "startMs": 1312,
+     "endMs": 1521
+    },
+    {
+     "text": "thirty-eight",
+     "startMs": 1579,
+     "endMs": 2032
+    },
+    {
+     "text": "thousand",
+     "startMs": 2067,
+     "endMs": 2415
+    },
+    {
+     "text": "hectares",
+     "startMs": 2473,
+     "endMs": 2868
+    },
+    {
+     "text": "in",
+     "startMs": 2914,
+     "endMs": 2972
+    },
+    {
+     "text": "Ávila,",
+     "startMs": 3030,
+     "endMs": 3471
+    },
+    {
+     "text": "and",
+     "startMs": 3727,
+     "endMs": 3866
+    },
+    {
+     "text": "two",
+     "startMs": 3901,
+     "endMs": 4052
+    },
+    {
+     "text": "hundred",
+     "startMs": 4110,
+     "endMs": 4354
+    },
+    {
+     "text": "and",
+     "startMs": 4377,
+     "endMs": 4447
+    },
+    {
+     "text": "twenty-nine",
+     "startMs": 4470,
+     "endMs": 4981
+    },
+    {
+     "text": "homes",
+     "startMs": 5027,
+     "endMs": 5364
+    },
+    {
+     "text": "stood",
+     "startMs": 5399,
+     "endMs": 5619
+    },
+    {
+     "text": "inside",
+     "startMs": 5666,
+     "endMs": 5944
+    },
+    {
+     "text": "the",
+     "startMs": 5968,
+     "endMs": 6037
+    },
+    {
+     "text": "burned",
+     "startMs": 6072,
+     "endMs": 6327
+    },
+    {
+     "text": "area.",
+     "startMs": 6374,
+     "endMs": 6966
+    }
+   ],
+   "hash": "e9994c1cf21a"
+  },
+  {
+   "id": "compare-1",
+   "scene": "compare",
+   "speaker": "narrator",
+   "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds.",
+   "file": "audio/lines/compare-1.mp3",
+   "durationMs": 8777,
+   "words": [
+    {
+     "text": "We",
+     "startMs": 0,
+     "endMs": 151
+    },
+    {
+     "text": "can't",
+     "startMs": 197,
+     "endMs": 418
+    },
+    {
+     "text": "rerun",
+     "startMs": 464,
+     "endMs": 801
+    },
+    {
+     "text": "that",
+     "startMs": 848,
+     "endMs": 998
+    },
+    {
+     "text": "day.",
+     "startMs": 1057,
+     "endMs": 1382
+    },
+    {
+     "text": "What",
+     "startMs": 1846,
+     "endMs": 2020
+    },
+    {
+     "text": "HackFire",
+     "startMs": 2067,
+     "endMs": 2485
+    },
+    {
+     "text": "changes",
+     "startMs": 2531,
+     "endMs": 2937
+    },
+    {
+     "text": "is",
+     "startMs": 2995,
+     "endMs": 3077
+    },
+    {
+     "text": "what",
+     "startMs": 3123,
+     "endMs": 3239
+    },
+    {
+     "text": "the",
+     "startMs": 3274,
+     "endMs": 3344
+    },
+    {
+     "text": "coordinator",
+     "startMs": 3379,
+     "endMs": 3866
+    },
+    {
+     "text": "knows:",
+     "startMs": 3901,
+     "endMs": 4342
+    },
+    {
+     "text": "every",
+     "startMs": 4632,
+     "endMs": 4888
+    },
+    {
+     "text": "household",
+     "startMs": 4946,
+     "endMs": 5399
+    },
+    {
+     "text": "answers,",
+     "startMs": 5457,
+     "endMs": 5968
+    },
+    {
+     "text": "and",
+     "startMs": 6107,
+     "endMs": 6246
+    },
+    {
+     "text": "each",
+     "startMs": 6293,
+     "endMs": 6432
+    },
+    {
+     "text": "answer",
+     "startMs": 6478,
+     "endMs": 6722
+    },
+    {
+     "text": "reaches",
+     "startMs": 6780,
+     "endMs": 7070
+    },
+    {
+     "text": "the",
+     "startMs": 7117,
+     "endMs": 7187
+    },
+    {
+     "text": "map",
+     "startMs": 7245,
+     "endMs": 7407
+    },
+    {
+     "text": "within",
+     "startMs": 7465,
+     "endMs": 7686
+    },
+    {
+     "text": "two",
+     "startMs": 7732,
+     "endMs": 7895
+    },
+    {
+     "text": "seconds.",
+     "startMs": 7953,
+     "endMs": 8731
+    }
+   ],
+   "hash": "03964102b476"
+  },
+  {
+   "id": "roadmap-0",
+   "scene": "roadmap",
+   "speaker": "narrator",
+   "text": "Next: real phone lines, and a handover to a person at the control post.",
+   "file": "audio/lines/roadmap-0.mp3",
+   "durationMs": 3709,
+   "words": [
+    {
+     "text": "Next:",
+     "startMs": 0,
+     "endMs": 406
+    },
+    {
+     "text": "real",
+     "startMs": 488,
+     "endMs": 708
+    },
+    {
+     "text": "phone",
+     "startMs": 766,
+     "endMs": 998
+    },
+    {
+     "text": "lines,",
+     "startMs": 1045,
+     "endMs": 1382
+    },
+    {
+     "text": "and",
+     "startMs": 1405,
+     "endMs": 1498
+    },
+    {
+     "text": "a",
+     "startMs": 1544,
+     "endMs": 1567
+    },
+    {
+     "text": "handover",
+     "startMs": 1614,
+     "endMs": 1997
+    },
+    {
+     "text": "to",
+     "startMs": 2043,
+     "endMs": 2101
+    },
+    {
+     "text": "a",
+     "startMs": 2148,
+     "endMs": 2183
+    },
+    {
+     "text": "person",
+     "startMs": 2229,
+     "endMs": 2461
+    },
+    {
+     "text": "at",
+     "startMs": 2496,
+     "endMs": 2554
+    },
+    {
+     "text": "the",
+     "startMs": 2589,
+     "endMs": 2659
+    },
+    {
+     "text": "control",
+     "startMs": 2694,
+     "endMs": 3007
+    },
+    {
+     "text": "post.",
+     "startMs": 3065,
+     "endMs": 3669
+    }
+   ],
+   "hash": "92baa33fb6ff"
+  },
+  {
+   "id": "roadmap-1",
+   "scene": "roadmap",
+   "speaker": "narrator",
+   "text": "Then more regions, built into the firefighters' workflow, and a forecast that Devin retrains against every new fire.",
+   "file": "audio/lines/roadmap-1.mp3",
+   "durationMs": 6217,
+   "words": [
+    {
+     "text": "Then",
+     "startMs": 0,
+     "endMs": 209
+    },
+    {
+     "text": "more",
+     "startMs": 255,
+     "endMs": 395
+    },
+    {
+     "text": "regions,",
+     "startMs": 453,
+     "endMs": 940
+    },
+    {
+     "text": "built",
+     "startMs": 975,
+     "endMs": 1196
+    },
+    {
+     "text": "into",
+     "startMs": 1242,
+     "endMs": 1382
+    },
+    {
+     "text": "the",
+     "startMs": 1428,
+     "endMs": 1498
+    },
+    {
+     "text": "firefighters'",
+     "startMs": 1533,
+     "endMs": 2113
+    },
+    {
+     "text": "workflow,",
+     "startMs": 2148,
+     "endMs": 2694
+    },
+    {
+     "text": "and",
+     "startMs": 2879,
+     "endMs": 3019
+    },
+    {
+     "text": "a",
+     "startMs": 3065,
+     "endMs": 3088
+    },
+    {
+     "text": "forecast",
+     "startMs": 3146,
+     "endMs": 3611
+    },
+    {
+     "text": "that",
+     "startMs": 3646,
+     "endMs": 3762
+    },
+    {
+     "text": "Devin",
+     "startMs": 3808,
+     "endMs": 4052
+    },
+    {
+     "text": "retrains",
+     "startMs": 4110,
+     "endMs": 4540
+    },
+    {
+     "text": "against",
+     "startMs": 4574,
+     "endMs": 4853
+    },
+    {
+     "text": "every",
+     "startMs": 4957,
+     "endMs": 5271
+    },
+    {
+     "text": "new",
+     "startMs": 5317,
+     "endMs": 5457
+    },
+    {
+     "text": "fire.",
+     "startMs": 5515,
+     "endMs": 6177
+    }
+   ],
+   "hash": "2783396c30a0"
+  },
+  {
    "id": "close-0",
    "scene": "close",
    "speaker": "narrator",

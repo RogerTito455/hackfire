@@ -3,10 +3,10 @@
 import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion'
 import { Backdrop, Header, Subtitles, Vignette } from './Chrome'
 import { MapStage } from './MapStage'
-import { Brand, Call, Close, Command, Problem } from './Scenes'
-import { ALL_LINES, SCENES, TOTAL, beat, lineEnd, scene } from './timeline'
+import { Brand, Call, Close, Command, Compare, Problem, Roadmap } from './Scenes'
+import { ALL_LINES, SCENES, TOTAL, beat, line, lineEnd, scene } from './timeline'
 
-const OPAQUE = ['problem', 'brand', 'call', 'command', 'close']
+const OPAQUE = ['problem', 'brand', 'call', 'command', 'compare', 'roadmap', 'close']
 
 export function HackFireVideo() {
   const f = useCurrentFrame()
@@ -21,6 +21,8 @@ export function HackFireVideo() {
       <Brand f={f} />
       <Call f={f} />
       <Command f={f} />
+      <Compare f={f} />
+      <Roadmap f={f} />
       <Close f={f} />
       <Vignette />
       <Header f={f} sceneId={current.id} />
@@ -71,6 +73,12 @@ function Sound() {
       <Sfx at={beat('rescue-0', 'queued')} name="blip" />
       <Sfx at={beat('rescue-0', 'crews')} name="blip" />
       <Sfx at={beat('command-0', 'vonage')} name="scan" volume={0.25} />
+      <Sfx at={beat('compare-0', 'thirty')} name="blip" />
+      <Sfx at={beat('compare-0', 'two')} name="blip" />
+      <Sfx at={line('compare-1').at + 6} name="scan" volume={0.25} />
+      <Sfx at={beat('compare-1', 'two')} name="tick" />
+      <Sfx at={line('roadmap-0').at} name="blip" />
+      <Sfx at={beat('roadmap-1', 'then')} name="blip" />
       <Sfx at={beat('close-0', 'listens')} name="scan" volume={0.3} />
       <Sfx at={lineEnd('close-0') + 4} name="hit" volume={0.35} />
       <Audio

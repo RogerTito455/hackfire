@@ -1,5 +1,5 @@
 {
-  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed; `subtitle` is what the viewer reads under a Spanish line. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); lead time from data/lead_time_la-atalaya.json.",
+  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed; `subtitle` is what the viewer reads under a Spanish line. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); about 38,000 ha (37,818 provisional, Junta de Castilla y León via Ávilared, 21 Aug) and 229 homes inside the burned area (Idealista's estimate via Ávilared, 31 Jul), see docs/findings/2026-09-19-press-figures.md; 2 seconds is the dashboard's triage refresh; lead time from data/lead_time_la-atalaya.json.",
   "voices": {
     "narrator": {
       "id": "G17SuINrv2H9FC6nvetn",
@@ -156,6 +156,32 @@
         {
           "speaker": "narrator",
           "text": "The coordinator can ask the agent by voice, and with Vonage, share the live map with every crew."
+        }
+      ]
+    },
+    {
+      "id": "compare",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area."
+        },
+        {
+          "speaker": "narrator",
+          "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds."
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "Next: real phone lines, and a handover to a person at the control post."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Then more regions, built into the firefighters' workflow, and a forecast that Devin retrains against every new fire."
         }
       ]
     },

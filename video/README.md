@@ -1,6 +1,6 @@
 # HackFire presentation video
 
-A 95-second 1920 × 1080 video for the pitch, made in code: [Remotion](https://www.remotion.dev) for the picture, ElevenLabs for the narration, the call's voices, the sound effects and the music. It does not record the dashboard. It draws its own interface, in HackFire's night palette and with the dashboard's icons, from the same data the dashboard uses.
+A 125-second 1920 × 1080 video for the pitch, made in code: [Remotion](https://www.remotion.dev) for the picture, ElevenLabs for the narration, the call's voices, the sound effects and the music. It does not record the dashboard. It draws its own interface, in HackFire's night palette and with the dashboard's icons, from the same data the dashboard uses.
 
 ```bash
 pnpm video:studio    # preview and scrub it in the browser
@@ -17,9 +17,10 @@ English narration with word-by-word subtitles; the call is in Spanish, subtitled
 | 02 The forecast | `brand`, `forecast`, `leadtime` | HackFire and its pipeline; the rewind to 15:30, the forecast, and the 6 h 8 min lead time |
 | 03 The call | `order`, `call`, `understood` | The coordinator approves the order; a simulated call with a demo resident; the triage it records |
 | 04 The rescue | `rescue`, `command` | The rescue queue, the crew plan and the cached routes; asking by voice; the Vonage live map |
-| 05 Listening back | `close` | ES-Alert speaks, HackFire listens back; the end card |
+| 05 What changes | `compare`, `roadmap` | The day's cost, sourced; what the coordinator knows that day and with HackFire, side by side; the roadmap |
+| 06 Listening back | `close` | ES-Alert speaks, HackFire listens back; the end card |
 
-**Tone rules (CLAUDE.md) hold here too.** Every figure has a source on screen or in `script.json`'s `about`: the press figures are the ✅ ones in [docs/findings/2026-09-19-press-figures.md](../docs/findings/2026-09-19-press-figures.md), and the ES-Alert text is quoted from Ávilared. The lead time comes with its definition, and says nothing about when anyone was warned. Everything from the order onwards is labelled "Simulation with demo residents", at the demo autopilot's times (`data/demo_timeline.json`).
+**Tone rules (CLAUDE.md) hold here too.** The comparison sets what the coordinator knew that day against what HackFire does, measured (the 2 s triage refresh, the replay's lead time); it never says what a different warning would have changed. Every figure has a source on screen or in `script.json`'s `about`: the press figures are the ✅ ones in [docs/findings/2026-09-19-press-figures.md](../docs/findings/2026-09-19-press-figures.md), and the ES-Alert text is quoted from Ávilared. The lead time comes with its definition, and says nothing about when anyone was warned. Everything from the order onwards is labelled "Simulation with demo residents", at the demo autopilot's times (`data/demo_timeline.json`).
 
 ## How it is built
 

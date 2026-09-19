@@ -80,7 +80,7 @@ export function SimulationTag({ opacity, top = 132 }: { opacity: number; top?: n
 }
 
 export function Source({ children, opacity }: { children: string; opacity: number }) {
-  return <div style={{ position: 'absolute', left: 48, bottom: 150, opacity, ...mono(16, 400, C.ink3), zIndex: 40 }}>{children}</div>
+  return <div style={{ position: 'absolute', left: 48, bottom: 14, opacity, ...mono(15, 400, C.ink2), zIndex: 60 }}>{children}</div>
 }
 
 const SPEAKER = { agent: ['Agent', C.agent], resident: ['Resident', C.ink] } as const

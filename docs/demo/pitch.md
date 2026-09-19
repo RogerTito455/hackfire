@@ -39,21 +39,41 @@ Three minutes, following PLAN.md section 8, updated to what the product does now
 
 **If the call fails:** click the pin → *Typed answer (backup)* → type "Mi madre no puede andar" → *Classify and record*. Without an LLM, press *Needs rescue*. See the [runbook](runbook.md).
 
-## 4. The coordinator (2:00–2:30)
+## 4. The coordinator (2:00–2:20)
 
 > Every resident who can leave on their own is sent on their way. Every one who can't lands here: the rescue queue, ordered by how soon the fire reaches them, each with the crew's route.
 
 *Show the rescue queue and click "Show crew route". If #10 is ready: ask the agent by voice "¿Qué rescates tengo y en qué orden?"*
 
-## 5. Close (2:30–3:00)
+## 5. What changes, side by side (2:20–2:42)
 
-> Six hours of lead time, from satellites alone.
+*Slide: the figures of the day, then the table.*
+
+> That day, the fire burned about thirty-eight thousand hectares in Ávila. Fifteen hundred people were evacuated, five homes were destroyed, and two hundred and twenty-nine more stood inside the burned area.
 >
-> A call needs a network, just like ES-Alert does. That is why we call when the forecast flags a zone, hours before the fire arrives, while the towers still work. And a call nobody answers is information too: it tells the coordinator where to send a patrol.
->
-> This doesn't replace ES-Alert; it listens back. Next: live video from residents who need rescue, volunteers dispatched only under the coordinator's orders, and a spread model that improves itself against the real hotspots.
->
-> Every resident who evacuates on their own is a rescue the firefighters don't have to make.
+> We can't rerun that day. What HackFire changes is what the coordinator knows, and when.
+
+| | 23 July 2026 | With HackFire |
+|---|---|---|
+| The warning | One ES-Alert to every phone: stay indoors because of the smoke | An order per zone, approved by the coordinator, said to each household by name |
+| Answers | None: an alert cannot hear back | Every call ends in a status: leaving, needs rescue, or no answer |
+| Who can't leave | Not known from the alert | On the coordinator's map within 2 seconds of being recorded, queued by when the fire arrives |
+| The way out | The same message whatever the road | A route per home that avoids the fire and every road the coordinator marks as cut |
+| Time to act | | La Atalaya flagged 6 h 8 min before the first hotspot within 3 km, from satellite data alone |
+
+*Sources for the left column and the figures: [press figures](../findings/2026-09-19-press-figures.md) (Junta de Castilla y León via Ávilared, 21 Aug; Tribuna de Ávila, 23 Jul; Idealista's estimate via Ávilared, 31 Jul). "2 seconds" is how often the dashboard refreshes the triage (`useTriage`, `POLL_MS`); the lead time is the replay's ([finding](../findings/2026-09-19-lead-time.md)). No "would have" figures: nobody can measure what a different warning would have changed that day.*
+
+## 6. Roadmap (2:42–2:52)
+
+> Next: real phone lines, and handing a call to a person at the control post when the agent should not carry it alone. Then more regions, inside the crews' and 112's own workflow, and a forecast that Devin retrains against every new fire's satellite data, with what residents tell us in each call.
+
+| Now (this weekend) | Next | Then |
+|---|---|---|
+| Forecast from satellite hotspots, orders, calls in Spanish, triage, rescue queue, crew plan, road closures, live map for crews (Vonage) | A SIP trunk for real calls; handover to a human at the control post (SLNG `transfer_call`); road closures from the DGT's feed; a pilot in one municipality with a voluntary registry | Any area Deepfire covers, in more languages; inside 112 and the crews' dispatch; Devin iterating the spread model against real hotspots, validated fire by fire; call feedback growing the triage evaluations (Galtea) |
+
+## 7. Close (2:52–3:00)
+
+> This doesn't replace ES-Alert; it listens back. Every resident who evacuates on their own is a rescue the firefighters don't have to make.
 
 ## Questions to prepare
 
