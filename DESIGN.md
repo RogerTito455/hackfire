@@ -159,8 +159,11 @@ Before merging a UI change, check that it does not bring back:
 
 `/about` (`frontend/about.html`, `src/landing.tsx`, components in `ui/landing/`) presents the project to judges and visitors and sends them to the dashboard at `/`. Same tokens, icons, languages and rules as the dashboard, with two differences:
 
-- **Its one loud element is the lead-time sign:** a navy panel with the figure in fire orange (numerals large, units small) and a bar between the two moments it spans. The bar is the time to act, so it is blue; its end is the fire, so it is warm.
+- **It is louder, in full-width colour fields that each still mean something:** a night-navy hero with the real hotspots of 23 July glowing behind the headline; the lead time in giant white numerals on a fire-coloured band (counted up once when it comes into view); the mini-demo; the three outcomes as tiles in their status colours; and the demo band in civil-protection blue.
+- **How it works is a mini-demo** (`ui/landing/MiniDemo.tsx`): SVG, CSS and a small playhead, no map library. It loops about 25 s: real hotspots fill the map, the predicted spread reaches La Atalaya and El Tiemblo, an example call plays out and the example residents' pins change state. It plays only while on screen, can be paused, and its steps jump to each moment. Under reduced motion it shows the final frame. Its data (`miniDemo.json`, about 11 KB) is generated from `data/` by `pnpm --dir frontend data:mini-demo`; it says on screen that the residents and the call are examples.
+- **One orchestrated moment per section:** the hero's fire lighting up, the counting numerals, the mini-demo. No scattered entrance animations.
 - **It scrolls.** A sticky top bar keeps **Open the demo** in reach on a phone; the hero repeats it as a full-width button.
+- **No links to the repository**, which is private.
 
 The lead time on the page is a copy of the published figure (`PUBLISHED_LEAD_TIME` in `domain/leadTime.ts`); if `pnpm data:lead-time` ever changes it, update both. The dashboard picture is `frontend/public/dashboard-phone.webp`, a 390 × 780 screenshot at 2× of a local run with the sample registry, never the real one.
 

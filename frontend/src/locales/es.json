@@ -224,7 +224,7 @@
       "title": "Llegar a cada vecino antes que el fuego",
       "lead": "Un agente de voz llama a los vecinos que están en la trayectoria prevista de un incendio forestal, le dice a cada uno cómo salir y le pregunta si puede irse por su cuenta. El coordinador de emergencias ve en un mapa quién está evacuando, quién no contesta y quién necesita rescate.",
       "cta": "Abrir la demo en directo",
-      "code": "Ver el código en GitHub",
+      "how": "Ver cómo funciona",
       "event": "Hecho en la HackBarna 2026 para el reto «AI for Wildfire» de Norrsken y Deepfire, categoría 4: valores en riesgo."
     },
     "leadTime": {
@@ -232,28 +232,48 @@
       "start": "Marcada en la trayectoria prevista del fuego",
       "end": "Primer foco de satélite a menos de {radius} km",
       "body": "Con solo los focos de satélite vistos hasta las {flagged} del 23 de julio de 2026, HackFire situó {zone} en la trayectoria prevista del fuego. El primer foco a menos de {radius} km de la urbanización llegó a las {reached}.",
-      "caveat": "Calculada solo con datos de satélite. No dice nada sobre cuándo avisaron las autoridades.",
-      "how": "Cómo se calcula la antelación"
+      "caveat": "Calculada solo con datos de satélite. No dice nada sobre cuándo avisaron las autoridades."
     },
     "problem": {
       "title": "El incendio que reproducimos",
       "body": "El 23 de julio de 2026 el incendio de Burgohondo, en Ávila, avanzó 3 km en 40 minutos y llegó a la urbanización La Atalaya, en El Tiemblo. Se evacuó de allí a entre 1.200 y 1.300 personas y quedaron destruidas 5 viviendas.",
-      "gap": "Los avisos a la población van en un solo sentido. ES-Alert envía el mismo mensaje a toda una zona y no escucha: el coordinador no sabe quién se ha ido, a quién no le ha llegado el mensaje y quién no puede moverse.",
-      "sources": "Fuentes de estas cifras"
+      "gap": "Los avisos a la población van en un solo sentido. ES-Alert envía el mismo mensaje a toda una zona y no escucha: el coordinador no sabe quién se ha ido, a quién no le ha llegado el mensaje y quién no puede moverse."
     },
     "how": {
       "title": "Cómo funciona",
+      "lead": "Un día del incendio real, en veinte segundos.",
       "fireTitle": "El fuego y hacia dónde va",
-      "fireBody": "Los focos de satélite de Deepfire en un mapa con una barra de tiempo, y la propagación prevista hora a hora: un cono proyectado a partir de la velocidad y la dirección del frente.",
+      "fireBody": "Los focos de satélite de Deepfire, recientes en amarillo y antiguos en rojo, y la propagación prevista a partir de la velocidad y la dirección del frente.",
       "zonesTitle": "Quién está en su camino",
-      "zonesBody": "La propagación prevista se cruza con pueblos, urbanizaciones, residencias, colegios y carreteras de OpenStreetMap. Cada lugar recibe un tiempo hasta que llega el fuego.",
+      "zonesBody": "La predicción se cruza con pueblos, urbanizaciones, residencias y colegios de OpenStreetMap. Cada lugar recibe un tiempo hasta que llega el fuego.",
       "callTitle": "Una llamada a cada vecino en riesgo",
-      "callBody": "El agente de voz da a cada vecino una ruta de salida, a pie o en coche, que evita el fuego previsto, y le pregunta: ¿puede irse por su cuenta?, ¿cuántos son?, ¿qué ve desde allí?",
+      "callBody": "El agente de voz da a cada vecino una ruta de salida que evita el fuego y le pregunta si puede irse por su cuenta.",
       "triageTitle": "Triaje para el coordinador",
-      "triageBody": "Cada respuesta se convierte en un estado en el mapa. Los rescates se ordenan según cuánto falta para que llegue el fuego, y cada uno genera un aviso a los bomberos con la ruta hasta la puerta.",
-      "outcomes": "Los tres resultados de una llamada",
+      "triageBody": "Cada respuesta se convierte en un estado en el mapa. Quien evacúa recibe su ruta a un punto seguro; cada rescate llega a los bomberos con el camino hasta la puerta.",
+      "play": "Reproducir la animación",
+      "pause": "Pausar la animación",
+      "jump": "Ir al paso {step}: {title}",
+      "honest": "Animación ilustrativa: focos de satélite reales del 23 de julio; vecinos y llamada de ejemplo.",
+      "map": "Mapa animado del incendio del 23 de julio de 2026 cerca de El Tiemblo, Ávila.",
+      "clock": "23 de julio, {time}",
+      "impact": "fuego en menos de {hours} h",
+      "safe": "Punto seguro",
+      "crew": "Bomberos",
+      "call": "Llamada de ejemplo a un vecino de La Atalaya",
+      "waiting": "Las llamadas empiezan en cuanto una zona entra en la trayectoria prevista.",
+      "agent": "Agente de HackFire",
+      "resident": "Vecino",
+      "agentLine": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias.",
+      "agentAsk": "¿Pueden salir por su cuenta?",
+      "residentLine": "Mi madre no puede andar.",
       "quote": "Cada vecino que se va por su cuenta es un rescate que los bomberos no tienen que hacer.",
       "network": "Las llamadas salen de la predicción, horas antes, mientras las antenas todavía funcionan. Que nadie conteste también es una señal: le indica al coordinador adónde mandar una patrulla."
+    },
+    "outcomes": {
+      "title": "Los tres resultados de una llamada",
+      "evacuating": "Se va por su cuenta, con una ruta a un punto seguro que evita el fuego.",
+      "no_answer": "Nadie contesta. El agente vuelve a llamar y el coordinador sabe adónde mandar una patrulla.",
+      "needs_rescue": "No puede irse solo. Se ordena por tiempo hasta el fuego y llega a los bomberos con la ruta hasta la puerta."
     },
     "demo": {
       "title": "Prueba la demo",

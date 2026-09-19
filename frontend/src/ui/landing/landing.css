@@ -1,28 +1,31 @@
-/* The landing page at /about. Same signage as the dashboard (DESIGN.md): warm is the fire, blue the
-   way out and what you can do, navy the ink. The lead-time sign is the one loud element. */
+/* The landing page at /about. Same signage as the dashboard (DESIGN.md), louder: a night-navy hero
+   with the real fire glowing in it, a fire-coloured band for the lead time, the mini-demo on paper,
+   the three outcomes in their status colours and a civil-protection blue band for the demo.
+   Every colour still means something: warm is fire, blue the way out, purple zones at risk. */
 
 .landing {
   --gutter: max(16px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
-  --measure: 1120px;
-  /* The sign: a navy panel in both schemes, like a road sign. */
-  --sign: #0f1b3d;
-  --sign-edge: #0f1b3d;
-  --sign-ink: #ffffff;
-  --sign-ink-2: #c3cbe6;
-  --sign-route: #6f8cff;
-  --sign-fire: var(--fire-2);
+  --measure: 1180px;
+  --night: #0b1330;
+  --night-2: #141e42;
+  --night-line: #26325c;
+  --night-ink-2: #b9c3e6;
+  --band-fire: #d4361b;
+  --band-blue: #2447d6;
+  --way-out-night: #6f8cff;
+  --zone-night: #ab47bc;
+  --zone-night-ink: #ecc9f3;
   --route-hover: #1c39b3;
   --zone-ink: var(--zone);
 
   min-height: 100vh;
+  overflow-x: hidden;
   background: var(--paper);
   color: var(--ink);
 }
 
 @media (prefers-color-scheme: dark) {
   .landing {
-    --sign: #0b1330;
-    --sign-edge: #33427a;
     --route-hover: #8ea5ff;
     --zone-ink: #c98ade;
   }
@@ -33,7 +36,16 @@
   text-underline-offset: 3px;
 }
 
-/* --- Top bar ------------------------------------------------------------------------------------ */
+.landing .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Top bar: night navy, continuous with the hero ------------------------------------------ */
 
 .landing-bar {
   position: sticky;
@@ -43,8 +55,8 @@
   gap: 8px;
   align-items: center;
   padding: calc(var(--safe-top) + 8px) max(var(--gutter), calc((100% - var(--measure)) / 2)) 8px;
-  border-bottom: 1px solid var(--line);
-  background: var(--paper);
+  border-bottom: 1px solid var(--night-line);
+  background: var(--night);
 }
 
 .landing .landing-brand {
@@ -53,20 +65,21 @@
   align-items: center;
   min-height: 44px;
   margin-right: auto;
-  color: var(--ink);
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
   text-decoration: none;
 }
 
 .landing-brand .icon {
-  color: var(--fire-3);
+  color: var(--fire-2);
 }
 
-.landing-bar .language {
-  border: 1px solid var(--line);
-  box-shadow: none;
+@media (max-width: 359px) {
+  .landing-brand span {
+    display: none;
+  }
 }
 
 /* --- Buttons ------------------------------------------------------------------------------------ */
@@ -75,15 +88,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 52px;
-  padding: 0 22px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  font-size: 17px;
-  font-weight: 700;
+  min-height: 56px;
+  padding: 0 26px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 800;
   text-align: center;
   text-decoration: none;
-  transition: transform 120ms var(--ease-out);
+  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out);
 }
 
 .landing .landing-button:active {
@@ -91,111 +104,135 @@
 }
 
 .landing .landing-button.primary {
-  background: var(--route);
-  color: var(--route-ink);
+  background: var(--band-blue);
+  color: #fff;
 }
 
-.landing .landing-button.secondary {
-  border-color: var(--line);
-  background: var(--paper);
-  color: var(--ink);
+/* The one call to action in the hero glows, blue on navy: the way out. */
+.landing .landing-button.glow {
+  box-shadow: 0 0 0 6px rgb(36 71 214 / 30%), 0 10px 40px rgb(111 140 255 / 45%);
+}
+
+.landing .landing-button.ghost {
+  border-color: rgb(255 255 255 / 45%);
+  background: transparent;
+  color: #fff;
+}
+
+.landing .landing-button.inverse {
+  min-height: 60px;
+  padding: 0 32px;
+  background: #fff;
+  color: var(--band-blue);
+  font-size: 19px;
 }
 
 .landing .landing-button.compact {
   min-height: 44px;
-  padding: 0 14px;
-  border-radius: 999px;
+  padding: 0 16px;
   font-size: 15px;
   white-space: nowrap;
 }
 
-/* Below 360 px the mark alone names the page; the link keeps its accessible name. */
-@media (max-width: 359px) {
-  .landing-brand span {
-    display: none;
-  }
-}
-
 @media (hover: hover) {
   .landing .landing-button.primary:hover {
-    background: var(--route-hover);
+    background: #1c39b3;
   }
 
-  .landing .landing-button.secondary:hover {
-    border-color: var(--ink-2);
+  .landing .landing-button.ghost:hover {
+    border-color: #fff;
+  }
+
+  .landing .landing-button.inverse:hover {
+    background: #e6ebff;
   }
 }
 
-/* --- Page frame --------------------------------------------------------------------------------- */
+/* --- Hero: night navy with the real fire glowing behind the headline -------------------------- */
 
-.landing-hero,
-.landing-section,
-.landing-footer > * {
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--night);
+  color: #fff;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
   width: calc(100% - 2 * var(--gutter));
   max-width: var(--measure);
-  margin-right: auto;
-  margin-left: auto;
-}
-
-.landing-section {
-  padding: 48px 0;
-  border-top: 1px solid var(--line);
-}
-
-.landing-section h2 {
-  margin: 0 0 20px;
-  font-size: clamp(26px, 6.5vw, 36px);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
-
-.landing-section p {
-  margin: 0 0 14px;
-}
-
-.landing-meta {
-  color: var(--ink-2);
-  font-size: 14px;
-}
-
-/* --- Hero --------------------------------------------------------------------------------------- */
-
-.landing-hero {
-  display: grid;
-  gap: 32px;
-  padding: 28px 0 48px;
+  margin: 0 auto;
+  padding: 40px 0 8px;
 }
 
 .hero h1 {
-  max-width: 13ch;
+  max-width: 11ch;
   margin: 0;
-  font-size: clamp(38px, 11vw, 68px);
-  font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  font-size: clamp(44px, 12.5vw, 112px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
 }
 
 .hero-lead {
-  max-width: 36em;
-  margin: 18px 0 0;
-  color: var(--ink-2);
-  font-size: 17px;
+  max-width: 34em;
+  margin: 24px 0 0;
+  color: var(--night-ink-2);
+  font-size: clamp(17px, 2vw, 20px);
   line-height: 1.5;
 }
 
 .hero-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 26px;
+  gap: 12px;
+  margin-top: 30px;
 }
 
 .hero-event {
   max-width: 36em;
-  margin: 18px 0 0;
-  color: var(--ink-2);
+  margin: 22px 0 0;
+  color: var(--night-ink-2);
   font-size: 13px;
+}
+
+.fire-field {
+  display: block;
+  order: 2;
+  width: 150%;
+  max-width: none;
+  height: auto;
+  margin: -24px 0 -16px -30%;
+}
+
+.fire-embers circle {
+  animation: ember-in 700ms var(--ease-out) both;
+}
+
+.fire-glow {
+  opacity: 0.75;
+  animation: fire-breathe 4.5s ease-in-out 2.4s infinite alternate both;
+}
+
+@keyframes ember-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fire-breathe {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0.95;
+  }
 }
 
 @media (min-width: 560px) {
@@ -206,53 +243,74 @@
 }
 
 @media (min-width: 960px) {
-  .landing-hero {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: 56px;
-    align-items: center;
-    padding: 72px 0 88px;
+  .hero {
+    min-height: 640px;
+    min-height: calc(100vh - 61px);
+    justify-content: center;
+  }
+
+  .hero-inner {
+    padding: 96px 0 112px;
+  }
+
+  .fire-field {
+    position: absolute;
+    top: 50%;
+    right: -14%;
+    width: 84%;
+    margin: 0;
+    transform: translateY(-40%);
+    /* The fire fades into the night on the headline's side, so the text stays readable. */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 45%);
+    mask-image: linear-gradient(to right, transparent 0, #000 45%);
+  }
+
+  .hero-lead,
+  .hero-event {
+    max-width: 30em;
   }
 }
 
-/* --- The lead-time sign ------------------------------------------------------------------------- */
+/* --- Lead-time band: the fire's colour, giant white numerals ---------------------------------- */
 
-.sign {
-  padding: 24px 20px 20px;
-  border: 1px solid var(--sign-edge);
-  border-radius: var(--radius-sheet);
-  background: var(--sign);
-  color: var(--sign-ink-2);
+.band-fire {
+  background: var(--band-fire);
+  color: #fff;
+}
+
+.band-inner {
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 56px 0 48px;
 }
 
 .sign-title {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin: 0;
 }
 
 .sign-figure {
-  color: var(--sign-fire);
-  font-size: clamp(88px, 27vw, 150px);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.045em;
+  font-size: clamp(84px, 25vw, 220px);
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* The units sit small beside the numerals, as on a clock or a road sign. */
 .sign-unit {
   font-size: 0.34em;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .sign-label {
-  color: var(--sign-ink);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .sign-timeline {
@@ -260,20 +318,21 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin: 26px 0 22px;
+  max-width: 760px;
+  margin: 32px 0 26px;
   padding: 0;
   list-style: none;
 }
 
-/* The window between the two moments: the time to act, so blue. */
+/* The window between the two moments: the time there was to act. */
 .sign-timeline::before {
   position: absolute;
-  top: 35px;
-  right: 7px;
-  left: 7px;
+  top: 37px;
+  right: 8px;
+  left: 8px;
   height: 6px;
   border-radius: 3px;
-  background: var(--sign-route);
+  background: #fff;
   content: '';
 }
 
@@ -281,24 +340,24 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  font-size: 13px;
+  gap: 26px;
+  font-size: 14px;
   line-height: 1.35;
-  text-wrap: balance;
 }
 
 .sign-moment::before {
   position: absolute;
-  top: 31px;
-  width: 14px;
-  height: 14px;
+  top: 32px;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #fff;
   border-radius: 50%;
   content: '';
 }
 
 .sign-start::before {
   left: 0;
-  background: var(--sign-route);
+  background: var(--band-blue);
 }
 
 .sign-end {
@@ -308,43 +367,62 @@
 
 .sign-end::before {
   right: 0;
-  background: var(--sign-fire);
+  background: var(--fire-1);
 }
 
 .sign-time {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
   min-height: 24px;
-  color: var(--sign-ink);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-.sign-end .icon {
-  color: var(--sign-fire);
-}
-
 .sign-body {
+  max-width: 44em;
   margin: 0 0 12px;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .sign-caveat {
+  max-width: 44em;
   margin: 0;
-  font-size: 13px;
-}
-
-.landing .sign a {
-  color: var(--sign-route);
+  font-size: 14px;
   font-weight: 600;
 }
 
-@media (min-width: 560px) {
-  .sign {
-    padding: 32px 32px 28px;
-  }
+/* --- Page frame for the quiet sections ---------------------------------------------------------- */
+
+.landing-section,
+.landing-footer > * {
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--measure);
+  margin-right: auto;
+  margin-left: auto;
 }
 
-/* --- The problem -------------------------------------------------------------------------------- */
+.landing-section {
+  padding: 48px 0;
+}
+
+.landing-section + .landing-section {
+  border-top: 1px solid var(--line);
+}
+
+.landing h2 {
+  margin: 0 0 18px;
+  font-size: clamp(30px, 7vw, 52px);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.landing-section p {
+  margin: 0 0 14px;
+}
 
 .problem-text {
   max-width: 40em;
@@ -357,167 +435,640 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     gap: 56px;
+    padding: 72px 0;
   }
 }
 
-/* --- How it works ------------------------------------------------------------------------------- */
+/* --- How it works: the mini-demo ---------------------------------------------------------------- */
 
-.steps {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.how {
+  padding: 56px 0 64px;
+  background: var(--mist);
 }
 
-.step {
-  padding: 18px 0 20px;
-  border-top: 1px solid var(--line);
+.how-inner,
+.outcomes-inner,
+.band-blue-inner {
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--measure);
+  margin: 0 auto;
 }
 
-.step-marker {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.step-number {
-  min-width: 1ch;
+.how-lead {
+  margin: -6px 0 24px;
   color: var(--ink-2);
-  font-size: 15px;
+  font-size: 18px;
+}
+
+.mini-stage {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-sheet);
+  background: var(--night-2);
+  color: #fff;
+}
+
+.mini-map {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-group);
+  background: var(--night);
+}
+
+.mini-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Bottom-left: the top of the map holds the place names. */
+.mini-clock {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(11 19 48 / 80%);
+  font-size: 14px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-.step h3 {
-  margin: 12px 0 6px;
-  font-size: 18px;
+.mini-cone {
+  opacity: 0;
+  transition: opacity 600ms var(--ease-out);
+}
+
+.mini-cone polygon {
+  fill-opacity: 0.16;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.mini-cone.shown {
+  opacity: 1;
+  animation: cone-pulse 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes cone-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.mini-zone polygon {
+  fill: var(--zone-night);
+  fill-opacity: 0;
+  stroke: var(--zone-night-ink);
+  stroke-opacity: 0.25;
+  stroke-width: 3;
+  transition: fill-opacity 500ms var(--ease-out), stroke-opacity 500ms var(--ease-out);
+}
+
+.mini-zone.lit polygon {
+  fill-opacity: 0.85;
+  stroke-opacity: 1;
+}
+
+.mini-zone-label {
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out);
+}
+
+.mini-zone-label.lit {
+  opacity: 1;
+}
+
+.mini-zone-label text {
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+
+.mini-zone-label .name {
+  fill: #fff;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.mini-zone-label .impact {
+  fill: var(--zone-night-ink);
+  font-size: 26px;
   font-weight: 700;
-  line-height: 1.3;
 }
 
-.step p {
-  margin: 0;
-  color: var(--ink-2);
+.mini-route {
+  fill: none;
+  stroke-dasharray: 1 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.tone-fire .icon {
-  color: var(--fire-2);
+.mini-route.way-out {
+  stroke: var(--way-out-night);
+  stroke-width: 8;
 }
 
-.tone-zone .icon {
-  color: var(--zone-ink);
+.mini-route.crew {
+  stroke: #fff;
+  stroke-width: 5;
 }
 
-.tone-route .icon {
-  color: var(--route);
+.mini-place text {
+  fill: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 7px;
 }
 
-.tone-rescue .icon {
-  color: var(--fire-3);
+.mini-place.safe circle {
+  fill: #fff;
+  stroke: var(--way-out-night);
+  stroke-width: 7;
 }
 
-@media (min-width: 720px) {
-  .steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 32px;
+.mini-place.crew-base rect {
+  fill: #fff;
+  stroke: var(--night);
+  stroke-width: 3;
+}
+
+.mini-pin {
+  stroke: #fff;
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: fill 250ms var(--ease-out);
+}
+
+.mini-pin.done {
+  animation: pin-pop 450ms var(--ease-out);
+}
+
+@keyframes pin-pop {
+  50% {
+    transform: scale(1.7);
   }
 }
 
-@media (min-width: 1080px) {
-  .steps {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.mini-side {
+  display: grid;
+  gap: 10px;
+  align-content: start;
 }
 
-.outcomes {
-  margin-top: 20px;
+.mini-call {
+  min-height: 236px;
+  padding: 12px;
+  border-radius: var(--radius-group);
+  background: var(--night);
 }
 
-.landing-section .outcomes-label {
-  margin-bottom: 10px;
-  color: var(--ink-2);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.outcome-list {
+.mini-call-head {
   display: flex;
-  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mini-call-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--night-line);
+}
+
+.mini-call.live .mini-call-icon {
+  background: var(--status-evacuating, #0e9f6e);
+}
+
+.mini-call-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--night-ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.mini-wave {
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+  align-items: center;
+  height: 24px;
+}
+
+.mini-wave i {
+  display: block;
+  width: 4px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--night-ink-2);
+}
+
+.mini-wave.speaking i {
+  background: #fff;
+  animation: wave 520ms ease-in-out infinite alternate;
+}
+
+.mini-wave.speaking i:nth-child(2) {
+  animation-delay: -120ms;
+}
+
+.mini-wave.speaking i:nth-child(3) {
+  animation-delay: -300ms;
+}
+
+.mini-wave.speaking i:nth-child(4) {
+  animation-delay: -60ms;
+}
+
+.mini-wave.speaking i:nth-child(5) {
+  animation-delay: -220ms;
+}
+
+@keyframes wave {
+  from {
+    height: 5px;
+  }
+  to {
+    height: 22px;
+  }
+}
+
+.mini-waiting {
+  margin: 0;
+  color: var(--night-ink-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.mini-bubbles {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.outcome {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 16px 0 12px;
-  border: 2px solid;
-  border-radius: 999px;
-  font-weight: 700;
+.mini-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 88%;
+  padding: 8px 12px 10px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.35;
 }
 
-.outcome-icon {
+.mini-bubble.agent {
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+  background: var(--band-blue);
+}
+
+.mini-bubble.resident {
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  background: #fff;
+  color: var(--night);
+}
+
+.mini-who {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.8;
+}
+
+.mini-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mini-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 3px 7px 5px;
+  border: 2px solid;
+  border-radius: 10px;
+  background: var(--night);
+  transition: background-color 250ms var(--ease-out);
+}
+
+.mini-tile.filled {
+  background: currentColor;
+}
+
+.mini-tile-count {
   display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Labels wrap rather than being cut: "Evacuando" must read whole at 320 px. */
+.mini-tile-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.mini-tile.filled .mini-tile-count,
+.mini-tile.filled .mini-tile-label {
+  color: #fff;
+}
+
+/* Amber takes navy ink, as on the dashboard's strip. */
+.mini-tile.filled.no_answer .mini-tile-count,
+.mini-tile.filled.no_answer .mini-tile-label {
+  color: #0f1b3d;
+}
+
+.mini-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0 18px;
+}
+
+.mini-play {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--band-blue);
+  color: #fff;
+  cursor: pointer;
+}
+
+.mini-honest {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mini-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mini-step {
+  --tone: var(--fire-2);
+  --tone-soft: rgb(255 122 26 / 12%);
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-group);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
+}
+
+.mini-step.tone-1 {
+  --tone: var(--zone-ink);
+  --tone-soft: rgb(171 71 188 / 12%);
+}
+
+.mini-step.tone-2 {
+  --tone: var(--route);
+  --tone-soft: rgb(36 71 214 / 12%);
+}
+
+.mini-step.tone-3 {
+  --tone: #e0302a;
+  --tone-soft: rgb(224 48 42 / 12%);
+}
+
+.mini-step-mark {
+  display: inline-flex;
+  grid-row: span 2;
+  gap: 6px;
+  align-items: center;
+  align-self: start;
+  color: var(--tone);
+}
+
+.mini-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--tone);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mini-step-title {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.mini-step-body {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mini-step.active {
+  border-color: var(--tone);
+  background: var(--tone-soft);
+}
+
+.mini-step.active .mini-step-number {
+  background: var(--tone);
+  color: #fff;
+}
+
+@media (min-width: 720px) {
+  .mini-stage {
+    padding: 14px;
+  }
+
+  .mini-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .mini-stage {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 14px;
+  }
+
+  .mini-call {
+    min-height: 0;
+    flex: 1;
+  }
+
+  .mini-tile-label {
+    font-size: 11px;
+  }
+
+  .mini-side {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mini-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .mini-step {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .mini-step-mark {
+    grid-row: auto;
+    margin-bottom: 6px;
+  }
+}
+
+/* --- The three outcomes: big tiles in the status colours -------------------------------------- */
+
+.outcomes {
+  padding: 56px 0 64px;
+  background: var(--paper);
+}
+
+.outcome-tiles {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outcome-tile {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 3px solid;
+  border-radius: var(--radius-sheet);
+  background: var(--paper);
+}
+
+.outcome-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 18px 20px;
+  color: #fff;
+}
+
+.outcome-tile.no_answer .outcome-head {
+  color: #0f1b3d;
+}
+
+.outcome-name {
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.outcome-body {
+  padding: 16px 20px 20px;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 .quote {
-  max-width: 34em;
-  margin: 40px 0 16px;
-  padding-left: 18px;
-  border-left: 4px solid var(--route);
+  max-width: 30em;
+  margin: 44px 0 14px;
+  padding: 0;
 }
 
-.landing-section .quote p {
+.landing .quote p {
   margin: 0;
-  font-size: clamp(21px, 5.2vw, 28px);
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
 }
 
-.landing-section .network {
+.network {
   max-width: 40em;
   margin: 0;
   color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.5;
 }
 
-/* --- Try the demo ------------------------------------------------------------------------------- */
+@media (min-width: 720px) {
+  .outcome-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
 
-.demo {
+/* --- Try the demo: civil-protection blue, the way in ----------------------------------------- */
+
+.band-blue {
+  padding: 56px 0 0;
+  overflow: hidden;
+  background: var(--band-blue);
+  color: #fff;
+}
+
+.band-blue-inner {
   display: grid;
-  gap: 32px;
-}
-
-.shot {
-  margin: 0;
-}
-
-.shot img {
-  display: block;
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--float);
-}
-
-.shot figcaption {
-  max-width: 300px;
-  margin-top: 12px;
-  color: var(--ink-2);
-  font-size: 13px;
+  gap: 36px;
 }
 
 .demo-steps {
-  max-width: 34em;
+  max-width: 32em;
   margin: 0 0 18px;
   padding-left: 1.4em;
-  font-size: 17px;
+  font-size: 18px;
+  line-height: 1.45;
 }
 
 .demo-steps li {
@@ -526,77 +1077,111 @@
 }
 
 .demo-steps li::marker {
-  color: var(--route);
-  font-weight: 800;
+  font-weight: 900;
 }
 
-.demo-text .landing-meta {
-  max-width: 34em;
-  margin-bottom: 22px;
+.demo-line {
+  max-width: 32em;
+  margin: 0 0 24px;
+  color: #dfe5ff;
+  font-size: 15px;
 }
 
-@media (min-width: 720px) {
-  .demo {
-    grid-template-columns: minmax(0, 1fr) 260px;
-    gap: 48px;
-    align-items: center;
+.phone {
+  justify-self: center;
+  width: min(280px, 80%);
+  margin: 0;
+}
+
+.phone-body {
+  overflow: hidden;
+  border: 10px solid var(--night);
+  border-bottom: 0;
+  border-radius: 44px 44px 0 0;
+  background: var(--night);
+  box-shadow: 0 30px 80px rgb(11 19 48 / 55%);
+}
+
+.phone img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.phone figcaption {
+  padding: 12px 0 20px;
+  color: #dfe5ff;
+  font-size: 13px;
+}
+
+@media (min-width: 820px) {
+  .band-blue {
+    padding-top: 72px;
+  }
+
+  .band-blue-inner {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 64px;
+    align-items: end;
+  }
+
+  .demo-text {
+    padding-bottom: 72px;
+  }
+
+  .phone {
+    width: 320px;
   }
 }
 
-@media (min-width: 960px) {
-  .demo {
-    grid-template-columns: minmax(0, 1fr) 300px;
-    gap: 96px;
-  }
-}
-
-/* --- What it is built on ------------------------------------------------------------------------ */
+/* --- What it is built on: compact ------------------------------------------------------------- */
 
 .stack {
+  display: grid;
+  gap: 0 32px;
   margin: 0;
 }
 
 .stack-row {
-  padding: 14px 0;
+  padding: 12px 0;
   border-top: 1px solid var(--line);
 }
 
 .stack dt {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .stack dd {
-  max-width: 44em;
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: var(--ink-2);
+  font-size: 15px;
 }
 
 @media (min-width: 720px) {
-  .stack-row {
-    display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 24px;
-  }
-
-  .stack dd {
-    margin: 0;
+  .stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* --- A note on the real fire -------------------------------------------------------------------- */
+/* --- A note on the real fire: quiet ------------------------------------------------------------ */
+
+.note h2 {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
 
 .note p {
   max-width: 40em;
   color: var(--ink-2);
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.55;
 }
 
 /* --- Footer ------------------------------------------------------------------------------------- */
 
 .landing-footer {
-  padding: 16px 0 calc(var(--safe-bottom) + 24px);
+  padding: 12px 0 calc(var(--safe-bottom) + 20px);
   background: var(--mist);
 }
 
@@ -604,13 +1189,31 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0 24px;
+  align-items: center;
   margin-top: 0;
   margin-bottom: 0;
+  color: var(--ink-2);
 }
 
 .footer-links a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* --- Less motion: still frames, no glow breathing, no pulses ---------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-embers circle,
+  .fire-glow,
+  .mini-cone.shown,
+  .mini-pin.done,
+  .mini-wave.speaking i {
+    animation: none;
+  }
+
+  .mini-cone.shown {
+    opacity: 1;
+  }
 }

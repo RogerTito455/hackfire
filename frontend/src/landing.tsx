@@ -10,12 +10,11 @@ import { Landing } from './ui/landing/Landing'
 
 // The dashboard is served from the same deployment, at the root.
 const DEMO_URL = '/'
-const REPO_URL = 'https://github.com/RogerTito455/hackfire'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <Landing demoUrl={DEMO_URL} repoUrl={REPO_URL} leadTime={PUBLISHED_LEAD_TIME} />
+      <Landing demoUrl={DEMO_URL} leadTime={PUBLISHED_LEAD_TIME} />
     </I18nProvider>
   </StrictMode>,
 )
