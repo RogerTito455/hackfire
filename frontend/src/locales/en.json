@@ -53,6 +53,10 @@
     "fresh": "Just detected",
     "old": "A day old"
   },
+  "autopilot": {
+    "toggle": "Simulate the calls",
+    "note": "Simulation with the demo residents, not what happened on 23 July"
+  },
   "live": {
     "loading": "Loading the fires burning now…",
     "down": "Deepfire is unavailable right now. The replay still works.",

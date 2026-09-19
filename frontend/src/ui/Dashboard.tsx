@@ -1,3 +1,4 @@
+import type { AutopilotControl } from '../hooks/useAutopilot'
 import type { FireForecast } from '../hooks/useFireForecast'
 import type { FireReplay } from '../hooks/useFireReplay'
 import type { LeadTimeView } from '../hooks/useLeadTime'
@@ -11,6 +12,7 @@ import type { Conversations, CoordinatorConversation } from '../hooks/useConvers
 import type { VoiceCapabilities } from '../domain/voice'
 import type { RescueVideoControl } from '../hooks/useRescueVideo'
 import type { Triage } from '../hooks/useTriage'
+import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
 import { CrewAlerts } from './CrewAlerts'
 import { Icon } from './Icon'
@@ -48,6 +50,7 @@ interface DashboardProps {
   conversation: Conversations
   coordinatorCall: CoordinatorConversation
   rescueVideo: RescueVideoControl
+  autopilot: AutopilotControl
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -67,6 +70,7 @@ export function Dashboard({
   conversation,
   coordinatorCall,
   rescueVideo,
+  autopilot,
 }: DashboardProps) {
   const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
@@ -120,15 +124,22 @@ export function Dashboard({
         header={
           <>
             {mode === 'replay' ? (
-              <ReplayControls
-                status={replay.status}
-                range={replay.range}
-                time={replay.time}
-                observedCount={replay.observedCount}
-                playing={replay.playing}
-                onTimeChange={replay.setTime}
-                onTogglePlay={replay.togglePlay}
-              />
+              <>
+                <ReplayControls
+                  status={replay.status}
+                  range={replay.range}
+                  time={replay.time}
+                  observedCount={replay.observedCount}
+                  playing={replay.playing}
+                  onTimeChange={replay.setTime}
+                  onTogglePlay={replay.togglePlay}
+                />
+                <AutopilotToggle
+                  enabled={autopilot.enabled}
+                  busy={autopilot.busy}
+                  onToggle={() => autopilot.toggle(replay.time)}
+                />
+              </>
             ) : (
               <LiveStatus {...live} />
             )}

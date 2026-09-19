@@ -50,6 +50,19 @@ class ReplayTimeRequest(BaseModel):
     at: AwareDatetime = Field(description="Replay moment the dashboard's slider is on")
 
 
+class Autopilot(BaseModel):
+    """The demo autopilot (autopilot.py): a labelled simulation of the workflow along the replay."""
+
+    enabled: bool
+
+
+class AutopilotRequest(BaseModel):
+    enabled: bool
+    at: AwareDatetime | None = Field(
+        default=None, description="The slider's replay moment, to apply the script at before the slider next moves"
+    )
+
+
 class EvacuationRouteRequest(BaseModel):
     address: str
     mode: TravelMode = TravelMode.CAR

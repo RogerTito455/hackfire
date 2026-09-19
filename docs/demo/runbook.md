@@ -11,6 +11,16 @@ How to run the three-minute demo (PLAN.md section 8) so it survives the room: th
 
 Everything the story needs is served from `data/`: hotspots, forecasts, zones, lead time and routes (`pnpm data:routes` caches every resident's route to every safe point). Only live mode and the voice agent talk to third parties.
 
+## Simulating the calls along the replay (off by default)
+
+The replay alone leaves the status strip at "Not called yet" for every resident. To show the coordinator's workflow while the slider moves, switch on **Simulate the calls** (*Simular las llamadas*) under the replay scrubber. The strip then shows a line saying it is a simulation with the demo residents, not what happened on 23 July.
+
+- **What it does.** As the slider moves, the backend plays the fixed script in `data/demo_timeline.json` (`backend/app/autopilot.py`): after La Atalaya is first flagged (15:30 CEST) the zones' proposed orders are approved, residents start evacuating, one does not answer, one needs rescue (rescue queue and crew alert on the dashboard) and the one who did not answer is reached on a retry. Scrubbing back undoes it. Residents are named by their position in the registry, so the same script works with the sample and the deployed registry.
+- **It never phones or texts anyone.** It writes the dashboard's state directly, never through `report_status`, so no crew SMS is sent. While it is on, **Call residents** and the rescue video request answer 409, because both reach real phones.
+- **Turning it off** puts back the residents, orders and alerts as they were before it was switched on. **Reset demo** also turns it off and clears everything.
+- **Turn it off before any live call.** Anything the voice agent records while it is on is overwritten on the next slider move and thrown away when it is switched off.
+- From a terminal: `curl -X POST <url>/api/autopilot -H 'Content-Type: application/json' -d '{"enabled": false}'`; `GET <url>/api/autopilot` says whether it is on.
+
 ## If something fails on stage
 
 | Failure | What to do |

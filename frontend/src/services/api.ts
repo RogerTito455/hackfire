@@ -1,5 +1,6 @@
 // Backend client. The only file that knows URLs and HTTP.
 
+import type { Autopilot } from '../domain/autopilot'
 import type { HotspotCollection } from '../domain/hotspots'
 import type { EvacuationOrder, OrderDecision, SafePoint } from '../domain/orders'
 import type { LeadTime } from '../domain/leadTime'
@@ -51,6 +52,14 @@ export const setReplayTime = (isoTime: string) =>
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ at: isoTime }),
+  })
+/** The demo autopilot: on at the slider's moment, or off (the backend puts the state back). */
+export const fetchAutopilot = () => request<Autopilot>('/api/autopilot')
+export const setAutopilot = (enabled: boolean, isoTime?: string) =>
+  request<Autopilot>('/api/autopilot', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled, at: isoTime ?? null }),
   })
 export const fetchOrders = () => request<EvacuationOrder[]>('/api/orders')
 export const fetchSafePoints = () => request<SafePoint[]>('/api/safe-points')
