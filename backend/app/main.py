@@ -1,20 +1,22 @@
+import json
 import logging
 import time
 from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_operations, live_spread, orders, replay, rescue_video, scenario, text_triage
+from . import audit, autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_operations, live_spread, orders, provider_status, replay, rescue_video, scenario, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
+    AuditEvent,
     Autopilot,
     AutopilotRequest,
     CampaignCall,
@@ -33,6 +35,7 @@ from .models import (
     FireStatusRequest,
     Neighbor,
     OrderDecision,
+    ProviderStatus,
     ReplayTimeRequest,
     ReportStatusRequest,
     Rescue,
@@ -160,7 +163,10 @@ def set_replay_time(request: ReplayTimeRequest) -> dict:
     """The dashboard's slider moved: the agent's answers now refer to this replay moment."""
     state.replay_time = request.at
     # The demo autopilot, when on, sets the scripted residents and orders for this moment.
+    before = state.snapshot() if autopilot.enabled() else None
     autopilot.follow(state.clock())
+    if before is not None:
+        audit.autopilot_changes(before, state.snapshot())
     return {"at": request.at}
 
 
@@ -180,10 +186,16 @@ def set_autopilot(request: AutopilotRequest) -> Autopilot:
     """Turn the demo autopilot on or off. On, it applies the script at `at` (or the replay clock) and
     follows the slider from then on; off, it puts back the state from before it was turned on. It never
     places a call or sends an SMS."""
+    was_on, before = autopilot.enabled(), state.snapshot()
     if request.enabled:
         autopilot.turn_on(request.at or state.clock())
+        if not was_on:
+            audit.record("autopilot.on", actor="coordinator", source="dashboard")
+        audit.autopilot_changes(before, state.snapshot())
     else:
         autopilot.turn_off()
+        if was_on:
+            audit.record("autopilot.off", actor="coordinator", source="dashboard")
     return _autopilot()
 
 
@@ -268,9 +280,11 @@ def list_orders() -> list[EvacuationOrder]:
 @app.post("/api/orders/{zone}")
 def approve_order(zone: str, decision: OrderDecision) -> EvacuationOrder:
     """The coordinator approves or changes a zone's order; the agent reads it from then on."""
+    changed = zone in state.orders
     order = orders.approve(zone, decision)
     if order is None:
         raise HTTPException(status_code=404, detail=f"Unknown zone {zone} or destination {decision.destination_id}")
+    audit.order_decided(order, changed=changed, actor="coordinator", source="dashboard")
     return order
 
 
@@ -299,9 +313,11 @@ def start_web_session(neighbor_id: str) -> WebSession:
     if not voice.web_sessions_configured():
         raise HTTPException(status_code=503, detail="The voice agent is not configured (SLNG_API_KEY)")
     try:
-        return voice.web_session(briefing.call_variables(resident), participant_name=resident.name)
+        session = voice.web_session(briefing.call_variables(resident), participant_name=resident.name)
     except voice.VoiceUnavailable as error:
         raise HTTPException(status_code=503, detail="The voice agent is unavailable right now") from error
+    audit.record("call.webStarted", actor="coordinator", source="dashboard", subject=resident.id, name=resident.name)
+    return session
 
 
 # A browser call can end with the agent saying it recorded the outcome when it never called
@@ -315,6 +331,7 @@ def _follow_up_if_unrecorded(neighbor_id: str, note: str) -> None:
     time.sleep(CALL_END_GRACE_S)
     if state.no_answer_if_pending(neighbor_id, observation=note):
         logger.info("call with %s ended without a report: marked no_answer for a follow-up call", neighbor_id)
+        audit.status_reported(state.get(neighbor_id), source="safety_net", actor="system")
 
 
 @app.post("/api/neighbors/{neighbor_id}/call-ended")
@@ -322,6 +339,7 @@ def browser_call_ended(neighbor_id: str, background: BackgroundTasks) -> dict:
     """The dashboard says a browser call with this resident has ended (the agent or the coordinator hung up)."""
     if state.get(neighbor_id) is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    audit.record("call.ended", actor="coordinator", source="dashboard", subject=neighbor_id, name=audit.resident_name(neighbor_id))
     background.add_task(_follow_up_if_unrecorded, neighbor_id, i18n.t("call.endedWithoutRecord"))
     return {"status": "checking"}
 
@@ -350,7 +368,15 @@ def request_rescue_video(neighbor_id: str) -> RescueVideoLink:
     if autopilot.enabled():
         raise HTTPException(status_code=409, detail="Turn off the call simulation before asking a resident for video")
     try:
-        return rescue_video.request(neighbor_id)
+        link = rescue_video.request(neighbor_id)
+        audit.record(
+            "video.linkTexted" if link.sms_sent else "video.linkShown",
+            actor="coordinator",
+            source="dashboard",
+            subject=neighbor_id,
+            name=audit.resident_name(neighbor_id),
+        )
+        return link
     except rescue_video.UnknownResident as error:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}") from error
     except rescue_video.NotNeedsRescue as error:
@@ -421,6 +447,15 @@ def start_campaign(zone: str, background: BackgroundTasks) -> list[CampaignCall]
         raise HTTPException(status_code=503, detail="No phone line is set up: talk to each resident from the dashboard") from error
     except campaign.NotApproved as error:
         raise HTTPException(status_code=409, detail=f"Approve the order for {zone} before calling its residents") from error
+    audit.record(
+        "campaign.started",
+        actor="coordinator",
+        source="dashboard",
+        subject=zone,
+        zone=impact.zone_name(zone),
+        count=sum(call.call_id is not None for call in calls),
+        refused=sum(call.call_id is None for call in calls),
+    )
     # One watcher for all of them: Starlette runs background tasks one after another.
     background.add_task(campaign.watch, calls)
     return calls
@@ -458,7 +493,7 @@ def triage_from_text(request: TextTriageRequest, background: BackgroundTasks) ->
         report, classification = text_triage.report_from_text(request.neighbor_id, request.text)
     except text_triage.ClassifierUnavailable as error:
         raise HTTPException(status_code=503, detail="The classifier is unavailable; use the buttons") from error
-    neighbor = report_status(report, background)
+    neighbor = _record_report(report, background, source="typed_answer")
     return {"neighbor": neighbor.model_dump(mode="json"), "classification": classification.model_dump(mode="json")}
 
 
@@ -473,13 +508,27 @@ def close_road(request: RoadClosureRequest) -> RoadClosure:
     """Mark a road as cut. Every route planned from now on goes around it. The answer names the
     residents already leaving by a route through it, for the coordinator to call again."""
     affected = orders.leaving_through(request.lon, request.lat, request.radius_m)
-    return closures.add(request, affected)
+    closure = closures.add(request, affected)
+    audit.record(
+        "closure.added",
+        actor="coordinator",
+        source="dashboard",
+        subject=closure.id,
+        place=f"{closure.lat:.4f}, {closure.lon:.4f}",
+        radius=round(closure.radius_m),
+        count=len(affected),
+    )
+    return closure
 
 
 @app.delete("/api/closures/{closure_id}", status_code=204)
 def reopen_road(closure_id: str) -> Response:
-    if not closures.remove(closure_id):
+    closure = next((c for c in closures.all() if c.id == closure_id), None)
+    if closure is None or not closures.remove(closure_id):
         raise HTTPException(status_code=404, detail=f"Unknown closure {closure_id}")
+    audit.record(
+        "closure.removed", actor="coordinator", source="dashboard", subject=closure_id, place=f"{closure.lat:.4f}, {closure.lon:.4f}"
+    )
     return Response(status_code=204)
 
 
@@ -494,7 +543,42 @@ def reset() -> dict:
     rescue_video.forget()
     crew_room.forget()
     closures.forget()
+    # The audit file keeps everything; the log shown starts again from this event (app/audit.py).
+    audit.record(audit.RESET, actor="coordinator", source="dashboard")
     return {"status": "reset", "neighbors": len(state.neighbors())}
+
+
+# --- Audit log and provider status (docs/setup/operations.md) -------------------------------
+
+
+def _audit_event(event: dict) -> AuditEvent:
+    return AuditEvent(**event, message=audit.message(event))
+
+
+@app.get("/api/audit")
+def audit_log(limit: int = Query(default=15, ge=1, le=1000)) -> list[AuditEvent]:
+    """The current run's decisions and outcomes, newest first, each as a sentence in the request's
+    language. Never a phone number."""
+    return [_audit_event(event) for event in audit.log.events(limit)]
+
+
+@app.get("/api/audit/export")
+def audit_export() -> Response:
+    """The whole current run as a JSON file to download, newest first."""
+    events = [_audit_event(event).model_dump(mode="json") for event in audit.log.events()]
+    stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M")
+    return Response(
+        content=json.dumps(events, ensure_ascii=False, indent=2),
+        media_type="application/json",
+        headers={"Content-Disposition": f'attachment; filename="hackfire-audit-{stamp}.json"'},
+    )
+
+
+@app.get("/api/status/providers")
+def providers_status() -> list[ProviderStatus]:
+    """Each external service: up, degraded, down, configured or not configured, with a reason.
+    Checked in parallel with short timeouts and cached for about a minute."""
+    return provider_status.statuses()
 
 
 # --- Agent tools -------------------------------------------------------------
@@ -535,24 +619,45 @@ logger = logging.getLogger("hackfire")
 def _text_the_crew(rescue_id: str, message: str) -> None:
     """Runs after the response, so the voice agent never waits on Twilio. A failure is logged and
     the alert stays on the dashboard, marked as not sent."""
+    neighbor_id = rescue_id.removeprefix("rescue-")
     try:
         sms.send(settings.crew_phone, message)
     except httpx.HTTPError:
         logger.exception("crew SMS for %s failed", rescue_id)
+        audit.record("alert.smsFailed", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
         return
     state.mark_alert_sent(rescue_id)
+    audit.record("alert.smsSent", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
 
 
 @app.post("/tools/report_status")
-def report_status(request: ReportStatusRequest, background: BackgroundTasks) -> Neighbor:
+def report_status(
+    request: ReportStatusRequest,
+    background: BackgroundTasks,
+    via: str | None = Query(default=None, description="dashboard: the coordinator's buttons, for the audit log"),
+) -> Neighbor:
+    return _record_report(request, background, source="manual_button" if via == "dashboard" else "agent_tool")
+
+
+def _record_report(request: ReportStatusRequest, background: BackgroundTasks, source: str) -> Neighbor:
     alerts_before = len(state.alerts())
     neighbor = state.report(request)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
+    audit.status_reported(neighbor, source=source, actor="agent" if source == "agent_tool" else "coordinator")
     # A new rescue became a crew alert (state.py): text it to the crew when Twilio is set up.
-    if len(state.alerts()) > alerts_before and sms.configured() and settings.crew_phone:
+    if len(state.alerts()) > alerts_before:
         alert = state.alerts()[0]
-        background.add_task(_text_the_crew, alert.rescue_id, alert.message)
+        texting = sms.configured() and bool(settings.crew_phone)
+        audit.record(
+            "alert.createdSms" if texting else "alert.createdDashboard",
+            actor="system",
+            source=source,
+            subject=neighbor.id,
+            name=neighbor.name,
+        )
+        if texting:
+            background.add_task(_text_the_crew, alert.rescue_id, alert.message)
     return neighbor
 
 

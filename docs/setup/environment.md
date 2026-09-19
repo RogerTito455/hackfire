@@ -13,6 +13,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `HACKFIRE_NEIGHBORS_FILE` | Demo with the real registry (#12) | Path to `data/neighbors.local.json`. Empty uses `data/neighbors.local.json` if it exists, else the sample registry |
 | `HACKFIRE_NEIGHBORS_JSON` | The real registry on Railway (#12), where the local file is not in the image | The whole registry as one line of JSON, set as a Railway variable. Wins over every file. See [Deployment](deployment.md#the-real-registry). Holds phone numbers: never commit it or paste it in a chat |
 | `HACKFIRE_CREWS` | The crews' plan (`GET /api/crew-plan`, the coordinator agent's `get_crew_plan`) | How many fire crews share the rescues. Default 2; the dashboard can change it |
+| `HACKFIRE_AUDIT_FILE` | The audit log (`app/audit.py`, [operations](operations.md)) | JSON Lines file it appends to. Default `data/audit.jsonl` (git-ignored) |
 | `HACKFIRE_CREW_PHONE` | Crew notification for each new rescue (#9) | A team member's phone, shared privately |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | The crew SMS (#9). All three plus `HACKFIRE_CREW_PHONE`, or alerts stay on the dashboard | Twilio console → Account info; the from number must be SMS-capable. Ask the SLNG mentors if they lend one |
 | `HACKFIRE_PUBLIC_URL` | The link in each crew alert (#9) | The deployed dashboard URL. Empty means `http://localhost:5173` |

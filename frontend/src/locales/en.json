@@ -39,7 +39,9 @@
     "typedBackup": "Voice not working? Type the answer",
     "callResident": "Call this resident",
     "crewPlan": "Crew plan",
-    "closures": "Road closures"
+    "closures": "Road closures",
+    "activity": "Activity log",
+    "services": "Service status"
   },
   "time": {
     "now": "now"
@@ -429,5 +431,22 @@
     "roadsNone": "No main road within the hour.",
     "calls": "No calls here: calling residents needs a registry of who lives in these places, which is future work.",
     "source": "Places: © OpenStreetMap contributors, looked up {time}."
+  },
+  "audit": {
+    "empty": "Nothing recorded yet. Approvals, calls, statuses and closures appear here.",
+    "download": "Download (JSON)",
+    "unavailable": "The activity log is unavailable right now."
+  },
+  "providers": {
+    "loading": "Checking the services…",
+    "unavailable": "The service status is unavailable right now.",
+    "checkedAt": "Checked at {time}",
+    "state": {
+      "up": "Up",
+      "degraded": "Degraded",
+      "down": "Down",
+      "configured": "Configured",
+      "not_configured": "Not configured"
+    }
   }
 }

@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from app import scenario
+from app import audit, scenario
 from app.config import settings
 from app.state import state
 
@@ -20,6 +20,14 @@ def sample_registry(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("app.state.settings", replace(settings, neighbors_json=""))
     monkeypatch.setattr("app.state._registry_candidates", lambda: [scenario.current().files.registry])
     state.load()
+
+
+@pytest.fixture(autouse=True)
+def fresh_audit_log(tmp_path, monkeypatch: pytest.MonkeyPatch) -> audit.AuditLog:
+    """Every test writes its own audit file, never data/audit.jsonl."""
+    log = audit.AuditLog(tmp_path / "audit.jsonl")
+    monkeypatch.setattr(audit, "log", log)
+    return log
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

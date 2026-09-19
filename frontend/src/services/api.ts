@@ -15,6 +15,7 @@ import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voic
 import type { CrewRoom, RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
 import type { CrewPlan } from '../domain/crewPlan'
 import type { RoadClosure } from '../domain/closures'
+import type { AuditEvent, ProviderStatus } from '../domain/operations'
 import type { Scenario } from '../domain/scenario'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
@@ -87,7 +88,7 @@ export const triageFromText = (neighborId: string, text: string) =>
     body: JSON.stringify({ neighbor_id: neighborId, text }),
   })
 export const reportStatus = (neighborId: string, status: TriageStatus) =>
-  request<Neighbor>('/tools/report_status', {
+  request<Neighbor>('/tools/report_status?via=dashboard', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ neighbor_id: neighborId, status }),
@@ -132,3 +133,10 @@ export async function reopenRoad(closureId: string): Promise<void> {
   const response = await fetch(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
   if (!response.ok) throw new Error(`/api/closures/${closureId} returned ${response.status}`)
 }
+
+/** The activity log's newest events, each already a sentence in the dashboard's language. */
+export const fetchAudit = (limit: number) => request<AuditEvent[]>(`/api/audit?limit=${limit}`)
+/** A plain link downloads the whole run as JSON; it names the language, since a link sends no header. */
+export const auditDownloadUrl = (locale: string) => `${API_URL}/api/audit/export?lang=${encodeURIComponent(locale)}`
+/** Whether each external service answers; the backend checks at most about once a minute. */
+export const fetchProviderStatus = () => request<ProviderStatus[]>('/api/status/providers')

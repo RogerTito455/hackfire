@@ -10,6 +10,8 @@ data/live_spread.json
 data/live_spread.tmp
 # Live mode's places at risk per Deepfire run (backend/app/live_operations.py)
 data/live_places/
+# The audit log of every decision and outcome (backend/app/audit.py, docs/setup/operations.md)
+data/audit.jsonl
 NOTES.internal.md
 
 # Python

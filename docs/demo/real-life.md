@@ -35,10 +35,10 @@ It keeps working when a provider does not answer: the last Deepfire answer is ke
 
 ## From a demo to an ongoing emergency
 
-A short roadmap. None of it is built beyond step 1.
+A short roadmap. None of it is built beyond step 1, the audit log of step 2 and the monitoring of step 7.
 
 1. **Live incident (this change).** Any active fire in Spain gets Deepfire's ELMFIRE prediction, the places at risk with their time to impact, draft alerts per zone, and the roads to close. Nothing is sent.
-2. **Persistent, multi-user state.** A database instead of in-memory state, coordinator accounts, and an audit log of every order, call and status change.
+2. **Persistent, multi-user state.** A database instead of in-memory state, and coordinator accounts. **The audit log exists now, without a database:** every order, call, campaign, status report (with its source: voice agent, typed answer, button, simulation or safety net), crew alert, road closure, video link, simulation toggle and reset is appended to `data/audit.jsonl`, read back after a restart, never with a phone number. The dashboard shows the latest events in *Activity log* with a JSON download (`GET /api/audit`, [operations](../setup/operations.md)). Still missing: who did it (no accounts) and a store shared by several backends.
 3. **Residents.** A registry from the emergency services or the municipality (the municipal register, or the vulnerable-person registries in civil protection plans), on a GDPR legal basis of vital or public interest, with geocoded addresses, imported per incident area.
 4. **Telephony.**
    - A SIP trunk with Spanish numbers attached to the SLNG agent (SLNG's "Manual" outbound connection: termination host, SIP credentials, a caller-ID number).
@@ -46,4 +46,4 @@ A short roadmap. None of it is built beyond step 1.
    - Capacity for concurrent calls, retries when nobody answers, and transcripts stored with each status.
 5. **Public alerts.** ES-Alert and zone SMS stay with Civil Protection and the regional emergency services. HackFire's drafts would feed their system; it would not send them itself.
 6. **Evacuation plans.** Official safe points and shelters from municipal and regional plans, as data, instead of the nearest-town heuristic. Road closures from official traffic feeds (for example the DGT's open incident data) as well as the coordinator's taps.
-7. **Model and operations.** ELMFIRE is already physics-based; validate it against observed perimeters. Add monitoring, fallbacks when a provider is down (as the demo already does), and a pilot with one municipality.
+7. **Model and operations.** ELMFIRE is already physics-based; validate it against observed perimeters, and run a pilot with one municipality. **Monitoring exists now:** `GET /api/status/providers` and the *Service status* group say whether Deepfire, openrouteservice, Overpass, SLNG, Twilio and Vonage answer, with a reason, such as "quota spent: using the cached routes" when openrouteservice's daily quota runs out ([operations](../setup/operations.md)). The fallbacks when a provider is down were already there. Still missing: alerting someone when a service goes down, and the DGT feed in the list.

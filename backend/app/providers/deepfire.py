@@ -102,3 +102,19 @@ def simulation(client: httpx.Client, token: str, simulation_id: str) -> dict:
     response = client.get(f"{_SIMULATIONS}/{simulation_id}", headers={"Authorization": f"Bearer {token}"})
     response.raise_for_status()
     return response.json()
+
+
+def configured() -> bool:
+    return bool(settings.deepfire_client_id and settings.deepfire_client_secret)
+
+
+def ping(client: httpx.Client) -> int:
+    """For the status page (app/provider_status.py): the status code of a one-feature read of the
+    active clusters, after the token. A refused token raises httpx.HTTPStatusError."""
+    token = cached_token(client)
+    response = client.get(
+        _ITEMS.format(collection="clusters"),
+        headers={"Authorization": f"Bearer {token}"},
+        params={"limit": 1, "f": "application/geo+json"},
+    )
+    return response.status_code

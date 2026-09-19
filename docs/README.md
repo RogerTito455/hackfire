@@ -11,6 +11,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [Claude Code](setup/claude-code.md) | MCP servers and skills for AI-assisted development |
 | | [Deployment](setup/deployment.md) | The one Railway service that serves the API and the dashboard |
 | | [A new scenario](setup/new-scenario.md) | Replaying another fire: the scenario file, the pipelines, what needs keys and quota |
+| | [Operations](setup/operations.md) | The audit log file and endpoints, and the service status checks |
 | **Services** | [Deepfire](services/deepfire.md) | Hotspots, active fires, spread simulation |
 | | [SLNG](services/slng.md) | Voice agent, outbound calls, SMS |
 | | [openrouteservice](services/openrouteservice.md) | Evacuation and rescue routes |

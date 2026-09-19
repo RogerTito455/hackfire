@@ -89,5 +89,98 @@
       "school": "an unnamed school",
       "road": "an unnumbered road"
     }
+  },
+  "audit": {
+    "status": {
+      "reported": "{name}: {status}, from {source}."
+    },
+    "statuses": {
+      "pending": "not called yet",
+      "evacuating": "evacuating",
+      "no_answer": "no answer",
+      "needs_rescue": "needs rescue"
+    },
+    "sources": {
+      "agent_tool": "the voice agent",
+      "typed_answer": "a typed answer",
+      "manual_button": "the coordinator's buttons",
+      "autopilot": "the call simulation",
+      "safety_net": "the safety net (the call ended with nothing recorded)",
+      "campaign": "the call campaign (no answer)",
+      "dashboard": "the dashboard"
+    },
+    "order": {
+      "approved": "Order for {zone} approved: leave for {destination}.",
+      "approvedShelter": "Order for {zone} approved: stay indoors.",
+      "changed": "Order for {zone} changed: leave for {destination}.",
+      "changedShelter": "Order for {zone} changed: stay indoors."
+    },
+    "call": {
+      "webStarted": "Call with {name} started in the browser.",
+      "phoneStarted": "Phone call to {name} placed.",
+      "ended": "Call with {name} ended."
+    },
+    "campaign": {
+      "started": {
+        "one": "Calls to {zone} started: {count} call placed, {refused} refused.",
+        "other": "Calls to {zone} started: {count} calls placed, {refused} refused."
+      }
+    },
+    "alert": {
+      "createdSms": "Crew alert for {name}, being texted to the crew.",
+      "createdDashboard": "Crew alert for {name}, on the dashboard only.",
+      "smsSent": "Crew alert for {name} texted to the crew.",
+      "smsFailed": "The crew SMS for {name} failed: the alert stays on the dashboard."
+    },
+    "closure": {
+      "added": {
+        "one": "Road closed at {place} ({radius} m): {count} resident was leaving through it.",
+        "other": "Road closed at {place} ({radius} m): {count} residents were leaving through it."
+      },
+      "removed": "Road reopened at {place}."
+    },
+    "video": {
+      "linkTexted": "Video link for {name} texted to the resident.",
+      "linkShown": "Video link for {name} created, not texted (no SMS)."
+    },
+    "autopilot": {
+      "on": "Call simulation turned on.",
+      "off": "Call simulation turned off: the state before it is back."
+    },
+    "demo": {
+      "reset": "Demo reset: registry reloaded, orders, closures and calls cleared."
+    }
+  },
+  "providers": {
+    "ok": "Answering.",
+    "rejected": "Key rejected (HTTP {code}).",
+    "busy": "Busy (HTTP {code}).",
+    "http": "Unexpected answer (HTTP {code}).",
+    "timeout": "No answer within {seconds} s.",
+    "unreachable": "Unreachable.",
+    "checking": "Still checking: no answer within {seconds} s.",
+    "deepfireOff": "The replay uses the cached hotspots.",
+    "deepfireBusy": "Busy (HTTP {code}): live mode keeps its last answer.",
+    "orsOff": "Using the cached routes.",
+    "orsQuota": "Quota spent: using the cached routes.",
+    "orsRate": "Too many requests this minute: using the cached routes.",
+    "orsDown": "Not answering: using the cached routes.",
+    "overpassAll": {
+      "one": "The mirror answers.",
+      "other": "All {count} mirrors answer."
+    },
+    "overpassSome": {
+      "one": "{up} of {count} mirror answers.",
+      "other": "{up} of {count} mirrors answer."
+    },
+    "overpassNone": "No mirror answers: the replay uses the cached places.",
+    "slngOff": "No voice calls.",
+    "slngNoAgent": "The key works, but the resident agent was not found.",
+    "twilioOff": "Crew alerts stay on the dashboard.",
+    "twilioNoCrew": "No crew phone set: crew alerts stay on the dashboard.",
+    "twilioOn": "Configured (not tested: that would send a message).",
+    "vonageOff": "No live video or video-link SMS.",
+    "vonageOn": "Configured (not tested: that would send a message).",
+    "vonageVideoOnly": "Video configured, SMS not: links are shown, not texted."
   }
 }

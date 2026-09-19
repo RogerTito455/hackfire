@@ -9,6 +9,7 @@ from ..config import settings
 from ..models import TravelMode
 
 _DIRECTIONS = "https://api.openrouteservice.org/v2/directions/{profile}/geojson"
+_GET_DIRECTIONS = "https://api.openrouteservice.org/v2/directions/driving-car"
 _PROFILE = {TravelMode.CAR: "driving-car", TravelMode.WALKING: "foot-walking"}
 
 # ORS error code for "no route between these points" (for example, every road is avoided).
@@ -51,3 +52,19 @@ def route_avoiding(
         raise NoRouteFound(response.json()["error"].get("message", "no route"))
     response.raise_for_status()
     return response.json()["features"][0]
+
+
+def configured() -> bool:
+    return bool(settings.ors_api_key)
+
+
+def ping(client: httpx.Client) -> tuple[int, str]:
+    """For the status page (app/provider_status.py): the status code and the start of the body of a
+    100 m route. It counts against the daily quota while there is quota left, so the status page asks
+    rarely; once the quota is spent ORS answers 403 "Quota exceeded" without counting."""
+    response = client.get(
+        _GET_DIRECTIONS,
+        headers={"Authorization": settings.ors_api_key},
+        params={"start": "-4.6,40.4", "end": "-4.601,40.401"},
+    )
+    return response.status_code, response.text[:300]
