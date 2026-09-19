@@ -88,6 +88,35 @@ class CampaignCall(BaseModel):
     call_id: str | None = Field(description="None when SLNG refused to place the call; the resident is then no_answer")
 
 
+class RescueVideoLink(BaseModel):
+    """The single-use link that opens a resident's camera (#18). Never carries the phone number."""
+
+    neighbor_id: str
+    link: str
+    sms_sent: bool = Field(description="Whether the link was texted to the resident's registry phone")
+
+
+class VideoAccess(BaseModel):
+    """What a browser needs to join a resident's video: Vonage's application id, the session, a token."""
+
+    application_id: str
+    session_id: str
+    token: str
+
+
+class RescueVideo(BaseModel):
+    """The coordinator's side of a resident's video: waiting for them, or a token to watch."""
+
+    neighbor_id: str
+    joined: bool = Field(description="Whether the resident has opened the link and turned on the camera")
+    access: VideoAccess | None = Field(default=None, description="A subscriber token, once the resident has joined")
+
+
+class VideoCapabilities(BaseModel):
+    video: bool = Field(description="Vonage is configured: the coordinator can ask a resident for live video")
+    sms: bool = Field(description="The video link can be texted; otherwise the coordinator passes it on")
+
+
 class VoiceCapabilities(BaseModel):
     phone_calls: bool = Field(description="An outbound trunk is set up, so the campaign can ring phones")
     web_sessions: bool = Field(description="The dashboard can take a resident's call in the browser")

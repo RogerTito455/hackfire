@@ -22,6 +22,9 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `SLNG_BASE_URL` | Same | See [SLNG](../services/slng.md) |
 | `SLNG_RESIDENT_AGENT_ID` | The call campaign and the dashboard's *Call … (answer here)* (#8) | The resident agent's id; defaults to `hackfire-resident-slng` (`0f035ccc-…`). `voiceai agents list` shows it |
 | `SLNG_COORDINATOR_AGENT_ID` | The dashboard's *Ask the coordinator agent* (#10) | The coordinator agent's id; defaults to `hackfire-coordinator-slng` (`6d1a743a-…`) |
+| `VONAGE_APPLICATION_ID` | Live video from a resident who needs rescue, with captions (#18) | https://developer.vonage.com → Applications → Create a new application → Generate public and private key → Video capability on |
+| `VONAGE_PRIVATE_KEY` | Same | The PEM text of the key downloaded then (one line with `\n` works, as on Railway), or a path to the `.key` file. Never commit it |
+| `VONAGE_SMS_FROM` | Texting the video link to the resident (#18) | Sender name, up to 11 letters or digits; default `HackFire`. A trial account only texts numbers on its test list |
 | `HACKFIRE_PHONE_CALLS` | Phoning residents from the call campaign (#8) | `1` once an outbound SIP trunk is attached to the agent in SLNG; anything else keeps phones off and the dashboard offers browser calls |
 | `SLNG_LLM_URL` | The backend's LLM: typed answers on the dashboard and `pnpm eval:triage`, with `SLNG_API_KEY` | SLNG's Context Router. Default `https://eu-north.context-router.slng.ai/v1` |
 | `SLNG_LLM_MODEL` | Same | Default `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, the model the voice agents think with |

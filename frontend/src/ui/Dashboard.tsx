@@ -9,6 +9,7 @@ import type { TextTriage } from '../hooks/useTextTriage'
 import type { Campaign } from '../hooks/useCampaign'
 import type { Conversations, CoordinatorConversation } from '../hooks/useConversation'
 import type { VoiceCapabilities } from '../domain/voice'
+import type { RescueVideoControl } from '../hooks/useRescueVideo'
 import type { Triage } from '../hooks/useTriage'
 import { BottomSheet } from './BottomSheet'
 import { CrewAlerts } from './CrewAlerts'
@@ -46,6 +47,7 @@ interface DashboardProps {
   campaign: Campaign
   conversation: Conversations
   coordinatorCall: CoordinatorConversation
+  rescueVideo: RescueVideoControl
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -64,10 +66,22 @@ export function Dashboard({
   campaign,
   conversation,
   coordinatorCall,
+  rescueVideo,
 }: DashboardProps) {
   const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
+  const watched = rescueVideo.live ? neighbors.find((neighbor) => neighbor.id === rescueVideo.live?.neighborId) : undefined
+  const liveVideo =
+    rescueVideo.live && watched
+      ? {
+          lon: watched.lon,
+          lat: watched.lat,
+          element: rescueVideo.live.element,
+          caption: rescueVideo.live.caption,
+          waiting: rescueVideo.live.state === 'waiting',
+        }
+      : null
   return (
     <div className="app">
       <div className="map-area">
@@ -84,6 +98,7 @@ export function Dashboard({
           onSelectNeighbor={selection.select}
           spread={forecast.spread}
           zones={forecast.zonesAtRisk}
+          liveVideo={liveVideo}
         />
       </div>
 
@@ -167,7 +182,20 @@ export function Dashboard({
             onAsk={coordinatorCall.start}
             onHangUp={coordinatorCall.hangUp}
           />
-          <RescueQueue rescues={rescues} />
+          <RescueQueue
+            rescues={rescues}
+            video={
+              rescueVideo.capabilities.video
+                ? {
+                    links: rescueVideo.links,
+                    requesting: rescueVideo.requesting,
+                    watching: rescueVideo.live?.neighborId ?? null,
+                    failed: rescueVideo.error !== null,
+                    onRequest: rescueVideo.request,
+                  }
+                : undefined
+            }
+          />
         </section>
 
         <section className="group">

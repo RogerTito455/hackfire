@@ -10,11 +10,15 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import briefing, campaign, evacuation, impact, live, orders, replay, text_triage
+from . import briefing, campaign, evacuation, impact, live, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
     CampaignCall,
+    RescueVideo,
+    RescueVideoLink,
+    VideoCapabilities,
+    VideoAccess,
     VoiceCapabilities,
     WebSession,
     CrewAlert,
@@ -32,7 +36,7 @@ from .models import (
     SafePoint,
     TravelMode,
 )
-from .providers import sms, voice
+from .providers import sms, voice, vonage
 from .state import state
 
 app = FastAPI(title="HackFire", version="0.1.0")
@@ -211,6 +215,49 @@ def start_coordinator_session() -> WebSession:
         raise HTTPException(status_code=503, detail="The coordinator agent is unavailable right now") from error
 
 
+@app.get("/api/video")
+def video_capabilities() -> VideoCapabilities:
+    """Whether the dashboard can ask residents for live video, and text them the link (#18)."""
+    return VideoCapabilities(video=vonage.video_configured(), sms=vonage.sms_configured())
+
+
+@app.post("/api/rescues/{neighbor_id}/video")
+def request_rescue_video(neighbor_id: str) -> RescueVideoLink:
+    """Ask a resident who needs rescue for live video: a single-use link, texted when SMS works (#18)."""
+    try:
+        return rescue_video.request(neighbor_id)
+    except rescue_video.UnknownResident as error:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}") from error
+    except rescue_video.NotNeedsRescue as error:
+        raise HTTPException(status_code=409, detail="Video is for residents who need rescue") from error
+    except vonage.VonageUnavailable as error:
+        raise HTTPException(status_code=503, detail="Live video is unavailable right now") from error
+
+
+@app.get("/api/rescues/{neighbor_id}/video")
+def watch_rescue_video(neighbor_id: str) -> RescueVideo:
+    """The coordinator's dashboard polls this until the resident is on camera, then watches (#18)."""
+    try:
+        return rescue_video.watch(neighbor_id)
+    except rescue_video.NoVideo as error:
+        raise HTTPException(status_code=404, detail=f"No video was asked of {neighbor_id}") from error
+    except vonage.VonageUnavailable as error:
+        raise HTTPException(status_code=503, detail="Live video is unavailable right now") from error
+
+
+@app.get("/api/video/{link_id}")
+def join_rescue_video(link_id: str) -> VideoAccess:
+    """The resident's page opens their camera with this; the link works once (#18)."""
+    try:
+        return rescue_video.join(link_id)
+    except rescue_video.UnknownLink as error:
+        raise HTTPException(status_code=404, detail="Unknown video link") from error
+    except rescue_video.LinkUsed as error:
+        raise HTTPException(status_code=410, detail="This video link was already used") from error
+    except vonage.VonageUnavailable as error:
+        raise HTTPException(status_code=503, detail="Live video is unavailable right now") from error
+
+
 @app.post("/api/campaigns/{zone}")
 def start_campaign(zone: str, background: BackgroundTasks) -> list[CampaignCall]:
     """The coordinator starts the calls to a zone's residents, once its order is approved."""
@@ -267,6 +314,7 @@ def reset() -> dict:
     state.load()
     state.replay_time = None
     campaign.forget()
+    rescue_video.forget()
     return {"status": "reset", "neighbors": len(state.neighbors())}
 
 
@@ -355,6 +403,11 @@ if settings.dashboard_dir:
 
     @app.get("/", include_in_schema=False)
     def dashboard() -> FileResponse:
+        return FileResponse(dashboard_dir / "index.html")
+
+    # A resident's video link (#18) opens the same app, which shows the camera page for /v/<link>.
+    @app.get("/v/{link_id}", include_in_schema=False)
+    def resident_video_page(link_id: str) -> FileResponse:
         return FileResponse(dashboard_dir / "index.html")
 
     # Vite copies frontend/public/ to the root of the build; each file there needs a route here.

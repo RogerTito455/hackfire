@@ -9,6 +9,7 @@ import type { TextClassification } from '../domain/textTriage'
 import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
 import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voice'
+import type { RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -71,3 +72,17 @@ export const startCampaign = (zone: string) =>
 export const createWebSession = (neighborId: string) =>
   request<WebSession>(`/api/neighbors/${encodeURIComponent(neighborId)}/web-session`, { method: 'POST' })
 export const createCoordinatorSession = () => request<WebSession>('/api/coordinator/web-session', { method: 'POST' })
+export const fetchVideoCapabilities = () => request<VideoCapabilities>('/api/video')
+export const requestRescueVideo = (neighborId: string) =>
+  request<RescueVideoLink>(`/api/rescues/${encodeURIComponent(neighborId)}/video`, { method: 'POST' })
+export const watchRescueVideo = (neighborId: string) =>
+  request<RescueVideo>(`/api/rescues/${encodeURIComponent(neighborId)}/video`)
+
+/** The resident's camera access, once per link: 'used' when it was opened before, 'unknown' when it never existed. */
+export async function joinVideo(linkId: string): Promise<VideoAccess | 'used' | 'unknown'> {
+  const response = await fetch(`${API_URL}/api/video/${encodeURIComponent(linkId)}`)
+  if (response.status === 410) return 'used'
+  if (response.status === 404) return 'unknown'
+  if (!response.ok) throw new Error(`/api/video returned ${response.status}`)
+  return response.json() as Promise<VideoAccess>
+}

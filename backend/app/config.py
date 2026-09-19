@@ -25,6 +25,16 @@ def _origins(name: str, default: str) -> list[str]:
     return [origin for origin in origins if origin] or [default]
 
 
+def _private_key(value: str) -> str:
+    """A PEM key given inline, or read from the path given instead. Empty when unset or unreadable."""
+    if not value or value.startswith("-----BEGIN"):
+        return value.replace("\\n", "\n")
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = REPO_ROOT / path  # the backend runs from backend/, the key sits at the repo root
+    return path.read_text(encoding="utf-8") if path.is_file() else ""
+
+
 @dataclass(frozen=True)
 class Settings:
     cors_origins: list[str] = field(
@@ -63,6 +73,11 @@ class Settings:
     slng_coordinator_agent_id: str = field(
         default_factory=lambda: _env("SLNG_COORDINATOR_AGENT_ID", "6d1a743a-4a0e-42b2-aa3f-5052c247137c")
     )
+    # Vonage (#18): live video from a resident who needs rescue, with captions, and the SMS with
+    # the link. The private key is the PEM text (as Railway holds it) or a path to the .key file.
+    vonage_application_id: str = field(default_factory=lambda: _env("VONAGE_APPLICATION_ID"))
+    vonage_private_key: str = field(default_factory=lambda: _private_key(_env("VONAGE_PRIVATE_KEY")))
+    vonage_sms_from: str = field(default_factory=lambda: _env("VONAGE_SMS_FROM", "HackFire"))
     # Off until an outbound SIP trunk is attached to the agent in SLNG: SLNG supplies no numbers.
     phone_calls: bool = field(default_factory=lambda: _env("HACKFIRE_PHONE_CALLS") == "1")
     slng_base_url: str = field(default_factory=lambda: _env("SLNG_BASE_URL"))

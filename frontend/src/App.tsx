@@ -10,6 +10,7 @@ import { useFollowAgent } from './hooks/useFollowAgent'
 import { useTriage } from './hooks/useTriage'
 import { useCampaign } from './hooks/useCampaign'
 import { useVoiceConversations } from './hooks/useConversation'
+import { useRescueVideo } from './hooks/useRescueVideo'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
 
@@ -25,6 +26,7 @@ function App() {
   const voice = useVoiceCapabilities()
   const campaign = useCampaign()
   const voiceCalls = useVoiceConversations()
+  const rescueVideo = useRescueVideo()
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
@@ -61,6 +63,7 @@ function App() {
       campaign={campaign}
       conversation={voiceCalls.resident}
       coordinatorCall={voiceCalls.coordinator}
+      rescueVideo={rescueVideo}
       forecast={forecast}
       leadTime={leadTime}
     />

@@ -191,5 +191,21 @@
   "map": {
     "liveFire": "Detected over {hours} h, last seen {time}",
     "resident": "{name}: {status}"
+  },
+  "video": {
+    "request": "Request live video",
+    "resend": "Send a new video link",
+    "creating": "Creating the link…",
+    "texted": "Link texted to the resident:",
+    "openOnPhone": "No SMS: open this on the resident's phone:",
+    "waiting": "Waiting for the resident to open the link…",
+    "failed": "Could not create the video link."
+  },
+  "residentCamera": {
+    "title": "Emergency coordination",
+    "joining": "Connecting to the emergency coordinators…",
+    "live": "The coordinators can see and hear you. Show them where you are and what you see, and speak normally.",
+    "used": "This link has been used already. If you need help, call 112.",
+    "error": "The camera could not be opened. If you need help, call 112."
   }
 }

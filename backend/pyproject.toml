@@ -10,6 +10,7 @@ dependencies = [
     "python-dotenv>=1.2.3",
     "shapely>=2.1.2",
     "uvicorn[standard]>=0.53.0",
+    "vonage>=4.9.0",
 ]
 
 [dependency-groups]

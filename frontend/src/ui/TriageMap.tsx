@@ -201,6 +201,8 @@ interface TriageMapProps {
   spread: SpreadPolygon[]
   /** Zones the predicted fire reaches, with their minutes to impact. */
   zones: ZoneImpact[]
+  /** A resident's live video (#18), drawn next to their pin with the last caption under it. */
+  liveVideo?: { lon: number; lat: number; element: HTMLElement; caption: string; waiting: boolean } | null
 }
 
 export function TriageMap({
@@ -216,6 +218,7 @@ export function TriageMap({
   onSelectNeighbor,
   spread,
   zones,
+  liveVideo = null,
 }: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
@@ -466,6 +469,35 @@ export function TriageMap({
       marker.getElement().classList.toggle('selected', neighbor.id === selectedNeighborId)
     }
   }, [neighbors, selectedNeighborId, t, intl])
+
+  // The resident's video, anchored next to their pin; the caption is updated in place.
+  const videoMarker = useRef<Marker | null>(null)
+  const videoCaption = useRef<HTMLParagraphElement | null>(null)
+  const videoLon = liveVideo?.lon
+  const videoLat = liveVideo?.lat
+  const videoElement = liveVideo?.element
+  useEffect(() => {
+    if (!map.current || !videoElement || videoLon === undefined || videoLat === undefined) return
+    const card = document.createElement('div')
+    card.className = 'live-video'
+    const caption = document.createElement('p')
+    caption.className = 'live-video-caption'
+    card.append(videoElement, caption)
+    videoCaption.current = caption
+    videoMarker.current = new Marker({ element: card, anchor: 'bottom-left', offset: [18, -30] })
+      .setLngLat([videoLon, videoLat])
+      .addTo(map.current)
+    return () => {
+      videoMarker.current?.remove()
+      videoMarker.current = null
+      videoCaption.current = null
+    }
+  }, [videoElement, videoLon, videoLat])
+
+  const videoText = liveVideo ? (liveVideo.waiting ? t('video.waiting') : liveVideo.caption) : ''
+  useEffect(() => {
+    if (videoCaption.current) videoCaption.current.textContent = videoText
+  }, [videoText])
 
   return <div ref={container} className="map" />
 }

@@ -191,5 +191,21 @@
   "map": {
     "liveFire": "Detectado durante {hours} h; visto por última vez: {time}",
     "resident": "{name}: {status}"
+  },
+  "video": {
+    "request": "Pedir vídeo en directo",
+    "resend": "Enviar un enlace nuevo",
+    "creating": "Creando el enlace…",
+    "texted": "Enlace enviado por SMS al vecino:",
+    "openOnPhone": "Sin SMS: abre esto en el móvil del vecino:",
+    "waiting": "Esperando a que el vecino abra el enlace…",
+    "failed": "No se ha podido crear el enlace de vídeo."
+  },
+  "residentCamera": {
+    "title": "Coordinación de la emergencia",
+    "joining": "Conectando con la coordinación de emergencias…",
+    "live": "La coordinación le está viendo y escuchando. Enseñe dónde está y qué ve, y hable con normalidad.",
+    "used": "Este enlace ya se ha usado. Si necesita ayuda, llame al 112.",
+    "error": "No se ha podido abrir la cámara. Si necesita ayuda, llame al 112."
   }
 }

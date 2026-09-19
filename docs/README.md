@@ -15,6 +15,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [openrouteservice](services/openrouteservice.md) | Evacuation and rescue routes |
 | | [Overpass (OpenStreetMap)](services/overpass.md) | Towns, care homes, schools, health centres and roads for the zones at risk |
 | | [Supabase](services/supabase.md) | Hosted Postgres; not adopted, see the page |
+| | [Vonage Video](services/vonage.md) | Extension 2: live video from a resident who needs rescue |
 | | [Norma (QualityClouds)](services/norma.md) | Extension 1: scan, fix, rescan |
 | | [Devin (Cognition)](services/devin.md) | Extension 3: self-improving spread model |
 | **Demo** | [Runbook](demo/runbook.md) | Before the demo, and what to do when something fails on stage |
