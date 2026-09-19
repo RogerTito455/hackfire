@@ -18,8 +18,9 @@ import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import type { ZoneImpact } from '../domain/zones'
 import type { MapMode } from '../hooks/useMapMode'
 import { useI18n } from './i18n'
-import { placeMarkerSvg, statusMarkerSvg } from './markers'
+import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg } from './markers'
 import {
+  BASEMAP_PAINT,
   FIRE_AREA_COLOR,
   formatSpanishTime,
   HOTSPOT_AGE_COLORS,
@@ -48,6 +49,12 @@ const IBERIA_BOUNDS: [[number, number], [number, number]] = [
   [4.4, 44.0],
 ]
 
+const DARK = '(prefers-color-scheme: dark)'
+
+function basemapPaint() {
+  return window.matchMedia?.(DARK).matches ? BASEMAP_PAINT.dark : BASEMAP_PAINT.light
+}
+
 const OSM_STYLE: StyleSpecification = {
   version: 8,
   sources: {
@@ -58,7 +65,7 @@ const OSM_STYLE: StyleSpecification = {
       attribution: '© OpenStreetMap contributors',
     },
   },
-  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+  layers: [{ id: 'osm', type: 'raster', source: 'osm', paint: basemapPaint() }],
 }
 
 const HOTSPOTS = 'hotspots'
@@ -140,11 +147,25 @@ const liveRadius = [
   ...LIVE_RADIUS_BY_HOURS.flat(),
 ] as ExpressionSpecification
 
-const radiusByFrp = [
+/** Hotspot radius by fire power, scaled with the zoom so a zoomed-out fire is not one orange blob. */
+const radiusByFrp = (scale: number) =>
+  [
+    'interpolate',
+    ['linear'],
+    ['get', 'frp'],
+    ...HOTSPOT_RADIUS_BY_FRP.flatMap(([frp, radius]) => [frp, radius * scale]),
+  ] as ExpressionSpecification
+
+const hotspotRadius = [
   'interpolate',
   ['linear'],
-  ['get', 'frp'],
-  ...HOTSPOT_RADIUS_BY_FRP.flat(),
+  ['zoom'],
+  8,
+  radiusByFrp(0.45),
+  11,
+  radiusByFrp(0.8),
+  14,
+  radiusByFrp(1.3),
 ] as ExpressionSpecification
 
 const spreadColor = [
@@ -302,10 +323,10 @@ export function TriageMap({
         source: HOTSPOTS,
         filter: ['<=', ['get', 't'], -1],
         paint: {
-          'circle-radius': radiusByFrp,
+          'circle-radius': hotspotRadius,
           'circle-color': ageColor(0),
           'circle-opacity': 0.85,
-          'circle-stroke-width': 0.5,
+          'circle-stroke-width': 0.75,
           'circle-stroke-color': '#3a0d06',
         },
       })
@@ -334,14 +355,14 @@ export function TriageMap({
         type: 'line',
         source: ROUTE,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#fff', 'line-width': 8 },
+        paint: { 'line-color': '#fff', 'line-width': 10 },
       })
       instance.addLayer({
         id: ROUTE,
         type: 'line',
         source: ROUTE,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': ROUTE_COLOR, 'line-width': 5 },
+        paint: { 'line-color': ROUTE_COLOR, 'line-width': 6 },
       })
       instance.on('click', LIVE_FIRES, (event) => {
         const feature = event.features?.[0]
@@ -367,6 +388,19 @@ export function TriageMap({
       setStyleReady(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (!styleReady || !window.matchMedia) return
+    const query = window.matchMedia(DARK)
+    const apply = () => {
+      const paint = basemapPaint()
+      for (const property of Object.keys(paint) as (keyof typeof paint)[]) {
+        map.current?.setPaintProperty('osm', property, paint[property])
+      }
+    }
+    query.addEventListener('change', apply)
+    return () => query.removeEventListener('change', apply)
+  }, [styleReady])
 
   const origin = hotspots.length > 0 ? hotspots[0].observedAt : 0
 
@@ -460,7 +494,7 @@ export function TriageMap({
         element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
         marker = new Marker({ element, anchor: 'bottom' })
           .setLngLat([neighbor.lon, neighbor.lat])
-          .setPopup(new Popup({ offset: [0, -38], closeButton: false, focusAfterOpen: false }).setText(label))
+          .setPopup(new Popup({ offset: [0, -STATUS_MARKER_HEIGHT + 2], closeButton: false, focusAfterOpen: false }).setText(label))
           .addTo(map.current)
         marker.getElement().addEventListener('click', () => onSelect.current(neighbor.id))
         markers.current.set(neighbor.id, marker)

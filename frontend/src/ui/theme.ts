@@ -20,11 +20,18 @@ export const HOTSPOT_AGE_COLORS: readonly (readonly [hours: number, color: strin
 
 // Hotspot radius in pixels by fire radiative power in MW.
 export const HOTSPOT_RADIUS_BY_FRP: readonly (readonly [frp: number, radius: number])[] = [
-  [0, 3],
-  [100, 5],
-  [500, 8],
-  [2000, 12],
+  [0, 4],
+  [100, 6],
+  [500, 9],
+  [2000, 13],
 ]
+
+// The base map is muted so that only our colours carry meaning: grey land, the fire in warm
+// colours, the way out in blue. At night the tiles are inverted to a dark grey.
+export const BASEMAP_PAINT = {
+  light: { 'raster-saturation': -0.8, 'raster-contrast': -0.1, 'raster-brightness-min': 0.1, 'raster-brightness-max': 1 },
+  dark: { 'raster-saturation': -1, 'raster-contrast': 0, 'raster-brightness-min': 0.78, 'raster-brightness-max': 0.1 },
+} as const
 
 // The fire is in Spain, so the replay clock shows Spanish local time.
 export const REPLAY_TIME_ZONE = 'Europe/Madrid'

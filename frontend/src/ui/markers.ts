@@ -12,10 +12,14 @@ function placeIcon(icon: IconName, x: number, y: number, size: number, color: st
   return iconMarkup(icon).replace('<svg ', `<svg x="${x}" y="${y}" width="${size}" height="${size}" color="${color}" `)
 }
 
-/** A 32 × 40 pin filled with `color`, a white outline, and the icon in white inside its head. */
+/** Drawn size of a resident pin: the 32 × 40 drawing scaled up so a thumb can hit it. */
+export const STATUS_MARKER_HEIGHT = 48
+const STATUS_MARKER_WIDTH = 38
+
+/** A resident pin filled with `color`, a white outline, and the icon in white inside its head. */
 export function statusMarkerSvg(color: string, icon: IconName): string {
   return (
-    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">' +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${STATUS_MARKER_WIDTH}" height="${STATUS_MARKER_HEIGHT}" viewBox="0 0 32 40">` +
     `<path d="${PIN_PATH}" fill="${color}" stroke="${MARKER_OUTLINE_COLOR}" stroke-width="2" stroke-linejoin="round"/>` +
     placeIcon(icon, 8, 7, 16, MARKER_OUTLINE_COLOR) +
     '</svg>'
