@@ -1,6 +1,7 @@
 import type { LoadStatus } from '../hooks/useFireReplay'
 import { MINUTE, type TimeRange } from '../domain/hotspots'
 import { Icon } from './Icon'
+import { useI18n } from './i18n'
 import { formatSpanishTime, HOTSPOT_AGE_COLORS } from './theme'
 
 interface ReplayControlsProps {
@@ -25,9 +26,10 @@ export function ReplayControls({
   onTimeChange,
   onTogglePlay,
 }: ReplayControlsProps) {
-  if (status === 'loading') return <div className="replay">Loading satellite hotspots…</div>
+  const { t, intl } = useI18n()
+  if (status === 'loading') return <div className="replay">{t('replay.loading')}</div>
   if (status === 'error' || range === null || time === null) {
-    return <div className="replay">Satellite hotspots unavailable</div>
+    return <div className="replay">{t('replay.unavailable')}</div>
   }
 
   const gradient = HOTSPOT_AGE_COLORS.map(([, color]) => color).join(', ')
@@ -40,14 +42,14 @@ export function ReplayControls({
         type="button"
         className="replay-play"
         onClick={onTogglePlay}
-        aria-label={playing ? 'Pause replay' : 'Play replay'}
+        aria-label={playing ? t('replay.pause') : t('replay.play')}
       >
         <Icon name={playing ? 'pause' : 'play'} size={18} />
       </button>
       <div className="replay-body">
         <div className="replay-head">
-          <strong>{formatSpanishTime(time)}</strong>
-          <span>{observedCount.toLocaleString('en-GB')} hotspots so far</span>
+          <strong>{formatSpanishTime(time, intl)}</strong>
+          <span>{t('replay.hotspots', { count: observedCount })}</span>
         </div>
         <input
           type="range"
@@ -57,11 +59,12 @@ export function ReplayControls({
           step={SLIDER_STEP}
           value={time}
           onChange={(event) => onTimeChange(Number(event.target.value))}
-          aria-label="Replay time"
+          aria-label={t('replay.slider')}
         />
         <div className="replay-legend">
+          <span>{t('replay.fresh')}</span>
           <span className="replay-ramp" style={{ background: `linear-gradient(to right, ${gradient})` }} />
-          <span>just detected → a day old</span>
+          <span>{t('replay.old')}</span>
         </div>
       </div>
     </div>

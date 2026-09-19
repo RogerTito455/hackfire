@@ -1,6 +1,7 @@
 import type { EvacuationOrder } from '../domain/orders'
 import type { Neighbor } from '../domain/triage'
 import type { ConversationState } from '../domain/voice'
+import { useI18n } from './i18n'
 import { Icon } from './Icon'
 
 interface TalkPanelProps {
@@ -17,25 +18,34 @@ interface TalkPanelProps {
 }
 
 // No phone can ring: the resident agent calls this laptop, and someone answers as the resident.
-export function TalkPanel({ neighbor, available, order, activeId, state, onTalk, onHangUp }: TalkPanelProps) {
-  if (!available) return <p className="empty">The voice agent is not configured (SLNG_API_KEY).</p>
+export function TalkPanel({
+  neighbor,
+  available,
+  order,
+  activeId,
+  state,
+  onTalk,
+  onHangUp,
+}: TalkPanelProps) {
+  const { t } = useI18n()
+  if (!available) return <p className="empty">{t('talk.notConfigured')}</p>
   if (!order?.approved) {
     return (
       <p className="empty warning">
-        {order?.zone_name ?? neighbor.zone}'s order is not approved: approve it under Evacuation orders, then call {neighbor.name}.
+        {t('talk.approveFirst', { zone: order?.zone_name ?? neighbor.zone, name: neighbor.name })}
       </p>
     )
   }
 
   const mine = activeId === neighbor.id
-  if (mine && state === 'connecting') return <p className="empty">Connecting to the agent…</p>
+  if (mine && state === 'connecting') return <p className="empty">{t('talk.connecting')}</p>
   if (mine && state === 'live') {
     return (
       <div className="talk">
-        <p className="talk-live">The resident agent is calling {neighbor.name}: answer as them.</p>
+        <p className="talk-live">{t('talk.onTheLine', { name: neighbor.name })}</p>
         <button type="button" className="talk-hang-up icon-button" onClick={onHangUp}>
           <Icon name="close" size={16} />
-          Hang up
+          {t('talk.hangUp')}
         </button>
       </div>
     )
@@ -44,9 +54,9 @@ export function TalkPanel({ neighbor, available, order, activeId, state, onTalk,
     <div className="talk">
       <button type="button" className="text-triage-send icon-button" disabled={state === 'connecting'} onClick={onTalk}>
         <Icon name="live" size={16} />
-        Call {neighbor.name} (answer here)
+        {t('talk.take', { name: neighbor.name })}
       </button>
-      {mine && state === 'error' && <p className="empty">Could not reach the agent. Use the typed answer below.</p>}
+      {mine && state === 'error' && <p className="empty">{t('talk.failed')}</p>}
     </div>
   )
 }

@@ -241,7 +241,12 @@
 
 .route-modes {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
+}
+
+.route-modes button {
+  white-space: nowrap;
 }
 
 .route-modes button {
@@ -268,9 +273,17 @@
 }
 
 .route-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text);
+}
+
+.route-meta strong {
+  color: var(--ink);
+  font-size: 15px;
 }
 
 .status-marker {
@@ -291,8 +304,12 @@
 
 /* MapLibre popups are white in both themes: keep their text dark. */
 .maplibregl-popup-content {
-  color: #202124;
-  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control, 10px);
+  box-shadow: var(--float);
+  color: #0f1b3d;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .alerts {
@@ -317,6 +334,12 @@
 .alert-meta {
   font-size: 12px;
   color: var(--text);
+}
+
+.alert-meta time {
+  color: var(--ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .alert-route {
@@ -616,4 +639,576 @@
   font: inherit;
   font-size: 12px;
   cursor: pointer;
+}
+
+/* ==========================================================================
+   Mobile-first layout (DESIGN.md). The map is the screen; panels live in a
+   bottom sheet on phones and in a side panel on wide screens. These rules come
+   last on purpose: they restyle the components above without renaming them.
+   ========================================================================== */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Fixed to the viewport rather than 100dvh: dvh needs Chrome 108, and the team's test phone
+   (Galaxy S9+, Chrome 101) drops it, which collapsed the whole app to zero height. */
+.app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--mist);
+}
+
+.app .map-area {
+  position: absolute;
+  inset: 0;
+}
+
+.app .map {
+  height: 100%;
+}
+
+/* --- Top bar: floats over the map, clear of the notch ---------------------- */
+
+.topbar {
+  position: absolute;
+  top: calc(var(--safe-top) + 10px);
+  right: 10px;
+  left: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.topbar > * {
+  pointer-events: auto;
+}
+
+.topbar .brand {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 0;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: var(--float);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.topbar .brand .icon {
+  color: var(--fire-3);
+}
+
+.topbar .conn {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: var(--float);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-ok, #0e9f6e);
+}
+
+.conn.down .conn-dot {
+  background: var(--fire-3);
+}
+
+.topbar .mode-toggle {
+  position: static;
+  margin-left: auto;
+  border: 0;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: var(--float);
+}
+
+.topbar .mode-toggle button {
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 0 14px;
+  white-space: nowrap;
+  border-radius: 999px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.topbar .mode-toggle button.active {
+  background: var(--route);
+  color: var(--route-ink);
+}
+
+/* The language pill: the code on show, the phone's native picker underneath. */
+.language {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: var(--float);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.language select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.language:focus-within {
+  outline: 3px solid var(--route);
+  outline-offset: 2px;
+}
+
+/* MapLibre's own controls: pinch-zoom replaces the buttons on phones. */
+.maplibregl-ctrl-top-left {
+  top: calc(var(--safe-top) + 58px);
+}
+
+@media (max-width: 899px) {
+  .maplibregl-ctrl-top-left .maplibregl-ctrl-group {
+    display: none;
+  }
+
+  .topbar .conn {
+    padding: 10px;
+  }
+
+  .topbar .conn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 479px) {
+  .topbar .brand-name {
+    display: none;
+  }
+
+  /* Segmented control: the chosen mode keeps its name, the other shrinks to its icon. */
+  .topbar .mode-toggle button:not(.active) {
+    padding: 0 12px;
+  }
+
+  .topbar .mode-toggle button:not(.active) .mode-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .topbar .brand {
+    padding: 9px;
+  }
+}
+
+/* --- The sheet -------------------------------------------------------------- */
+
+.sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  height: calc(var(--sheet-peek, 196px) + var(--safe-bottom));
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--mist);
+  box-shadow: var(--float);
+  transition: height 280ms var(--ease-out);
+}
+
+.sheet[data-snap='half'] {
+  height: 52vh;
+  height: 52dvh;
+}
+
+.sheet[data-snap='full'] {
+  height: 90vh;
+  height: 90dvh;
+}
+
+.sheet-grab {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  padding: 8px 0 4px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheet-handle {
+  width: 44px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+
+.sheet-handle::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 5px;
+  margin: 7px auto;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.sheet-header {
+  flex: none;
+  padding: 0 12px 10px;
+}
+
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px calc(24px + var(--safe-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Replay scrubber, now the top of the sheet rather than a floating card. */
+.sheet .replay {
+  position: static;
+  max-width: none;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.sheet .replay-play {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.sheet .replay-slider {
+  height: 28px;
+  margin: 2px 0;
+  accent-color: var(--fire-2);
+}
+
+.sheet .replay-head {
+  flex-wrap: wrap;
+  column-gap: 10px;
+  align-items: baseline;
+}
+
+.sheet .replay-head > * {
+  white-space: nowrap;
+}
+
+.sheet .replay-head span {
+  font-size: 12px;
+}
+
+.sheet .replay-legend {
+  gap: 6px;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.sheet .replay-legend .replay-ramp {
+  flex: 1;
+  width: auto;
+  min-width: 32px;
+}
+
+/* --- Status strip: the loud element ----------------------------------------- */
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-strip li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 4px;
+  align-items: center;
+  align-content: start;
+  min-height: 64px;
+  padding: 7px 6px 7px 7px;
+  border-radius: var(--radius-group);
+  background: var(--tone);
+  color: #fff;
+}
+
+.status-strip li.none {
+  background: var(--paper);
+  color: var(--tone);
+  box-shadow: inset 0 0 0 1.5px var(--line); /* color-mix needs Chrome 111 */
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tone) 40%, transparent);
+}
+
+.status-strip strong {
+  justify-self: end;
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Labels may take two lines: "Necesita rescate" must be read whole, never cut to "Neces…". */
+.status-strip li > span:last-child {
+  grid-column: 1 / -1;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* --- Groups: native inset lists, not a wall of identical cards -------------- */
+
+.group {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-group);
+  background: var(--paper);
+}
+
+.group h2,
+.panel h2 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.group h2 .icon {
+  color: var(--ink-2);
+}
+
+.group-selected {
+  box-shadow: inset 0 0 0 2px var(--route);
+}
+
+.group-selected h2 .icon {
+  color: var(--route);
+}
+
+/* A step inside a group, such as calling the selected resident after reading their route. */
+.group .subhead {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 14px 0 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.empty,
+.hint {
+  margin: 4px 0;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.hint {
+  margin: 16px 4px 0;
+  text-align: center;
+}
+
+/* Rows separated by hairlines, the way a phone's own lists are. */
+.rescues li,
+.alerts li,
+.orders li {
+  margin: 0;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.rescues li:last-child,
+.alerts li:last-child,
+.orders li:last-child {
+  border-bottom: 0;
+}
+
+.rescues li {
+  padding-left: 12px;
+  box-shadow: inset 4px 0 0 var(--fire-3);
+}
+
+.impact,
+.zone-time,
+.minutes {
+  color: var(--fire-3);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thumb-sized controls. */
+.group button,
+.group select,
+.sheet .reset,
+.route-modes button,
+.order-approve,
+.alert-route,
+.text-triage-send,
+.text-triage-manual button {
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.route-modes button.active,
+.order-approve,
+.text-triage-send {
+  border-color: var(--route);
+  background: var(--route);
+  color: var(--route-ink);
+}
+
+.alert-route {
+  border-color: var(--route);
+  color: var(--route);
+}
+
+.group select,
+.text-triage textarea {
+  min-height: 44px;
+  border-color: var(--line);
+  border-radius: var(--radius-control);
+  background: var(--mist);
+  color: var(--ink);
+  font-size: 16px; /* 16 px or more, or iOS zooms the page on focus. */
+}
+
+.backup {
+  margin-top: 10px;
+}
+
+.backup summary {
+  padding: 11px 0;
+  line-height: 1.35;
+  color: var(--route);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sheet .reset {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 16px 0 0;
+  border: 0;
+  border-radius: var(--radius-group);
+  background: var(--paper);
+  color: var(--fire-3);
+  font-weight: 600;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* MapLibre popups stay dark-on-white in both themes. */
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  margin: 0 0 calc(var(--safe-bottom) + 200px) 0;
+}
+
+/* --- Wide screens: the sheet becomes a side panel ---------------------------- */
+
+@media (min-width: 900px) {
+  .app .map-area {
+    left: 400px;
+  }
+
+  .topbar {
+    left: 410px;
+  }
+
+  .sheet,
+  .sheet[data-snap='half'],
+  .sheet[data-snap='full'] {
+    top: 0;
+    right: auto;
+    width: 400px;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    transition: none;
+  }
+
+  .sheet-grab {
+    display: none;
+  }
+
+  .sheet-header {
+    padding: 16px 16px 10px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sheet-body {
+    padding: 0 16px 24px;
+  }
+
+  .maplibregl-ctrl-attrib.maplibregl-compact {
+    margin-bottom: 0;
+  }
 }

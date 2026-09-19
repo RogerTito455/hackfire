@@ -1,7 +1,8 @@
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import type { RouteStatus } from '../hooks/useSelectedRoute'
 import { Icon } from './Icon'
-import { formatDistance, formatDuration, formatSpanishTime, ROUTE_KIND_ICON, ROUTE_KIND_LABEL } from './theme'
+import { useI18n } from './i18n'
+import { formatDistance, formatDuration, formatSpanishTime, ROUTE_KIND_ICON } from './theme'
 
 interface RoutePanelProps {
   neighbor: Neighbor | null
@@ -18,19 +19,20 @@ const MODES: readonly RouteKind[] = ['car', 'walking', 'rescue']
 
 // The selected resident's way out, as the agent would read it to them, or the crew's way in.
 export function RoutePanel({ neighbor, mode, route, status, avoids, onModeChange, onClose }: RoutePanelProps) {
+  const { t, intl } = useI18n()
   if (neighbor === null) {
-    return <p className="empty">Click a resident on the map to see their route out.</p>
+    return <p className="empty">{t('route.pick')}</p>
   }
 
   return (
     <div className="route-panel">
       <div className="route-head">
         <strong>{neighbor.name}</strong>
-        <button type="button" className="route-close" onClick={onClose} aria-label="Close route">
+        <button type="button" className="route-close" onClick={onClose} aria-label={t('route.close')}>
           <Icon name="close" size={18} />
         </button>
       </div>
-      <div className="route-modes" role="group" aria-label="Travel mode">
+      <div className="route-modes" role="group" aria-label={t('route.modes')}>
         {MODES.map((option) => (
           <button
             key={option}
@@ -40,26 +42,30 @@ export function RoutePanel({ neighbor, mode, route, status, avoids, onModeChange
             onClick={() => onModeChange(option)}
           >
             <Icon name={ROUTE_KIND_ICON[option]} size={16} />
-            {ROUTE_KIND_LABEL[option]}
+            {t(`route.${option}`)}
           </button>
         ))}
       </div>
-      {status === 'loading' && <p className="empty">Planning the route…</p>}
-      {status === 'error' && <p className="empty">Routing is unavailable right now.</p>}
+      {status === 'loading' && <p className="empty">{t('route.planning')}</p>}
+      {status === 'error' && <p className="empty">{t('route.unavailable')}</p>}
       {status === 'ready' && route !== null && (
         <>
           <p className="route-directions">“{route.spoken_directions}”</p>
           {route.distance_m !== null && route.duration_s !== null && (
             <p className="route-meta">
-              {formatDistance(route.distance_m)} · {formatDuration(route.duration_s)}
+              <strong>
+                {t('route.summary', {
+                  distance: formatDistance(route.distance_m, intl),
+                  duration: formatDuration(route.duration_s),
+                })}
+              </strong>
               {avoids !== null && (
-                <>
-                  {' · '}
-                  {avoids.properties.ahead_hours > 0
-                    ? `avoids the fire and its next ${avoids.properties.ahead_hours} h of predicted spread`
-                    : 'avoids the area already burned'}
-                  {`, as of ${formatSpanishTime(Date.parse(avoids.properties.until))}`}
-                </>
+                <span>
+                  {t(avoids.properties.ahead_hours > 0 ? 'route.avoidsAhead' : 'route.avoidsBurned', {
+                    count: avoids.properties.ahead_hours,
+                    time: formatSpanishTime(Date.parse(avoids.properties.until), intl),
+                  })}
+                </span>
               )}
             </p>
           )}

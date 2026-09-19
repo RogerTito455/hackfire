@@ -49,6 +49,7 @@ Project skills live in `.claude/skills/` and load automatically. Claude picks on
 | `diagnosing-bugs` | [mattpocock/skills](https://github.com/mattpocock/skills) | Hard bugs: build a failing curl or test first, then fix. Redacts secrets in what it shows |
 | `maplibre-v6-migration` | [maplibre/maplibre-agent-skills](https://github.com/maplibre/maplibre-agent-skills) | MapLibre v6 specifics: no default export, ESM only, `setWorkerUrl()` under Vite |
 | `maplibre-source-wiring` | [maplibre/maplibre-agent-skills](https://github.com/maplibre/maplibre-agent-skills) | A layer that does not render, `source-layer` mismatches, `setFeatureState` doing nothing |
+| `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills) | Any change to the dashboard's look: plan tokens against the brief, avoid generic AI-looking defaults. Follow [DESIGN.md](../../DESIGN.md) |
 | `agent-prompt` | [slng-ai/skills](https://github.com/slng-ai/skills) | Drafting the greeting, system prompt, variables and tools for the SLNG Agent Builder (#7) |
 | `agents` | [slng-ai/skills](https://github.com/slng-ai/skills) | Creating SLNG agents and dispatching calls through the API (#8, #10). Reads `VOICEAI_API_KEY` |
 | `unmute`, `unmute-deploy`, `unmute-manifest` | The `unmute` CLI, v0.5.5 | Writing and validating the voice agents in `voice/` (`unmute`), pushing them to SLNG (`unmute-deploy`). `unmute-manifest` is for organisation contracts, which we do not use |
@@ -77,7 +78,7 @@ The Unmute skills are the exception: they ship inside the `unmute` binary, not t
 ### What we chose not to install, and why
 
 - **The rest of mattpocock/skills.** The planning skills (`to-spec`, `to-tickets`, `triage`, `grill-me`) duplicate PLAN.md and the slice issues. `setup-matt-pocock-skills` rewrites CLAUDE.md. `git-guardrails` blocks `git push`. `resolving-merge-conflicts` commits on its own. The architecture skills work on a longer horizon than a hackathon.
-- **anthropics/skills.** `web-artifacts-builder` relies on shadcn and Tailwind, which the no-component-kit rule forbids. The `pptx` skill could help with the pitch deck (#15) if we build one: `/plugin install document-skills@anthropic-agent-skills`.
+- **The rest of anthropics/skills.** `web-artifacts-builder` relies on shadcn and Tailwind, which the no-component-kit rule forbids. The `pptx` skill could help with the pitch deck (#15) if we build one: `/plugin install document-skills@anthropic-agent-skills`.
 - **The rest of slng-ai/skills.** `setup-api-key`, `text-to-speech` and `speech-to-text` overlap with what the docs MCP and the curl in [SLNG](../services/slng.md) already give; the three migration skills are for moving an existing LiveKit or Pipecat agent.
 - **supabase/agent-skills.** Identical to what the Supabase plugin already provides, and Supabase is not adopted.
 - **fastapi/fastapi skill.** It pushes `fastapi dev` and a hand-written `pyproject.toml` section, both against our conventions.

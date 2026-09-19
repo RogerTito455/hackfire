@@ -7,7 +7,7 @@ The dashboard's icons, drawn by hand for HackFire. CLAUDE.md rules out icon pack
 ```tsx
 import { Icon } from './Icon'
 
-<button type="button" className="icon-button" onClick={onTogglePlay} aria-label="Play replay">
+<button type="button" className="icon-button" onClick={onTogglePlay} aria-label={t('replay.play')}>
   <Icon name="play" size={16} />
 </button>
 ```

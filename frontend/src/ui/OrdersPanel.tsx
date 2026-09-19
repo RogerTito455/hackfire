@@ -10,7 +10,8 @@ import {
 } from '../domain/orders'
 import type { CampaignResult } from '../domain/voice'
 import { Icon } from './Icon'
-import { ORDER_STATE_COLOR, ORDER_STATE_LABEL } from './theme'
+import { useI18n } from './i18n'
+import { formatMinutesToImpact, ORDER_STATE_COLOR } from './theme'
 
 interface OrdersPanelProps {
   orders: EvacuationOrder[]
@@ -25,32 +26,30 @@ interface OrdersPanelProps {
   onCall: (zone: string) => void
 }
 
-function residents(count: number): string {
-  return `${count} ${count === 1 ? 'resident' : 'residents'}`
-}
+type Translate = ReturnType<typeof useI18n>['t']
 
-function campaignText({ placed, refused }: CampaignResult): string {
-  if (placed === null || refused === null) return 'Could not start the calls.'
-  if (placed === 0 && refused === 0) return 'Nobody to call: every resident already has a status or a call going.'
+function campaignText({ placed, refused }: CampaignResult, t: Translate): string {
+  if (placed === null || refused === null) return t('orders.callsFailed')
+  if (placed === 0 && refused === 0) return t('orders.nobodyToCall')
   const parts = []
-  if (placed > 0) parts.push(`Calling ${residents(placed)}; unanswered calls turn into No answer.`)
-  if (refused > 0) parts.push(`SLNG refused the calls to ${residents(refused)}: marked No answer.`)
+  if (placed > 0) parts.push(t('orders.callsPlaced', { count: placed }))
+  if (refused > 0) parts.push(t('orders.callsRefused', { count: refused }))
   return parts.join(' ')
 }
 
-function impactText(minutes: number | null): string {
-  if (minutes === null) return 'not in the forecast'
-  if (minutes === 0) return 'fire already there'
-  if (minutes < 60) return `fire in ${minutes} min`
-  return `fire in ${Math.floor(minutes / 60)} h ${minutes % 60 ? `${minutes % 60} min` : ''}`.trim()
+function impactText(minutes: number | null, t: Translate): string {
+  if (minutes === null) return t('orders.impactNone')
+  if (minutes === 0) return t('orders.impactNow')
+  return t('orders.impactIn', { time: formatMinutesToImpact(minutes, t('time.now')) })
 }
 
 // One order per zone: the coordinator confirms the proposal or picks another destination, and the
 // agent reads the approved order to everyone in that zone.
 export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls, calling, campaign, onCall }: OrdersPanelProps) {
+  const { t } = useI18n()
   const [drafts, setDrafts] = useState<Record<string, string>>({})
 
-  if (orders.length === 0) return <p className="empty">No zones with residents in the registry.</p>
+  if (orders.length === 0) return <p className="empty">{t('orders.empty')}</p>
 
   return (
     <ol className="orders">
@@ -63,14 +62,14 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls,
             <div className="order-head">
               <strong>{order.zone_name}</strong>
               <span className="order-state" style={{ color: ORDER_STATE_COLOR[state] }}>
-                {ORDER_STATE_LABEL[state]}
+                {t(`orders.${state}`)}
               </span>
             </div>
             <span className="order-meta">
-              {order.residents} {order.residents === 1 ? 'resident' : 'residents'} · {impactText(order.minutes_to_impact)}
+              {t('orders.residents', { count: order.residents })}, {impactText(order.minutes_to_impact, t)}
             </span>
             <label className="order-choice">
-              <span className="visually-hidden">Order for {order.zone_name}</span>
+              <span className="visually-hidden">{t('orders.choice', { zone: order.zone_name })}</span>
               <select
                 value={choice}
                 onChange={(event) => setDrafts({ ...drafts, [order.zone]: event.target.value })}
@@ -79,12 +78,13 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls,
                   .filter((point) => point.name !== order.zone_name)
                   .map((point) => (
                     <option key={point.id} value={point.id}>
-                      Leave for {point.name}
-                      {point.id === proposedChoice(order) ? ' (proposed)' : point.safe ? '' : ' (not safe now)'}
+                      {t('orders.leaveFor', { place: point.name })}
+                      {point.id === proposedChoice(order) ? t('orders.proposedTag') : point.safe ? '' : t('orders.unsafeTag')}
                     </option>
                   ))}
                 <option value={SHELTER}>
-                  Stay indoors{proposedChoice(order) === SHELTER ? ' (proposed)' : ''}
+                  {t('orders.stayIndoors')}
+                  {proposedChoice(order) === SHELTER ? t('orders.proposedTag') : ''}
                 </option>
               </select>
             </label>
@@ -103,7 +103,7 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls,
                 }}
               >
                 <Icon name={choice === SHELTER ? 'home' : 'flag'} size={16} />
-                {saving === order.zone ? 'Saving…' : order.approved ? 'Change order' : 'Approve order'}
+                {saving === order.zone ? t('orders.saving') : order.approved ? t('orders.change') : t('orders.approve')}
               </button>
             )}
             {order.approved && !changed && <p className="order-message">“{order.message}”</p>}
@@ -115,13 +115,13 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls,
                 onClick={() => onCall(order.zone)}
               >
                 <Icon name="live" size={16} />
-                {calling === order.zone ? 'Calling…' : 'Call residents'}
+                {calling === order.zone ? t('orders.calling') : t('orders.call')}
               </button>
             )}
             {order.approved && !changed && !phoneCalls && (
-              <p className="empty">No phone line: take each resident's call from their panel.</p>
+              <p className="empty">{t('orders.noLine')}</p>
             )}
-            {campaign?.zone === order.zone && <p className="empty">{campaignText(campaign)}</p>}
+            {campaign?.zone === order.zone && <p className="empty">{campaignText(campaign, t)}</p>}
           </li>
         )
       })}

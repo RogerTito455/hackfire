@@ -17,6 +17,7 @@ import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import type { ZoneImpact } from '../domain/zones'
 import type { MapMode } from '../hooks/useMapMode'
+import { useI18n } from './i18n'
 import { placeMarkerSvg, statusMarkerSvg } from './markers'
 import {
   FIRE_AREA_COLOR,
@@ -29,7 +30,6 @@ import {
   SPREAD_HOUR_COLORS,
   STATUS_COLOR,
   STATUS_ICON,
-  STATUS_LABEL,
   ZONE_URGENCY_COLORS,
 } from './theme'
 
@@ -175,6 +175,14 @@ const zoneLineWidth = [
 // Predicted spread and the zones it reaches belong to the replay; live mode hides them.
 const REPLAY_LAYERS = ['spread-fill', 'spread-outline', 'zones-fill', 'zones-outline']
 
+// Leave room for what covers the map: the top bar, and on a phone the bottom sheet.
+function routePadding() {
+  const phone = window.matchMedia('(max-width: 899px)').matches
+  return phone
+    ? { top: 90, right: 40, bottom: Math.round(window.innerHeight * 0.55), left: 40 }
+    : { top: 80, right: 80, bottom: 80, left: 80 }
+}
+
 interface TriageMapProps {
   mode: MapMode
   neighbors: Neighbor[]
@@ -218,10 +226,18 @@ export function TriageMap({
   useEffect(() => {
     onSelect.current = onSelectNeighbor
   }, [onSelectNeighbor])
+  // The map is built once; its click handlers read the current language through this ref.
+  const { t, intl } = useI18n()
+  const words = useRef({ t, intl })
+  useEffect(() => {
+    words.current = { t, intl }
+  }, [t, intl])
 
   useEffect(() => {
     if (!container.current || map.current) return
     const instance = new MapLibreMap({
+      // Credits collapse to an (i) button, so they never cover the sheet on a phone.
+      attributionControl: { compact: true },
       container: container.current,
       style: OSM_STYLE,
       bounds: DEMO_BOUNDS,
@@ -229,6 +245,8 @@ export function TriageMap({
     })
     instance.addControl(new NavigationControl(), 'top-left')
     instance.on('load', () => {
+      // Compact credits start open; fold them into the (i) button until someone taps it.
+      instance.getContainer().querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
       // Under the hotspots: the burned area the routes avoid.
       instance.addSource(FIRE_AREA, { type: 'geojson', data: EMPTY })
       instance.addLayer({
@@ -326,9 +344,14 @@ export function TriageMap({
         const feature = event.features?.[0]
         if (!feature || feature.geometry.type !== 'Point') return
         const { hoursBurning, lastObserved } = feature.properties as { hoursBurning: number; lastObserved: number }
-        new Popup({ offset: 12 })
+        new Popup({ offset: 12, closeButton: false, focusAfterOpen: false })
           .setLngLat(feature.geometry.coordinates as [number, number])
-          .setText(`Detected over ${Math.round(hoursBurning)} h · last seen ${formatSpanishTime(lastObserved)}`)
+          .setText(
+            words.current.t('map.liveFire', {
+              hours: Math.round(hoursBurning),
+              time: formatSpanishTime(lastObserved, words.current.intl),
+            }),
+          )
           .addTo(instance)
       })
       setStyleReady(true)
@@ -411,7 +434,7 @@ export function TriageMap({
           [Math.min(...lons), Math.min(...lats)],
           [Math.max(...lons), Math.max(...lats)],
         ],
-        { padding: { top: 80, right: 80, bottom: 150, left: 80 }, duration: 800, maxZoom: 14 },
+        { padding: routePadding(), duration: 800, maxZoom: 14 },
       )
     }
   }, [styleReady, showRoute, route, routeKind, fireArea])
@@ -422,18 +445,19 @@ export function TriageMap({
   useEffect(() => {
     if (!map.current) return
     for (const neighbor of neighbors) {
-      const look = `${neighbor.status}|${neighbor.lon}|${neighbor.lat}|${neighbor.name}`
+      const look = `${neighbor.status}|${neighbor.lon}|${neighbor.lat}|${neighbor.name}|${intl}`
+      const label = t('map.resident', { name: neighbor.name, status: t(`status.${neighbor.status}`) })
       let marker = markers.current.get(neighbor.id)
       if (marker === undefined || drawn.current.get(neighbor.id) !== look) {
         marker?.remove()
         const element = document.createElement('div')
         element.className = 'status-marker'
         element.setAttribute('role', 'button')
-        element.setAttribute('aria-label', `${neighbor.name}: ${STATUS_LABEL[neighbor.status]}`)
+        element.setAttribute('aria-label', label)
         element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
         marker = new Marker({ element, anchor: 'bottom' })
           .setLngLat([neighbor.lon, neighbor.lat])
-          .setPopup(new Popup({ offset: [0, -38] }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
+          .setPopup(new Popup({ offset: [0, -38], closeButton: false, focusAfterOpen: false }).setText(label))
           .addTo(map.current)
         marker.getElement().addEventListener('click', () => onSelect.current(neighbor.id))
         markers.current.set(neighbor.id, marker)
@@ -441,7 +465,7 @@ export function TriageMap({
       }
       marker.getElement().classList.toggle('selected', neighbor.id === selectedNeighborId)
     }
-  }, [neighbors, selectedNeighborId])
+  }, [neighbors, selectedNeighborId, t, intl])
 
   return <div ref={container} className="map" />
 }

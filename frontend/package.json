@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "icons:check": "node scripts/check-icons.mjs"
+    "icons:check": "node scripts/check-icons.mjs",
+    "locales:check": "node scripts/check-locales.mjs"
   },
   "dependencies": {
     "livekit-client": "^2.22.3",

@@ -1,4 +1,5 @@
 import type { LeadTimeView } from '../hooks/useLeadTime'
+import { useI18n } from './i18n'
 import { formatMinutes, formatSpanishTime } from './theme'
 
 interface LeadTimeCardProps {
@@ -7,25 +8,29 @@ interface LeadTimeCardProps {
 
 // The pitch's headline number, shown once the replay reaches the moment the zone was first flagged.
 export function LeadTimeCard({ view }: LeadTimeCardProps) {
+  const { t, intl } = useI18n()
   const { status, leadTime, flagged } = view
-  if (status === 'loading') return <p className="empty">Loading the lead time…</p>
+  if (status === 'loading') return <p className="empty">{t('leadTime.loading')}</p>
   if (status === 'error' || leadTime === null) {
-    return <p className="empty warning">Lead time unavailable: run pnpm data:lead-time.</p>
+    return <p className="empty warning">{t('leadTime.error')}</p>
   }
-  if (!flagged) return <p className="empty">{leadTime.zone_name} has not been flagged yet.</p>
+  if (!flagged) return <p className="empty">{t('leadTime.notFlagged', { zone: leadTime.zone_name })}</p>
 
   return (
     <div className="lead">
       <p className="lead-figure">
-        <strong>{formatMinutes(leadTime.minutes)}</strong> lead time
+        <strong>{formatMinutes(leadTime.minutes)}</strong> {t('leadTime.label')}
       </p>
       <p>
-        {leadTime.zone_name} was flagged at {formatSpanishTime(Date.parse(leadTime.flagged_at))}, using only
-        the hotspots seen up to then. In the recorded satellite data the first hotspot within{' '}
-        {leadTime.radius_km} km of it came at {formatSpanishTime(Date.parse(leadTime.reached_at))}.
+        {t('leadTime.explanation', {
+          zone: leadTime.zone_name,
+          flagged: formatSpanishTime(Date.parse(leadTime.flagged_at), intl),
+          radius: leadTime.radius_km,
+          reached: formatSpanishTime(Date.parse(leadTime.reached_at), intl),
+        })}
       </p>
       <details>
-        <summary>How it is computed</summary>
+        <summary>{t('leadTime.how')}</summary>
         <p>{leadTime.definition}</p>
       </details>
     </div>
