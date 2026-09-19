@@ -521,6 +521,8 @@ export function TriageMap({
     videoMarker.current = new Marker({ element: card, anchor: 'bottom-left', offset: [18, -30] })
       .setLngLat([videoLon, videoLat])
       .addTo(map.current)
+    // Bring the resident into view with room for the card, which opens up and to the right of the pin.
+    map.current.easeTo({ center: [videoLon, videoLat], offset: [-120, 90], duration: 800 })
     return () => {
       videoMarker.current?.remove()
       videoMarker.current = null

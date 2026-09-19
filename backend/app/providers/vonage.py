@@ -51,7 +51,11 @@ def _guarded(call):
 
 def create_session() -> str:
     """A routed session: captions only work when Vonage's media router carries the audio."""
-    return _guarded(lambda: _client().video.create_session(SessionOptions(media_mode="routed")).session_id)
+    video = _client().video
+    # vonage-http-client leaves "Content-Type: application/json" on its shared headers after any JSON
+    # request (captions, SMS), so the form-encoded session/create that follows got HTTP 415.
+    video.http_client._headers.pop("Content-Type", None)
+    return _guarded(lambda: video.create_session(SessionOptions(media_mode="routed")).session_id)
 
 
 def client_token(session_id: str, role: str, ttl_s: int) -> str:
