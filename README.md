@@ -31,12 +31,13 @@ Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app**
 - Live mode: a toggle switches the map to Deepfire's active fire clusters right now, refreshed every minute. If Deepfire is down, the page shows a message and the replay keeps working.
 - Predicted spread and zones at risk: for the replay of 23 July, a cone from the front's velocity gives a forecast every 30 minutes, drawn hour by hour on the map, and the panel lists the places in its path (La Atalaya, El Tiemblo, care homes, schools, health centres, roads) with their time to impact. `get_fire_status` answers from the same numbers, for the moment the slider is on.
 - Lead time: La Atalaya is flagged 6 h 8 min before the first satellite hotspot comes within 3 km of it, computed from satellite data only ([how](docs/findings/2026-09-19-lead-time.md)) and shown on the dashboard once the slider passes the flag.
-- Evacuation routes: `get_evacuation_route` and `get_rescue_route` are real. Routes avoid the area burned up to the scenario time and send residents to the safe point farthest from the fire. Click a resident on the map to see their route by car or on foot, and the directions the agent reads them. Demo routes are cached in `data/`.
+- Evacuation routes: `get_evacuation_route` and `get_rescue_route` are real. Residents go to the nearest safe point the forecast does not reach, avoiding the area burned by the scenario time plus the next hour of predicted spread; crews avoid only what has burned ([why](docs/findings/2026-09-19-evacuation-destinations.md)). Click a resident on the map to see their route by car or on foot, and the directions the agent reads them. Demo routes are cached in `data/`.
 - Evacuation orders per zone: the system proposes a destination (or staying indoors) for each zone with residents, the coordinator approves or changes it, and the agent reads that order to everyone in the zone, then gives each resident their own route to it.
 - Demo mode: a typed answer (classified by the LLM) or three buttons replace a failed call, map tiles are cached for a flaky network, and Reset restores everything between rehearsals. See [docs/demo/runbook.md](docs/demo/runbook.md).
+- Voice agents (Unmute packages in `voice/`): the resident agent is deployed on SLNG (Spanish, Nemotron Super 3, Castilian voice) and changes a pin from SLNG's browser test; the coordinator agent, which reads the rescue queue and the crew's route while the dashboard draws it, is packaged but not deployed yet.
 - Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard, and texted to the crew by SMS once Twilio credentials are set.
 
-Still to build: outbound calls (#8) and the coordinator asking by voice (#10). See [PLAN.md](PLAN.md) and the issues.
+Still to build: outbound phone calls, which need a phone number (#8), and deploying the coordinator agent (#10). See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 
