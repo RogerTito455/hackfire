@@ -1,4 +1,6 @@
 import { useFireReplay } from './hooks/useFireReplay'
+import { useLiveFires } from './hooks/useLiveFires'
+import { useMapMode, type MapMode } from './hooks/useMapMode'
 import { useTriage } from './hooks/useTriage'
 import { Dashboard } from './ui/Dashboard'
 
@@ -6,7 +8,15 @@ import { Dashboard } from './ui/Dashboard'
 function App() {
   const triage = useTriage()
   const replay = useFireReplay()
-  return <Dashboard triage={triage} replay={replay} />
+  const [mode, setMode] = useMapMode()
+  const live = useLiveFires(mode === 'live')
+
+  const changeMode = (next: MapMode) => {
+    if (next === 'live' && replay.playing) replay.togglePlay()
+    setMode(next)
+  }
+
+  return <Dashboard triage={triage} replay={replay} mode={mode} onModeChange={changeMode} live={live} />
 }
 
 export default App
