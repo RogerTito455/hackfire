@@ -20,7 +20,7 @@ agents:
     # in the language of the call keeps the model from drifting into English.
     instructions: instructions.md
     think: reasoning
-    speak: elena
+    speak: nestor
     tools:
       - get_fire_status
       - get_evacuation_route
@@ -41,12 +41,20 @@ models:
       # triage must be right before it is fast. Nano is the switch if a turn feels slow (#14).
       # No `provider:` on purpose: the slng driver sends `model` exactly as written.
       model: "bedrock-mantle/nvidia.nemotron-super-3-120b:latest"
+      # Low, so the same answer gets the same triage.
+      temperature: 0.2
   speak:
-    elena:
-      description: Fish S2.1 Pro hosted by SLNG, Castilian voice Elena
+    nestor:
+      # Fish S2.1 Pro (Castilian voice Elena, 566359628f6a4d5fabf902f6f64ecec1) failed on
+      # every session with a tts_error: SLNG hosts it only in nebius-eu-north1 and
+      # ap-southeast-2, and the agent runs in eu-north. Aura 2 is deployed in eu, where
+      # Soniox, which the agent reaches fine, lives too.
+      description: Deepgram Aura 2 through SLNG, Spanish voice Nestor (calm, professional, clear)
       provider: slng
-      model: "slng/fish/tts:s2.1-pro"
-      voice: "566359628f6a4d5fabf902f6f64ecec1"
+      model: "deepgram/aura:2"
+      voice: "aura-2-nestor-es"
+      # Aura's speech rate, 0.7 to 1.5. The first test call felt slow at 1.0.
+      speed: 1.15
   listen:
     transcriber:
       description: Soniox real-time v5 through SLNG, Spanish

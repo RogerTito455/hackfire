@@ -25,7 +25,7 @@ The voice agents as [Unmute](https://unmute.ai) packages: SLNG's declarative voi
 | Role | Model |
 |---|---|
 | Listen | Soniox real-time v5, `soniox/speech-ai:rt-v5`, language `es` |
-| Speak | Fish S2.1 Pro hosted by SLNG, `slng/fish/tts:s2.1-pro`, Castilian voice Elena `566359628f6a4d5fabf902f6f64ecec1` |
+| Speak | Deepgram Aura 2 through SLNG, `deepgram/aura:2`, voice Nestor `aura-2-nestor-es`, speed 1.15. Fish S2.1 Pro (voice Elena) failed on every session: SLNG hosts it only in `nebius-eu-north1` and `ap-southeast-2`, not where the agent runs |
 | Think | NVIDIA Nemotron Super 3 (120B), `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, served by SLNG. Nano 3 (30B) is the faster fallback |
 
 The agent never chooses whose pin it updates: `neighbor_id`, `zone` and `address` come from the call variables and are pinned into the tool calls (`inject:`). The model supplies only the travel `mode` and the triage fields.
@@ -100,7 +100,7 @@ To deploy, in order:
 - **No triage state for "confined at home".** A resident who stays inside and is fine is reported as `evacuating`, with the observation saying so. A resident who refuses to leave is reported as `needs_rescue`. Both are the prompt's choices; the team should confirm them.
 - **The backend's spoken text is in English.** `FireStatus.summary` and `Route.spoken_directions` are English, and the prompt tells the agent to retell them in Spanish. Retelling costs latency and risks mangling road names; better that the backend writes them in Spanish, since this agent is their only listener.
 - **Numbers in words.** The prompt asks for numbers written as words (`unos cuarenta minutos`), as agreed for Spanish TTS. Unmute's own guidance (2026-08-28) is the opposite: write digits and let the voice normalise them. Listen to Fish saying both before choosing.
-- **Not heard yet.** Nobody has listened to the greeting, the voice or the latency. Measure the latency per turn for #14.
+- **First test call, 2026-09-19.** `report_status` changed n01's pin on the deployed dashboard (checkpoint 1). The agent took ~1.6–1.8 s to start each answer (LLM ~1 s to first token, TTS ~0.2 s) but then spoke for up to 26 s a turn, announcing every tool call and reading the whole route. The prompt now asks for one short sentence a turn and the route as destination, road and time; the voice runs at 1.15. SLNG's session report (`voiceai agents calls get <agent> <call> --json`) has per-turn `llm_node_ttft`, `tts_node_ttfb` and `e2e_latency` for #14.
 
 ## Left out on purpose
 

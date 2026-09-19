@@ -49,7 +49,7 @@ What works: every new rescue creates a crew alert (`GET /api/alerts`) with the a
 | | Options |
 |---|---|
 | Speech to text | Soniox Speech AI RT v5, `soniox/speech-ai:rt-v5` (NL, DE; $0.0028/min); Deepgram Nova 3 (SLNG-hosted only in US, AU, IN) |
-| Text to speech | Fish S2.1 Pro, `slng/fish/tts:s2.1-pro` (SLNG-hosted in NL, DE); Deepgram Aura 2 Spanish voices (`aura-2-alvaro-es`, `aura-2-celeste-es`…), but SLNG-hosted only in the US |
+| Text to speech | Deepgram Aura 2, `deepgram/aura:2`, deployed in `eu` with 17 Spanish voices (`aura-2-nestor-es` is the agent's). Fish S2.1 Pro, `slng/fish/tts:s2.1-pro`, is deployed only in `nebius-eu-north1` and `ap-southeast-2` (`voiceai models --tts --json`, 2026-09-19) and failed in an `eu-north` agent with a `tts_error` |
 
 For latency (#14), prefer the EU-hosted models: Soniox to listen, Fish to speak. Fish has **Castilian** voices meant for voice agents: Elena `566359628f6a4d5fabf902f6f64ecec1`, Marta `e8c4bf4a0a2d481991acf8bd1c25e2e0`, Sergio `ad2a0e367c664e1a88208e0311ef97ee`. The Aura Spanish voices do not say which accent they have.
 
