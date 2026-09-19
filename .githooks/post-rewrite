@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# After `git pull --rebase` or `git rebase`: install new dependencies if any. Not after `--amend`.
+[ "$1" = "rebase" ] || exit 0
+exec "$(git rev-parse --show-toplevel)/.githooks/install-if-deps-changed" ORIG_HEAD HEAD

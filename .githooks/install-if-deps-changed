@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Runs `pnpm bootstrap` when a pull, rebase or branch switch changed any dependency file, so a
+# teammate's new package never breaks the dashboard with "Failed to resolve import".
+# Called by post-merge, post-rewrite and post-checkout with the old and new commits.
+# Activated by `pnpm bootstrap`, which points git at this folder (core.hooksPath).
+
+old="$1"
+new="$2"
+[ -z "$old" ] || [ -z "$new" ] && exit 0
+git rev-parse -q --verify "$old^{commit}" >/dev/null || exit 0
+[ "$(git rev-parse "$old")" = "$(git rev-parse "$new")" ] && exit 0
+
+changed=$(git diff --name-only "$old" "$new" -- \
+  package.json pnpm-lock.yaml pnpm-workspace.yaml frontend/package.json \
+  backend/pyproject.toml backend/uv.lock)
+[ -z "$changed" ] && exit 0
+
+echo "hackfire: dependencies changed ($(echo "$changed" | tr '\n' ' ')); running pnpm bootstrap"
+# Hooks can run without the login shell's PATH (IDEs); uv installs to ~/.local/bin.
+export PATH="$HOME/.local/bin:$PATH"
+if ! pnpm bootstrap; then
+  echo "hackfire: pnpm bootstrap failed; run it by hand" >&2
+fi
+exit 0
