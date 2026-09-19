@@ -1,5 +1,4 @@
 import type { LiveMode } from '../hooks/useLiveFires'
-import { Icon } from './Icon'
 import { formatSpanishTime } from './theme'
 
 // Status bar for live mode. A Deepfire outage shows up here as a message, never as a broken map.
@@ -26,8 +25,7 @@ export function LiveStatus({ status, data }: LiveMode) {
     <div className="replay">
       <div className="replay-body">
         <div className="replay-head">
-          <strong className="icon-button">
-            <Icon name="satellite" size={16} />{data.fires.length.toLocaleString('en-GB')} active fire clusters on this map</strong>
+          <strong>{data.fires.length.toLocaleString('en-GB')} active fire clusters on this map</strong>
         </div>
         <div className={status === 'error' || data.stale ? 'live-note warn' : 'live-note'}>{note}</div>
       </div>

@@ -1,15 +1,14 @@
-import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
+import type { Neighbor, Route, RouteKind } from '../domain/triage'
 import type { RouteStatus } from '../hooks/useSelectedRoute'
-import { Icon } from './Icon'
-import { formatDistance, formatDuration, formatSpanishTime, ROUTE_KIND_ICON, ROUTE_KIND_LABEL } from './theme'
+import { formatDistance, formatDuration, formatSpanishTime, ROUTE_KIND_LABEL } from './theme'
 
 interface RoutePanelProps {
   neighbor: Neighbor | null
   mode: RouteKind
   route: Route | null
   status: RouteStatus
-  /** What the route keeps away from. */
-  avoids: FireArea | null
+  /** ISO time the avoided fire area runs up to. */
+  avoidsUntil: string | null
   onModeChange: (mode: RouteKind) => void
   onClose: () => void
 }
@@ -17,7 +16,7 @@ interface RoutePanelProps {
 const MODES: readonly RouteKind[] = ['car', 'walking', 'rescue']
 
 // The selected resident's way out, as the agent would read it to them, or the crew's way in.
-export function RoutePanel({ neighbor, mode, route, status, avoids, onModeChange, onClose }: RoutePanelProps) {
+export function RoutePanel({ neighbor, mode, route, status, avoidsUntil, onModeChange, onClose }: RoutePanelProps) {
   if (neighbor === null) {
     return <p className="empty">Click a resident on the map to see their route out.</p>
   }
@@ -27,7 +26,7 @@ export function RoutePanel({ neighbor, mode, route, status, avoids, onModeChange
       <div className="route-head">
         <strong>{neighbor.name}</strong>
         <button type="button" className="route-close" onClick={onClose} aria-label="Close route">
-          <Icon name="close" size={18} />
+          ×
         </button>
       </div>
       <div className="route-modes" role="group" aria-label="Travel mode">
@@ -36,10 +35,9 @@ export function RoutePanel({ neighbor, mode, route, status, avoids, onModeChange
             key={option}
             type="button"
             aria-pressed={mode === option}
-            className={mode === option ? 'icon-button active' : 'icon-button'}
+            className={mode === option ? 'active' : ''}
             onClick={() => onModeChange(option)}
           >
-            <Icon name={ROUTE_KIND_ICON[option]} size={16} />
             {ROUTE_KIND_LABEL[option]}
           </button>
         ))}
@@ -52,15 +50,7 @@ export function RoutePanel({ neighbor, mode, route, status, avoids, onModeChange
           {route.distance_m !== null && route.duration_s !== null && (
             <p className="route-meta">
               {formatDistance(route.distance_m)} · {formatDuration(route.duration_s)}
-              {avoids !== null && (
-                <>
-                  {' · '}
-                  {avoids.properties.ahead_hours > 0
-                    ? `avoids the fire and its next ${avoids.properties.ahead_hours} h of predicted spread`
-                    : 'avoids the area already burned'}
-                  {`, as of ${formatSpanishTime(Date.parse(avoids.properties.until))}`}
-                </>
-              )}
+              {avoidsUntil !== null && <> · avoids the area burned by {formatSpanishTime(Date.parse(avoidsUntil))}</>}
             </p>
           )}
         </>

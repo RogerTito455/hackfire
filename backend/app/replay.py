@@ -11,6 +11,12 @@ from . import geo
 from .config import DATA_DIR
 
 HOTSPOTS_FILE = DATA_DIR / "hotspots_2026-07-22_24.geojson"
+# Demo box around Burgohondo, El Tiemblo and La Atalaya (min lon, min lat, max lon, max lat).
+# Every cached polygon is clipped to it.
+DEMO_BOX = shapely.box(-4.85, 40.30, -4.40, 40.50)
+SPREAD_FILE = DATA_DIR / "spread_2026-07-23.geojson"
+ZONES_FILE = DATA_DIR / "zones.geojson"
+LEAD_TIME_FILE = DATA_DIR / "lead_time_la-atalaya.json"
 
 
 @cache
@@ -23,11 +29,26 @@ def hotspots_geojson() -> bytes | None:
     return HOTSPOTS_FILE.read_bytes() if HOTSPOTS_FILE.exists() else None
 
 
+@cache
+def spread_geojson() -> bytes | None:
+    """The predicted spread written by `pnpm data:spread`, or None if it is missing."""
+    return SPREAD_FILE.read_bytes() if SPREAD_FILE.exists() else None
+
+
+@cache
+def zones_geojson() -> bytes | None:
+    """The zones written by `pnpm data:zones`, or None if it is missing."""
+    return ZONES_FILE.read_bytes() if ZONES_FILE.exists() else None
+
+
+@cache
+def lead_time_json() -> bytes | None:
+    """The lead time written by `pnpm data:lead-time`, or None if it is missing."""
+    return LEAD_TIME_FILE.read_bytes() if LEAD_TIME_FILE.exists() else None
+
+
 # Satellite pixels are 375 m (VIIRS) to about 2 km (MTG): a hotspot stands for an area, not a point.
 HOTSPOT_RADIUS_M = 750
-# MTG repeats the same pixel every 10 minutes: snapping to this grid drops ~70% of the points and
-# makes the burned area ~10x faster to build, for a difference well under the buffer.
-GRID_M = 200
 
 
 @cache
@@ -43,18 +64,11 @@ def _hotspot_times_and_points() -> tuple[list[datetime], list[tuple[float, float
 def burned_area_m(until: datetime) -> BaseGeometry:
     """The area the fire had reached by `until`, in local metres (see geo.py).
 
-    Every hotspot observed so far, snapped to GRID_M, buffered by HOTSPOT_RADIUS_M and merged,
-    then simplified to 100 m so it stays small enough to send to openrouteservice.
+    Every hotspot observed so far, buffered by HOTSPOT_RADIUS_M and merged, then simplified
+    to 100 m so it stays small enough to send to openrouteservice.
     """
     times, points = _hotspot_times_and_points()
-    seen = sorted(
-        {
-            (round(p.x / GRID_M) * GRID_M, round(p.y / GRID_M) * GRID_M)
-            for p in (geo.point_m(lon, lat) for (lon, lat), t in zip(points, times, strict=True) if t <= until)
-        }
-    )
-    if not seen:
-        return shapely.Polygon()
+    seen = [geo.point_m(lon, lat) for (lon, lat), t in zip(points, times, strict=True) if t <= until]
     # One buffer per hotspot, then a tree union: buffering the MultiPoint in one pass peaked at
     # ~1.9 GB and 17 s, enough for Railway to kill the process.
-    return shapely.union_all(shapely.buffer(shapely.points(seen), HOTSPOT_RADIUS_M, quad_segs=8)).simplify(100)
+    return shapely.union_all(shapely.buffer(seen, HOTSPOT_RADIUS_M)).simplify(100)

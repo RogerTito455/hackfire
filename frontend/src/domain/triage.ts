@@ -55,8 +55,7 @@ export interface Route {
 export interface FireArea {
   type: 'Feature'
   geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown }
-  /** `ahead_hours`: hours of predicted spread included: 1 for residents, 0 for crews. */
-  properties: { until: string; ahead_hours: number }
+  properties: { until: string }
 }
 
 /** What the map shows for a selected resident: their way out, or the crew's way in. */
