@@ -27,6 +27,7 @@ backend/app/spread.py      Predicted spread: a cone from the front's velocity (p
 backend/app/impact.py      Cached spread x zones: which zones the fire reaches and in how many minutes
 backend/app/lead_time.py   Lead time: first flag of a zone to first hotspot within the radius (pure)
 backend/app/replay.py      Cached replay files under data/, served as-is
+backend/app/evacuation.py  Routes that avoid the fire and safe points; orders.py: evacuation orders per zone
 backend/app/config.py      Every key, URL and path, read from the environment
 backend/app/providers/     One module per external service (deepfire, routing, llm, voice)
 backend/app/pipelines/     One-off data downloads that write to data/

@@ -92,3 +92,39 @@ class CrewAlert(BaseModel):
     link: str = Field(description="Opens the dashboard on this rescue with the crew's route drawn")
     created_at: datetime
     sent_by_sms: bool = Field(default=False, description="False: shown on the dashboard only")
+
+
+class OrderAction(StrEnum):
+    EVACUATE = "evacuate"
+    SHELTER = "shelter"
+
+
+class OrderDecision(BaseModel):
+    """What the coordinator approves for a zone."""
+
+    action: OrderAction
+    destination_id: str | None = Field(default=None, description="A safe point id from data/places.json")
+
+
+class EvacuationOrder(BaseModel):
+    """One order per zone: proposed by the system, approved or changed by the coordinator."""
+
+    zone: str
+    zone_name: str
+    residents: int
+    minutes_to_impact: int | None
+    proposed_action: OrderAction
+    proposed_destination_id: str | None
+    action: OrderAction
+    destination_id: str | None
+    destination_name: str | None
+    approved: bool = False
+    message: str = Field(description="What the agent tells everyone in the zone once approved")
+
+
+class SafePoint(BaseModel):
+    id: str
+    name: str
+    lat: float
+    lon: float
+    safe: bool = Field(description="Outside the forecast and at least 3 km from the fire at the scenario time")

@@ -75,12 +75,21 @@ def _is_safe(place: Place, at: datetime) -> bool:
     ).intersects(area)
 
 
+def safe_points(at: datetime) -> list[Place]:
+    """The safe points that qualify at `at`: outside the forecast and clear of the fire."""
+    return [p for p in _places()[0] if _is_safe(p, at)]
+
+
+def all_places() -> list[Place]:
+    return list(_places()[0])
+
+
 def safest_point(at: datetime, start: tuple[float, float] | None = None) -> Place:
     """The nearest safe point the forecast does not reach and that is clear of the fire.
 
     Nearest to `start` as the crow flies. If none qualifies, the one farthest from the fire.
     """
-    candidates = [p for p in _places()[0] if _is_safe(p, at)]
+    candidates = safe_points(at)
     if not candidates:
         burned = replay.burned_area_m(at)
         return max(_places()[0], key=lambda p: burned.distance(geo.point_m(p.lon, p.lat)))
@@ -225,6 +234,14 @@ def plan(
         )
     _memory[key] = route.model_dump(mode="json")
     return route
+
+
+def route_to(
+    neighbor: Neighbor, target: Place, mode: TravelMode, at: datetime | None = None, refresh: bool = False
+) -> Route:
+    """The resident's route to a given safe point (an approved order's destination)."""
+    at = at or settings.scenario_time
+    return plan((neighbor.lon, neighbor.lat), (target.lon, target.lat), mode, target.name, at, refresh)
 
 
 def evacuation_route(

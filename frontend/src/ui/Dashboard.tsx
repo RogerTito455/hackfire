@@ -4,9 +4,11 @@ import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
+import type { Orders } from '../hooks/useOrders'
 import type { Triage } from '../hooks/useTriage'
 import { CrewAlerts } from './CrewAlerts'
 import { Icon } from './Icon'
+import { OrdersPanel } from './OrdersPanel'
 import { LeadTimeCard } from './LeadTimeCard'
 import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
@@ -28,6 +30,7 @@ interface DashboardProps {
   selection: SelectedRoute
   forecast: FireForecast
   leadTime: LeadTimeView
+  orders: Orders
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -40,6 +43,7 @@ export function Dashboard({
   selection,
   forecast,
   leadTime,
+  orders,
 }: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
@@ -82,6 +86,19 @@ export function Dashboard({
             </section>
           </>
         )}
+
+        <section>
+          <h2 className="icon-button">
+            <Icon name="flag" size={16} />
+            Evacuation orders
+          </h2>
+          <OrdersPanel
+            orders={orders.orders}
+            safePoints={orders.safePoints}
+            saving={orders.saving}
+            onApprove={orders.approve}
+          />
+        </section>
 
         <section>
           <h2 className="icon-button">

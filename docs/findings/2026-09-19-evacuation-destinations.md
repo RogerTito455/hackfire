@@ -14,9 +14,16 @@ The first route planner sent every resident to the same safe point: the one fart
 - **Crews are different:** their routes avoid only what has burned, and if even that blocks every road they get the direct route with a spoken warning first. Crews work inside the fire's path; residents never get a route through it.
 - **The scenario time moved to 16:00 UTC (18:00 CEST).** With the forecast from #31, La Atalaya is first flagged at 15:30 CEST. By 20:30 CEST, the old default, the forecast already covers the estate and no one has a safe way out. At 18:00 CEST it is about 4 h from impact: La Atalaya goes to San Martín de Valdeiglesias (6 km) and El Tiemblo to Navahondilla.
 
-## Next
+## Evacuation orders per zone (done)
 
-In practice the authority assigns destinations **per zone** ("everyone in La Atalaya: go to X by road Y"), so the message is the same for a whole area and people can be counted on arrival. The proposal: the system suggests a destination per zone at risk, the coordinator confirms or changes it when approving the call campaign (#8), and the agent reads that order to everyone in the zone, with each resident's own route to it.
+In practice the authority orders a **whole zone** at once ("everyone in La Atalaya: leave for X"), so the message is the same for every neighbour and arrivals can be counted. HackFire now works that way (`backend/app/orders.py`):
+
+1. **The system proposes** one order per zone with residents: leave for the nearest safe point the forecast does not reach, measured from the zone's centre, or stay indoors when there is none.
+2. **The coordinator approves or changes it** in the dashboard's *Evacuation orders* panel: any safe point, marked "not safe now" when it does not qualify, or stay indoors.
+3. **Once approved, the agent reads it to everyone in the zone.** `get_fire_status` ends with the order ("The order for La Atalaya is to leave now for San Martín de Valdeiglesias."). `get_evacuation_route` starts with it and leads each resident, by their own route, to that destination; a stay-indoors order replaces the route.
+4. Unapproved zones keep the per-resident nearest safe point. Reset clears every order.
+
+`pnpm data:routes` caches every resident's route to every qualifying safe point, so a changed order is still served without openrouteservice.
 
 ## Sources
 
