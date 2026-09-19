@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "deepfire": {
+      "type": "http",
+      "url": "https://api.deepfire.co/mcp"
+    },
+    "slng-docs": {
+      "type": "http",
+      "url": "https://docs.slng.ai/mcp"
+    },
+    "nebius-docs": {
+      "type": "http",
+      "url": "https://docs.tokenfactory.nebius.com/mcp"
+    },
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "norma": {
+      "type": "http",
+      "url": "https://api.qualityclouds.ai/mcp"
+    }
+  }
+}
