@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "icons:check": "node scripts/check-icons.mjs",
-    "locales:check": "node scripts/check-locales.mjs"
+    "locales:check": "node scripts/check-locales.mjs",
+    "data:mini-demo": "node scripts/mini-demo-data.mjs"
   },
   "dependencies": {
     "@vonage/client-sdk-video": "^2.35.2",
