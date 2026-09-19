@@ -24,8 +24,9 @@ function rescueFromUrl(): string | null {
   return new URLSearchParams(window.location.search).get('rescue')
 }
 
-/** `language` only refetches the route, so its directions follow the dashboard's language. */
-export function useSelectedRoute(language: string): SelectedRoute {
+/** `language` only refetches the route, so its directions follow the dashboard's language;
+ * `closures` changes when a road is closed or reopened, and the route is asked again. */
+export function useSelectedRoute(language: string, closures = ''): SelectedRoute {
   const [neighborId, setNeighborId] = useState<string | null>(rescueFromUrl)
   const [mode, setMode] = useState<RouteKind>(() => (rescueFromUrl() === null ? 'car' : 'rescue'))
   const [route, setRoute] = useState<Route | null>(null)
@@ -75,7 +76,7 @@ export function useSelectedRoute(language: string): SelectedRoute {
     return () => {
       cancelled = true
     }
-  }, [neighborId, mode, language])
+  }, [neighborId, mode, language, closures])
 
   // Residents' routes avoid the fire plus an hour of predicted spread; crews' only what has burned.
   const crew = mode === 'rescue'

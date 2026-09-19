@@ -173,6 +173,24 @@ class CrewAssignment(BaseModel):
     verdict: Verdict
 
 
+class RoadClosureRequest(BaseModel):
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+    radius_m: float = Field(default=150, ge=30, le=1_000, description="How much of the road around the point is cut")
+    note: str | None = Field(default=None, max_length=200)
+
+
+class RoadClosure(RoadClosureRequest):
+    """A road the coordinator marked as cut: no route goes through it, crews' included."""
+
+    id: str
+    created_at: AwareDatetime
+    affected: list[str] = Field(
+        default_factory=list,
+        description="Residents already leaving by a route through here, who need the new one",
+    )
+
+
 class CrewPlan(BaseModel):
     crews: int
     on_scene_min: int = Field(description="Minutes a crew spends getting people into the vehicle")

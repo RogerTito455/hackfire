@@ -13,6 +13,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
+import { closureArea, type RoadClosure } from '../domain/closures'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import { ROAD_CLOSED_WITHIN_MIN, type ZoneImpact } from '../domain/zones'
@@ -21,6 +22,7 @@ import { useI18n } from './i18n'
 import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg } from './markers'
 import {
   BASEMAP_PAINT,
+  CLOSURE_COLOR,
   FIRE_AREA_COLOR,
   formatSpanishTime,
   HOTSPOT_AGE_COLORS,
@@ -73,6 +75,7 @@ const HOTSPOTS = 'hotspots'
 const LIVE_FIRES = 'live-fires'
 const FIRE_AREA = 'fire-area'
 const ROUTE = 'route'
+const CLOSURES = 'closures'
 const SPREAD = 'spread'
 const ZONES = 'zones'
 const EMPTY: GeoJSONData = { type: 'FeatureCollection', features: [] }
@@ -232,6 +235,11 @@ interface TriageMapProps {
   zones: ZoneImpact[]
   /** A resident's live video (#18), drawn next to their pin with the last caption under it. */
   liveVideo?: { lon: number; lat: number; element: HTMLElement; caption: string; waiting: boolean } | null
+  /** Roads marked as cut, drawn as no-entry signs over the stretch they close. */
+  closures?: RoadClosure[]
+  /** While true, a tap on the map reports where, to close the road there. */
+  closing?: boolean
+  onMapClick?: (lon: number, lat: number) => void
 }
 
 export function TriageMap({
@@ -248,6 +256,9 @@ export function TriageMap({
   spread,
   zones,
   liveVideo = null,
+  closures = [],
+  closing = false,
+  onMapClick,
 }: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
@@ -258,6 +269,11 @@ export function TriageMap({
   useEffect(() => {
     onSelect.current = onSelectNeighbor
   }, [onSelectNeighbor])
+  // The map is built once: its click handler reads whether a road is being closed through refs.
+  const tapToClose = useRef<((lon: number, lat: number) => void) | null>(null)
+  useEffect(() => {
+    tapToClose.current = closing && onMapClick ? onMapClick : null
+  }, [closing, onMapClick])
   // The map is built once; its click handlers read the current language through this ref.
   const { t, intl } = useI18n()
   const words = useRef({ t, intl })
@@ -387,6 +403,21 @@ export function TriageMap({
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: { 'line-color': ROUTE_COLOR, 'line-width': 6 },
       })
+      // Closed roads: the stretch each one cuts, over the route so a cut on it shows.
+      instance.addSource(CLOSURES, { type: 'geojson', data: EMPTY })
+      instance.addLayer({
+        id: `${CLOSURES}-fill`,
+        type: 'fill',
+        source: CLOSURES,
+        paint: { 'fill-color': CLOSURE_COLOR, 'fill-opacity': 0.18 },
+      })
+      instance.addLayer({
+        id: `${CLOSURES}-outline`,
+        type: 'line',
+        source: CLOSURES,
+        paint: { 'line-color': CLOSURE_COLOR, 'line-width': 2 },
+      })
+      instance.on('click', (event) => tapToClose.current?.(event.lngLat.lng, event.lngLat.lat))
       instance.on('click', LIVE_FIRES, (event) => {
         const feature = event.features?.[0]
         if (!feature || feature.geometry.type !== 'Point') return
@@ -498,6 +529,29 @@ export function TriageMap({
       )
     }
   }, [styleReady, showRoute, route, routeKind, fireArea])
+
+  // Closed roads: the area on the map, a no-entry marker on each, and a crosshair while closing one.
+  const closureMarkers = useRef<Marker[]>([])
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    const instance = map.current
+    instance.getSource<GeoJSONSource>(CLOSURES)?.setData({
+      type: 'FeatureCollection',
+      features: closures.map((closure) => ({ type: 'Feature', geometry: closureArea(closure), properties: {} })),
+    })
+    for (const marker of closureMarkers.current) marker.remove()
+    closureMarkers.current = closures.map((closure) => {
+      const element = document.createElement('div')
+      element.className = 'place-marker closure-marker'
+      element.setAttribute('aria-label', t('closures.marker'))
+      element.innerHTML = placeMarkerSvg('road-closed')
+      return new Marker({ element }).setLngLat([closure.lon, closure.lat]).addTo(instance)
+    })
+  }, [styleReady, closures, t])
+
+  useEffect(() => {
+    if (map.current) map.current.getCanvas().style.cursor = closing ? 'crosshair' : ''
+  }, [closing])
 
   // Markers are rebuilt only when what they show changes, so a click is never lost to a poll.
   const drawn = useRef<Map<string, string>>(new Map())

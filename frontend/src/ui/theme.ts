@@ -146,5 +146,7 @@ export const STATUS_ICON: Record<TriageStatus, import('./Icon').IconName> = {
 // and the dark grey ink of the white place markers (safe point, crew base).
 export const MARKER_OUTLINE_COLOR = '#fff'
 export const PLACE_MARKER_INK = '#3c4043'
+/** A closed road: the neutral ink of signage, so it reads as neither fire nor a way out. */
+export const CLOSURE_COLOR = '#3c4043'
 
 export const ORDER_STATE_COLOR = { proposed: '#e0a100', approved: '#2e9e5b' } as const

@@ -15,10 +15,10 @@ from datetime import datetime
 from functools import cache
 
 import httpx
-from shapely.geometry import Point, mapping
+from shapely.geometry import Point, Polygon, mapping
 from shapely.geometry.base import BaseGeometry
 
-from . import geo, impact, replay
+from . import closures, geo, impact, replay
 from .config import DATA_DIR, settings
 from .i18n import t
 from .models import Neighbor, Route, TravelMode
@@ -102,17 +102,28 @@ def safest_point(at: datetime, start: tuple[float, float] | None = None) -> Plac
 
 
 def avoid_polygon(
-    start: tuple[float, float], end: tuple[float, float], at: datetime, ahead_h: float = AVOID_AHEAD_H
+    start: tuple[float, float],
+    end: tuple[float, float],
+    at: datetime,
+    ahead_h: float = AVOID_AHEAD_H,
+    fire: bool = True,
 ) -> dict | None:
-    """The fire area around this route, clipped to what ORS accepts, as GeoJSON in lon/lat."""
+    """The fire area (unless `fire` is False) and the closed roads around this route, clipped to what
+    ORS accepts, as GeoJSON in lon/lat. The endpoints are kept clear of the fire, never of a closure:
+    a cut road is cut."""
     a, b = geo.point_m(*start), geo.point_m(*end)
-    middle = Point((a.x + b.x) / 2, (a.y + b.y) / 2)
-    area = (
-        fire_m(at, ahead_h)
-        .intersection(geo.square_m(middle, AVOID_SQUARE_M))
-        .difference(a.buffer(ENDPOINT_CLEARANCE_M))
-        .difference(b.buffer(ENDPOINT_CLEARANCE_M))
-    )
+    square = geo.square_m(Point((a.x + b.x) / 2, (a.y + b.y) / 2), AVOID_SQUARE_M)
+    area = Polygon()
+    if fire:
+        area = (
+            fire_m(at, ahead_h)
+            .intersection(square)
+            .difference(a.buffer(ENDPOINT_CLEARANCE_M))
+            .difference(b.buffer(ENDPOINT_CLEARANCE_M))
+        )
+    closed = closures.area_m()
+    if closed is not None:
+        area = area.union(closed.intersection(square))
     return None if area.is_empty else mapping(geo.to_degrees(area))
 
 
@@ -244,7 +255,10 @@ def _disk_cache() -> dict[str, dict]:
 def cache_key(
     start: tuple[float, float], end: tuple[float, float], mode: TravelMode, at: datetime, ahead_h: float
 ) -> str:
-    return f"{mode}:{start[0]:.5f},{start[1]:.5f}->{end[0]:.5f},{end[1]:.5f}@{at.isoformat()}+{ahead_h:g}h"
+    key = f"{mode}:{start[0]:.5f},{start[1]:.5f}->{end[0]:.5f},{end[1]:.5f}@{at.isoformat()}+{ahead_h:g}h"
+    # A route planned before a road was closed must not be served after it.
+    closed = closures.fingerprint()
+    return f"{key}|closed:{closed}" if closed else key
 
 
 def plan(
@@ -259,7 +273,8 @@ def plan(
 ) -> Route:
     """A route from the cache, or from openrouteservice. `refresh` skips both caches.
 
-    For a crew, a blocked route falls back to the direct one, with a warning first.
+    For a crew, a blocked route falls back to one that ignores the fire, with a warning first; it
+    still goes around closed roads.
     """
     key = cache_key(start, end, mode, at, ahead_h)
     cached = None if refresh else _memory.get(key) or _disk_cache().get(key)
@@ -275,8 +290,8 @@ def plan(
             except routing.NoRouteFound:
                 if not crew:
                     raise
-                feature = routing.route_avoiding(client, start, end, mode, None)
-                avoid, warning = None, True
+                avoid, warning = avoid_polygon(start, end, at, ahead_h, fire=False), True
+                feature = routing.route_avoiding(client, start, end, mode, avoid)
     except routing.NoRouteFound:
         data = {"none": True}
         route = Route(mode=mode, spoken_directions=say(data))
@@ -284,7 +299,7 @@ def plan(
         raise RoutingUnavailable(str(error)) from error
     else:
         summary = feature["properties"]["summary"]
-        data = directions(feature, mode, destination, avoided_fire=avoid is not None, ahead_h=ahead_h)
+        data = directions(feature, mode, destination, avoided_fire=avoid is not None and not warning, ahead_h=ahead_h)
         if warning:
             data["warning"] = True
         route = Route(
@@ -309,9 +324,34 @@ def route_to(
 def evacuation_route(
     neighbor: Neighbor, mode: TravelMode, at: datetime | None = None, refresh: bool = False
 ) -> Route:
+    """To the nearest safe point; with roads closed, to whichever of the nearest is fastest to reach."""
     at = at or settings.scenario_time
-    target = safest_point(at, (neighbor.lon, neighbor.lat))
-    return plan((neighbor.lon, neighbor.lat), (target.lon, target.lat), mode, target.name, at, refresh)
+    home = (neighbor.lon, neighbor.lat)
+    if closures.fingerprint():
+        best = fastest_reachable(home, nearest_safe_points(at, home), mode, at, refresh)
+        if best is not None:
+            return best
+    target = safest_point(at, home)
+    return plan(home, (target.lon, target.lat), mode, target.name, at, refresh)
+
+
+# How many of the nearest safe points are tried when a closure may have cut some of them off.
+ALTERNATIVES = 3
+
+
+def nearest_safe_points(at: datetime, start: tuple[float, float], exclude: str | None = None) -> list[Place]:
+    here = geo.point_m(*start)
+    candidates = [p for p in safe_points(at) if p.id != exclude]
+    return sorted(candidates, key=lambda p: here.distance(geo.point_m(p.lon, p.lat)))[:ALTERNATIVES]
+
+
+def fastest_reachable(
+    start: tuple[float, float], targets: list[Place], mode: TravelMode, at: datetime, refresh: bool = False
+) -> Route | None:
+    """The quickest route to any of `targets` that exists, or None if every one is cut off."""
+    routes = [plan(start, (p.lon, p.lat), mode, p.name, at, refresh) for p in targets]
+    reachable = [r for r in routes if r.geometry is not None]
+    return min(reachable, key=lambda r: r.duration_s or float("inf"), default=None)
 
 
 def rescue_route(neighbor: Neighbor, at: datetime | None = None, refresh: bool = False) -> Route:

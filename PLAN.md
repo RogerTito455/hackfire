@@ -163,6 +163,7 @@ This is the interface between voice and everything else. Fix it in the first hou
 - Nebius is out of the stack (19 September, afternoon). The agents and the backend use the LLM SLNG serves.
 - **Checkpoint 2 (19 September, 19:31): the four steps work end to end.** Vonage starts (Bryan, #18, cut-off 21:00); Devin stays a pitch mention (#19). The demo video is made with ElevenLabs narration and Remotion, over footage of a Playwright simulation with real agent calls.
 - All project documentation is written in English.
+- **After the feature freeze (19 September, 21:30), by the owner's decision:** road closures. The coordinator marks a cut road on the map; every route, crews' included, goes around it, the fastest reachable safe point replaces one it cuts off, and residents already leaving through it are named for a second call. Handing a call to a person at a control post stays on the roadmap: SLNG's `transfer_call` needs an outbound SIP connection, which the project does not have.
 
 **Adopted on recommendation, not yet confirmed — review them in five minutes**
 

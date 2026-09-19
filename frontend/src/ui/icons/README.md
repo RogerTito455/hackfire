@@ -91,6 +91,7 @@ The marker colours (`MARKER_OUTLINE_COLOR`, `PLACE_MARKER_INK`) live in `ui/them
 | <img src="play.svg" width="24"> | `play` | Start the replay | Replay controls | A triangle pointing right |
 | <img src="replay.svg" width="24"> | `replay` | Replay mode | Map mode toggle | A clock with hands, its rim an arc with a counter-clockwise arrowhead on the left |
 | <img src="reset.svg" width="24"> | `reset` | Restart the demo | Sidebar button | An open circular arrow turning counter-clockwise, arrowhead at the top; no clock hands, unlike `replay` |
+| <img src="road-closed.svg" width="24"> | `road-closed` | A road the coordinator marked as cut | Road closures section header, closure markers | A circle crossed by one horizontal bar, like a no-entry sign |
 | <img src="route.svg" width="24"> | `route` | Evacuation route | Route section header | Two points joined by an S-shaped path |
 | <img src="satellite.svg" width="24"> | `satellite` | Data from satellites | Live-mode status bar | A satellite on the diagonal, two panels and a body, sending two signal arcs to the lower left |
 | <img src="walk.svg" width="24"> | `walk` | On foot | Route travel mode | A person walking to the right |

@@ -37,7 +37,8 @@
     "alerts": "Avisos a bomberos",
     "typedBackup": "¿Falla la voz? Escribe la respuesta",
     "callResident": "Llamar a este vecino",
-    "crewPlan": "Plan de los equipos"
+    "crewPlan": "Plan de los equipos",
+    "closures": "Carreteras cortadas"
   },
   "time": {
     "now": "ya"
@@ -338,5 +339,16 @@
     "idle": "El puesto de mando no está compartiendo ahora.",
     "live": "Ves el mapa del puesto de mando en directo. Habla para comunicarte con ellos.",
     "error": "No se ha podido entrar en la sala. Llama al puesto de mando."
+  },
+  "closures": {
+    "close": "Cortar una carretera",
+    "cancel": "Cancelar",
+    "hint": "Toca en el mapa la carretera cortada. Desde ahora, todas las rutas la rodean.",
+    "empty": "No hay carreteras cortadas.",
+    "item": "Carretera cortada {number}",
+    "reopen": "Reabrir",
+    "affected": "Ya salían por aquí: {names}. Vuelve a llamarlos: el agente les da la ruta nueva.",
+    "error": "No se ha podido cortar la carretera. Inténtalo de nuevo.",
+    "marker": "Carretera cortada"
   }
 }

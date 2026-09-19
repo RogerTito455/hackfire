@@ -12,6 +12,7 @@ import type { ImpactTable, ZoneCollection } from '../domain/zones'
 import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voice'
 import type { CrewRoom, RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
 import type { CrewPlan } from '../domain/crewPlan'
+import type { RoadClosure } from '../domain/closures'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -110,3 +111,16 @@ export async function joinVideo(linkId: string): Promise<VideoAccess | 'used' | 
 export const fetchCrewPlan = (crews: number) => request<CrewPlan>(`/api/crew-plan?crews=${crews}`)
 export const openCrewRoom = () => request<CrewRoom>('/api/crew-room', { method: 'POST' })
 export const joinCrewRoomAccess = (roomId: string) => request<VideoAccess>(`/api/crew-room/${encodeURIComponent(roomId)}`)
+
+/** Roads marked as cut; every route asked after a closure goes around it. */
+export const fetchClosures = () => request<RoadClosure[]>('/api/closures')
+export const closeRoad = (lon: number, lat: number) =>
+  request<RoadClosure>('/api/closures', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lon, lat }),
+  })
+export async function reopenRoad(closureId: string): Promise<void> {
+  const response = await fetch(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
+  if (!response.ok) throw new Error(`/api/closures/${closureId} returned ${response.status}`)
+}

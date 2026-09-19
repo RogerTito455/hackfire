@@ -1393,3 +1393,46 @@ button:active {
 .verdict.no-route {
   color: var(--alert);
 }
+
+/* Road closures: a no-entry list, and a clear state while the next tap closes a road. */
+.closures {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.closures > button {
+  align-self: flex-start;
+}
+.closures ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.closures li + li {
+  border-top: 1px solid var(--line);
+}
+.closure-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.closure-row .closure-name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.closure-row .link {
+  margin-top: 0;
+}
+.closure-row small {
+  color: var(--ink-2);
+}
+.closure-affected {
+  margin: 0 0 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+  border-left: 3px solid #e9a100;
+  background: var(--mist);
+  color: var(--ink);
+}

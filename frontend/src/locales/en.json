@@ -37,7 +37,8 @@
     "alerts": "Crew alerts",
     "typedBackup": "Voice not working? Type the answer",
     "callResident": "Call this resident",
-    "crewPlan": "Crew plan"
+    "crewPlan": "Crew plan",
+    "closures": "Road closures"
   },
   "time": {
     "now": "now"
@@ -338,5 +339,16 @@
     "idle": "The command post is not sharing right now.",
     "live": "You see the command post's map live. Speak to talk to them.",
     "error": "Could not join the crews' room. Call the command post."
+  },
+  "closures": {
+    "close": "Close a road",
+    "cancel": "Cancel",
+    "hint": "Tap the cut road on the map. Every route from now on goes around it.",
+    "empty": "No roads closed.",
+    "item": "Closed road {number}",
+    "reopen": "Reopen",
+    "affected": "Already leaving through here: {names}. Call them again: the agent gives the new route.",
+    "error": "The road could not be closed. Try again.",
+    "marker": "Closed road"
   }
 }

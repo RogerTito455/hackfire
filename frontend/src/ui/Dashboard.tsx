@@ -14,6 +14,7 @@ import type { VoiceCapabilities } from '../domain/voice'
 import type { RescueVideoControl } from '../hooks/useRescueVideo'
 import type { CrewPlanView } from '../hooks/useCrewPlan'
 import type { CrewRoomHost } from '../hooks/useCrewRoom'
+import type { Closures } from '../hooks/useClosures'
 import type { Triage } from '../hooks/useTriage'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
@@ -29,6 +30,7 @@ import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
 import { CrewPlanPanel } from './CrewPlanPanel'
+import { ClosuresPanel } from './ClosuresPanel'
 import { ShareWithCrewsPanel } from './ShareWithCrewsPanel'
 import { RoutePanel } from './RoutePanel'
 import { TalkPanel } from './TalkPanel'
@@ -58,6 +60,7 @@ interface DashboardProps {
   autopilot: AutopilotControl
   crewPlan: CrewPlanView
   crewRoom: CrewRoomHost
+  closures: Closures
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -80,6 +83,7 @@ export function Dashboard({
   autopilot,
   crewPlan,
   crewRoom,
+  closures,
 }: DashboardProps) {
   const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
@@ -109,6 +113,9 @@ export function Dashboard({
           routeKind={selection.mode}
           fireArea={selection.fireArea}
           onSelectNeighbor={selection.select}
+          closures={closures.closures}
+          closing={closures.closing}
+          onMapClick={(lon, lat) => void closures.close(lon, lat)}
           spread={forecast.spread}
           zones={forecast.zonesAtRisk}
           liveVideo={liveVideo}
@@ -238,6 +245,25 @@ export function Dashboard({
               onModeChange('replay')
               selection.showRescue(neighborId)
             }}
+          />
+        </section>
+
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="road-closed" size={18} />
+            {t('section.closures')}
+          </h2>
+          <ClosuresPanel
+            closures={closures.closures}
+            closing={closures.closing}
+            saving={closures.saving}
+            error={closures.error}
+            onToggleClosing={() => {
+              if (!closures.closing) onModeChange('replay')
+              closures.setClosing(!closures.closing)
+            }}
+            onReopen={(closureId) => void closures.reopen(closureId)}
+            nameOf={(neighborId) => neighbors.find((neighbor) => neighbor.id === neighborId)?.name ?? neighborId}
           />
         </section>
 

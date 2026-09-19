@@ -11,7 +11,9 @@ docs/findings/2026-09-19-evacuation-destinations.md.
 
 from datetime import datetime
 
-from . import evacuation, impact
+from shapely.geometry import shape
+
+from . import closures, evacuation, geo, impact
 from .config import settings
 from .i18n import t
 from .models import (
@@ -22,6 +24,7 @@ from .models import (
     Route,
     SafePoint,
     TravelMode,
+    TriageStatus,
 )
 from .state import state
 
@@ -111,7 +114,17 @@ def route_for(neighbor: Neighbor, mode: TravelMode) -> Route:
         return evacuation.evacuation_route(neighbor, mode)
     if order.action == OrderAction.SHELTER:
         return Route(mode=mode, spoken_directions=order.message)
-    route = evacuation.route_to(neighbor, _place(order.destination_id), mode)
+    destination = _place(order.destination_id)
+    route = evacuation.route_to(neighbor, destination, mode)
+    if route.geometry is None and closures.fingerprint():
+        # A closed road cuts the ordered destination off: say so, and send them to the fastest one left.
+        home = (neighbor.lon, neighbor.lat)
+        at = settings.scenario_time
+        others = evacuation.nearest_safe_points(at, home, exclude=destination.id)
+        detour = evacuation.fastest_reachable(home, others, mode, at)
+        if detour is not None:
+            closed = t("route.closed", destination=destination.name)
+            return detour.model_copy(update={"spoken_directions": f"{order.message} {closed} {detour.spoken_directions}"})
     return route.model_copy(update={"spoken_directions": f"{order.message} {route.spoken_directions}"})
 
 
@@ -119,3 +132,20 @@ def safe_point_list(at: datetime | None = None) -> list[SafePoint]:
     at = at or settings.scenario_time
     qualifying = {p.id for p in evacuation.safe_points(at)}
     return [SafePoint(id=p.id, name=p.name, lat=p.lat, lon=p.lon, safe=p.id in qualifying) for p in evacuation.all_places()]
+
+
+def leaving_through(lon: float, lat: float, radius_m: float) -> list[str]:
+    """Residents already evacuating whose route, as it stands, passes within `radius_m` of a point:
+    the ones a new closure there leaves on a cut road, who need calling again with the new route."""
+    closed = geo.point_m(lon, lat).buffer(radius_m)
+    affected = []
+    for neighbor in state.neighbors():
+        if neighbor.status != TriageStatus.EVACUATING:
+            continue
+        try:
+            route = route_for(neighbor, TravelMode.CAR)
+        except evacuation.RoutingUnavailable:
+            continue
+        if route.geometry is not None and geo.to_metres(shape(route.geometry)).intersects(closed):
+            affected.append(neighbor.id)
+    return affected

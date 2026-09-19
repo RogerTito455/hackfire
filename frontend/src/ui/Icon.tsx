@@ -31,6 +31,7 @@ export const ICON_NAMES = [
   'play',
   'replay',
   'reset',
+  'road-closed',
   'route',
   'satellite',
   'walk',

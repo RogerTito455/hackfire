@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, crew_plan, crew_room, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
+from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -37,6 +37,8 @@ from .models import (
     ReportStatusRequest,
     Rescue,
     RescueRouteRequest,
+    RoadClosure,
+    RoadClosureRequest,
     Route,
     SafePoint,
     TravelMode,
@@ -411,6 +413,27 @@ def triage_from_text(request: TextTriageRequest, background: BackgroundTasks) ->
     return {"neighbor": neighbor.model_dump(mode="json"), "classification": classification.model_dump(mode="json")}
 
 
+@app.get("/api/closures")
+def list_closures() -> list[RoadClosure]:
+    """Roads marked as cut, oldest first."""
+    return closures.all()
+
+
+@app.post("/api/closures")
+def close_road(request: RoadClosureRequest) -> RoadClosure:
+    """Mark a road as cut. Every route planned from now on goes around it. The answer names the
+    residents already leaving by a route through it, for the coordinator to call again."""
+    affected = orders.leaving_through(request.lon, request.lat, request.radius_m)
+    return closures.add(request, affected)
+
+
+@app.delete("/api/closures/{closure_id}", status_code=204)
+def reopen_road(closure_id: str) -> Response:
+    if not closures.remove(closure_id):
+        raise HTTPException(status_code=404, detail=f"Unknown closure {closure_id}")
+    return Response(status_code=204)
+
+
 @app.post("/api/reset")
 def reset() -> dict:
     """Reload the registry and forget the replay moment, orders and alerts. Restarts the demo with
@@ -421,6 +444,7 @@ def reset() -> dict:
     campaign.forget()
     rescue_video.forget()
     crew_room.forget()
+    closures.forget()
     return {"status": "reset", "neighbors": len(state.neighbors())}
 
 

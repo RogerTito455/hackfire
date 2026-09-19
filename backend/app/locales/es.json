@@ -33,7 +33,8 @@
     },
     "avoidsBurned": "Esta ruta se aleja de la zona que el fuego ya ha quemado.",
     "warning": "Atención: ninguna ruta evita la zona quemada.",
-    "none": "No se ha encontrado ninguna ruta que se aleje del fuego. Sigue las instrucciones de los servicios de emergencia en el lugar."
+    "none": "No se ha encontrado ninguna ruta que se aleje del fuego. Sigue las instrucciones de los servicios de emergencia en el lugar.",
+    "closed": "La carretera hacia {destination} está cortada."
   },
   "order": {
     "leave": "La orden para {zone} es salir ahora hacia {destination}.",

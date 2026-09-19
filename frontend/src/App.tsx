@@ -13,6 +13,7 @@ import { useCampaign } from './hooks/useCampaign'
 import { useVoiceConversations } from './hooks/useConversation'
 import { useRescueVideo } from './hooks/useRescueVideo'
 import { useCrewPlan } from './hooks/useCrewPlan'
+import { useClosures } from './hooks/useClosures'
 import { useCrewRoomHost } from './hooks/useCrewRoom'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
@@ -25,7 +26,8 @@ function App() {
   const [mode, setMode] = useMapMode()
   const live = useLiveFires(mode === 'live')
   const { locale } = useI18n()
-  const selection = useSelectedRoute(locale)
+  const closures = useClosures()
+  const selection = useSelectedRoute(locale, closures.key)
   const orders = useOrders()
   const textTriage = useTextTriage()
   const voice = useVoiceCapabilities()
@@ -77,6 +79,7 @@ function App() {
       autopilot={autopilot}
       crewPlan={crewPlan}
       crewRoom={crewRoom}
+      closures={closures}
       forecast={forecast}
       leadTime={leadTime}
     />
