@@ -15,6 +15,7 @@ import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
 import { closureArea, type RoadClosure } from '../domain/closures'
 import { liveSpreadPolygons, simulationFor, type LiveSpread } from '../domain/liveSpread'
+import { operationsBounds, type LiveOperations } from '../domain/liveOperations'
 import type { Bounds } from '../domain/scenario'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
@@ -71,6 +72,7 @@ const OSM_STYLE: StyleSpecification = {
 const HOTSPOTS = 'hotspots'
 const LIVE_FIRES = 'live-fires'
 const LIVE_SPREAD = 'live-spread'
+const LIVE_OPS = 'live-ops'
 const FIRE_AREA = 'fire-area'
 const ROUTE = 'route'
 const CLOSURES = 'closures'
@@ -165,6 +167,24 @@ function livePopupContent(lines: string[]): HTMLElement {
   return content
 }
 
+// --- Live mode: the selected fire's places at risk and roads to close ---------------------------
+
+const LIVE_OPS_LAYERS = [`${LIVE_OPS}-fill`, `${LIVE_OPS}-outline`, `${LIVE_OPS}-roads-casing`, `${LIVE_OPS}-roads`]
+// Places the simulation never reaches are drawn in the ramp's palest purple.
+const NOT_REACHED_MINUTES = 720
+
+function liveOperationsCollection(operations: LiveOperations | null): GeoJSONData {
+  const closed = new Set(operations?.roadsToClose ?? [])
+  return {
+    type: 'FeatureCollection',
+    features: (operations?.places ?? []).map((place) => ({
+      type: 'Feature',
+      geometry: place.geometry,
+      properties: { kind: place.kind, minutes: place.minutes ?? NOT_REACHED_MINUTES, closed: closed.has(place.id) },
+    })),
+  } as unknown as GeoJSONData
+}
+
 // --- end of live spread ------------------------------------------------------------------------
 
 const liveColor = [
@@ -256,6 +276,10 @@ interface TriageMapProps {
   live: LiveFires | null
   /** Deepfire's spread simulations of the live fires, drawn under them in live mode. */
   liveSpread?: LiveSpread | null
+  /** The selected live fire's places at risk and roads to close; the map fits them when they arrive. */
+  liveOperations?: LiveOperations | null
+  /** A tap on a live fire selects it. */
+  onSelectLiveFire?: (fireId: string) => void
   selectedNeighborId: string | null
   route: Route | null
   /** Out by car or on foot (the flag marks the destination), or the crew's way in (from the fire station). */
@@ -284,6 +308,8 @@ export function TriageMap({
   time,
   live,
   liveSpread = null,
+  liveOperations = null,
+  onSelectLiveFire,
   selectedNeighborId,
   route,
   routeKind,
@@ -325,6 +351,10 @@ export function TriageMap({
   useEffect(() => {
     liveRuns.current = liveSpread
   }, [liveSpread])
+  const onLiveFire = useRef(onSelectLiveFire)
+  useEffect(() => {
+    onLiveFire.current = onSelectLiveFire
+  }, [onSelectLiveFire])
 
   useEffect(() => {
     if (!container.current || map.current || startBounds === null) return
@@ -430,6 +460,38 @@ export function TriageMap({
         layout: { visibility: 'none' },
         paint: { 'line-color': spreadColor, 'line-width': 1, 'line-opacity': 0.9 },
       })
+      // The selected fire's places at risk, and the roads closed to residents as a dashed red cordon.
+      instance.addSource(LIVE_OPS, { type: 'geojson', data: EMPTY, attribution: 'Places: © OpenStreetMap' })
+      instance.addLayer({
+        id: `${LIVE_OPS}-fill`,
+        type: 'fill',
+        source: LIVE_OPS,
+        layout: { visibility: 'none' },
+        paint: { 'fill-color': zoneColor, 'fill-opacity': 0.5 },
+      })
+      instance.addLayer({
+        id: `${LIVE_OPS}-outline`,
+        type: 'line',
+        source: LIVE_OPS,
+        layout: { visibility: 'none' },
+        paint: { 'line-color': zoneColor, 'line-width': zoneLineWidth },
+      })
+      instance.addLayer({
+        id: `${LIVE_OPS}-roads-casing`,
+        type: 'line',
+        source: LIVE_OPS,
+        filter: ['==', ['get', 'closed'], true],
+        layout: { visibility: 'none', 'line-cap': 'round' },
+        paint: { 'line-color': '#fff', 'line-width': 7 },
+      })
+      instance.addLayer({
+        id: `${LIVE_OPS}-roads`,
+        type: 'line',
+        source: LIVE_OPS,
+        filter: ['==', ['get', 'closed'], true],
+        layout: { visibility: 'none' },
+        paint: { 'line-color': ROAD_CLOSED_COLOR, 'line-width': 4, 'line-dasharray': [1.2, 0.8] },
+      })
       instance.addSource(LIVE_FIRES, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -495,6 +557,7 @@ export function TriageMap({
           }),
         ]
         const run = simulationFor(liveRuns.current, fireId)
+        onLiveFire.current?.(fireId)
         if (run) {
           lines.push(
             words.current.t('map.liveSimulation', {
@@ -563,10 +626,25 @@ export function TriageMap({
 
   useEffect(() => {
     if (!styleReady || !map.current) return
-    for (const layer of LIVE_SPREAD_LAYERS) {
+    for (const layer of [...LIVE_SPREAD_LAYERS, ...LIVE_OPS_LAYERS]) {
       map.current.setLayoutProperty(layer, 'visibility', mode === 'live' ? 'visible' : 'none')
     }
   }, [styleReady, mode])
+
+  // Live mode: the selected fire's places and cordons, fitted once per fire when they first arrive.
+  const fitted = useRef<string | null>(null)
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(LIVE_OPS)?.setData(liveOperationsCollection(liveOperations))
+    if (liveOperations === null) {
+      fitted.current = null
+      return
+    }
+    if (fitted.current === liveOperations.fireId) return
+    fitted.current = liveOperations.fireId
+    const bounds = operationsBounds(liveOperations, simulationFor(liveRuns.current, liveOperations.fireId))
+    if (bounds) map.current.fitBounds(bounds, { padding: routePadding(), duration: 800, maxZoom: 13 })
+  }, [styleReady, liveOperations])
 
   useEffect(() => {
     if (!styleReady || !map.current) return

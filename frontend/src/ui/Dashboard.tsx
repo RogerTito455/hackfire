@@ -6,6 +6,7 @@ import type { FireReplay } from '../hooks/useFireReplay'
 import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { Bounds } from '../domain/scenario'
 import type { LiveMode } from '../hooks/useLiveFires'
+import type { LiveOperationsView } from '../hooks/useLiveOperations'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Orders } from '../hooks/useOrders'
@@ -28,6 +29,7 @@ import { LanguagePicker } from './LanguagePicker'
 import { OrdersPanel } from './OrdersPanel'
 import { TextTriagePanel } from './TextTriagePanel'
 import { LeadTimeCard } from './LeadTimeCard'
+import { LiveOperationsPanel } from './LiveOperationsPanel'
 import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
@@ -53,6 +55,8 @@ interface DashboardProps {
   mode: MapMode
   onModeChange: (mode: MapMode) => void
   live: LiveMode
+  /** Live mode: the selected real fire's places at risk, alert drafts and roads to close. */
+  liveOperations: LiveOperationsView
   selection: SelectedRoute
   forecast: FireForecast
   leadTime: LeadTimeView
@@ -78,6 +82,7 @@ export function Dashboard({
   mode,
   onModeChange,
   live,
+  liveOperations,
   selection,
   forecast,
   leadTime,
@@ -119,6 +124,8 @@ export function Dashboard({
           time={replay.time}
           live={live.data}
           liveSpread={live.spread}
+          liveOperations={liveOperations.data}
+          onSelectLiveFire={liveOperations.select}
           selectedNeighborId={selection.neighborId}
           route={selection.route}
           routeKind={selection.mode}
@@ -149,7 +156,7 @@ export function Dashboard({
       </header>
 
       <BottomSheet
-        wake={selection.neighborId}
+        wake={selection.neighborId ?? liveOperations.fireId}
         header={
           <>
             {mode === 'replay' ? (
@@ -186,6 +193,21 @@ export function Dashboard({
             typing={scriptedCall.typing}
           />
         )}
+        {mode === 'live' && (
+          <section className="group">
+            <h2 className="icon-button">
+              <Icon name="flame" size={18} />
+              {t('liveOps.section')}
+            </h2>
+            <LiveOperationsPanel
+              fires={live.spread?.fires ?? []}
+              view={liveOperations}
+              onSelect={liveOperations.select}
+              onRetry={liveOperations.retry}
+            />
+          </section>
+        )}
+
         {selected !== null && (
           <section className="group group-selected">
             <h2 className="icon-button">

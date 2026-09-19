@@ -73,5 +73,21 @@
   "sms": {
     "videoLink": "Wildfire emergency: open this link to show the coordination your situation on video: {link}",
     "crewRoom": "HackFire: the coordination is sharing its map with the crews. Join here: {link}"
+  },
+  "liveOps": {
+    "alert": {
+      "one": "Wildfire near {place}: the simulation expects it to arrive in about an hour. Follow the instructions of Civil Protection and 112.",
+      "other": "Wildfire near {place}: the simulation expects it to arrive in about {count} hours. Follow the instructions of Civil Protection and 112."
+    },
+    "alertSoon": "Wildfire near {place}: the simulation expects it to arrive in less than an hour. Follow the instructions of Civil Protection and 112.",
+    "alertDue": "Wildfire near {place}: according to the simulation, it may already be arriving. Follow the instructions of Civil Protection and 112.",
+    "unnamed": {
+      "estate": "an unnamed housing estate",
+      "town": "an unnamed town",
+      "care_home": "an unnamed care home",
+      "health_centre": "an unnamed health centre",
+      "school": "an unnamed school",
+      "road": "an unnumbered road"
+    }
   }
 }

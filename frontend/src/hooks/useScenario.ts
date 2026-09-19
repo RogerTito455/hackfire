@@ -1,6 +1,6 @@
 // The active scenario, loaded once: the map fits its box.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { scenarioBounds, type Bounds, type Scenario } from '../domain/scenario'
 import { fetchScenario } from '../services/api'
 import type { LoadStatus } from './useFireReplay'
@@ -32,5 +32,7 @@ export function useScenario(): ScenarioView {
     }
   }, [])
 
-  return { status, scenario, bounds: scenario ? scenarioBounds(scenario) : null }
+  // One array per scenario: the map refits whenever the box it is given changes identity.
+  const bounds = useMemo(() => (scenario ? scenarioBounds(scenario) : null), [scenario])
+  return { status, scenario, bounds }
 }

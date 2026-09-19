@@ -48,6 +48,15 @@ def zones() -> dict[str, Zone]:
     }
 
 
+def first_hour_touching(hourly: dict[int, object], geometry) -> int | None:
+    """The first hour whose predicted polygon touches `geometry`, or None if none does.
+
+    `hourly` maps hours ahead to cumulative polygons (lon/lat). Pure: the replay's forecasts and live
+    mode's Deepfire runs (live_operations.py) both use it.
+    """
+    return next((hour for hour in sorted(hourly) if hourly[hour].intersects(geometry)), None)
+
+
 @cached
 def forecasts() -> list[IssuedForecast]:
     """Cached forecasts sorted by issue time, with each zone's hours to reach precomputed."""
@@ -65,7 +74,7 @@ def forecasts() -> list[IssuedForecast]:
         hourly = polygons[issued_at]
         hours_to_reach = {}
         for zone in zones().values():
-            hour = next((h for h in sorted(hourly) if hourly[h].intersects(zone.geometry)), None)
+            hour = first_hour_touching(hourly, zone.geometry)
             if hour is not None:
                 hours_to_reach[zone.id] = hour
         issued.append(IssuedForecast(issued_at, hours_to_reach))

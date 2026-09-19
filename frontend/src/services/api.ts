@@ -6,6 +6,7 @@ import type { EvacuationOrder, OrderDecision, SafePoint } from '../domain/orders
 import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { LiveSpreadResponse } from '../domain/liveSpread'
+import type { LiveOperationsResponse } from '../domain/liveOperations'
 import type { SpreadCollection } from '../domain/spread'
 import type { TextClassification } from '../domain/textTriage'
 import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
@@ -42,6 +43,9 @@ export const fetchScenario = () => request<Scenario>('/api/scenario')
 export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
 export const fetchLiveSpread = () => request<LiveSpreadResponse>('/api/live/spread')
+/** Places at risk, alert drafts and roads to close for one live fire with a Deepfire run. */
+export const fetchLiveOperations = (fireId: string) =>
+  request<LiveOperationsResponse>(`/api/live/operations/${encodeURIComponent(fireId)}`)
 export const fetchRoute = (neighborId: string, mode: TravelMode) =>
   request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
 export const fetchFireArea = (crew: boolean) => request<FireArea>(`/api/fire-area${crew ? '?crew=true' : ''}`)

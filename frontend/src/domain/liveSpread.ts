@@ -27,6 +27,7 @@ export interface LiveSpreadResponse {
 
 export interface SimulatedFire {
   fireId: string
+  simulationId: string
   name: string
   /** When Deepfire ran the simulation, epoch ms. */
   runAt: number
@@ -46,6 +47,7 @@ export function parseLiveSpread(response: LiveSpreadResponse): LiveSpread {
   return {
     fires: response.fires.map((fire) => ({
       fireId: fire.fire_id,
+      simulationId: fire.simulation_id,
       name: fire.name,
       runAt: Date.parse(fire.created_at),
       model: fire.model,

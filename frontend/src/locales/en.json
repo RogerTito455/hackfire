@@ -387,5 +387,47 @@
   "dataNote": {
     "replay": "Real fire (Deepfire satellite data). Residents, calls and evacuations: fictional.",
     "live": "Real fires burning now (Deepfire). Nobody is called in this mode."
+  },
+  "liveOps": {
+    "section": "Places at risk",
+    "pick": "Tap a fire on the map, or pick one that Deepfire has simulated:",
+    "noSimulated": "Deepfire has no spread simulation for the fires on the map yet.",
+    "run": "{model} simulation, run at {time}",
+    "back": "All fires",
+    "note": "Prediction from Deepfire's ELMFIRE simulation, not an official warning. In a real emergency, follow 112 and Civil Protection.",
+    "loading": "Looking up places in OpenStreetMap…",
+    "error": "Could not load the places at risk.",
+    "refreshFailed": "Could not refresh; showing the last answer.",
+    "retry": "Try again",
+    "noRun": "Deepfire has not simulated this fire's spread, so there are no places at risk to show.",
+    "placesStale": "OpenStreetMap is not answering: these places come from an earlier run of this fire.",
+    "spreadStale": "Deepfire is busy: this is the last simulation available.",
+    "places": "In the simulated path",
+    "placesNone": "The simulation reaches no mapped town, housing estate, care home, school or health centre within {hours} h.",
+    "nearby": {
+      "one": "{count} more place within {metres} m, not reached within {hours} h",
+      "other": "{count} more places within {metres} m, not reached within {hours} h"
+    },
+    "due": "Due now",
+    "at": "about {time}",
+    "showMore": "Show {count} more",
+    "showFewer": "Show fewer",
+    "kind": {
+      "estate": "Housing estate",
+      "town": "Town or village",
+      "care_home": "Care home",
+      "health_centre": "Health centre",
+      "school": "School",
+      "road": "Road"
+    },
+    "alerts": "Alert drafts",
+    "alertsNote": "Drafts for the coordinator to review. HackFire sends nothing: there is no public alerting channel here (ES-Alert and SMS to zones are future work).",
+    "draft": "Draft, not sent",
+    "alertsNone": "No drafts: the simulation reaches no place.",
+    "roads": "Roads to close",
+    "roadsNote": "Main roads the simulation reaches within the hour: closed to residents, crews still use them.",
+    "roadsNone": "No main road within the hour.",
+    "calls": "No calls here: calling residents needs a registry of who lives in these places, which is future work.",
+    "source": "Places: © OpenStreetMap contributors, looked up {time}."
   }
 }
