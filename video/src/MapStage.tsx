@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { AbsoluteFill } from 'remotion'
 import { DATA, FireMap, VIEWS, camAt, lerpCam, toKm, type Camera, type MapProps } from './FireMap'
 import { Icon } from './Icon'
-import { Clock, SimulationTag, Source } from './Chrome'
+import { Clock, SimulationTag } from './Chrome'
 import { beat, scene } from './timeline'
 import { C, clamp01, clock, ease, easeOut, fade, mono, pop, sp, text, type Status } from './theme'
 
@@ -185,7 +185,6 @@ function OpenOverlay({ f, s }: { f: number; s: Stage }) {
           </div>
         ))}
       </div>
-      <Source opacity={fade(f - people, 10)}>Sources: Tribuna de Ávila, Ávilared, 23 July 2026</Source>
     </During>
   )
 }
@@ -294,9 +293,11 @@ function LeadTimeOverlay({ f, s }: { f: number; s: Stage }) {
               <span>First hotspot within 3 km</span>
             </div>
           </div>
-          <Source opacity={fade(f - sign - 20, 10)}>
-            Satellite data only, on the replay of this fire. A range, because one satellite pixel decides the arrival. It says nothing about when anyone was warned.
-          </Source>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 690, textAlign: 'center', ...text(22, 500, C.ink3), opacity: fade(f - sign - 20, 10) }}>
+            Satellite data only, on the replay of this fire. A range, because one satellite pixel decides the arrival.
+            <br />
+            It says nothing about when anyone was warned.
+          </div>
         </>
       )}
     </During>

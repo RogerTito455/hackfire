@@ -27,7 +27,8 @@ Everything is in English, with word-by-word subtitles. The call is shown in Engl
 - **Timing comes from the audio.** `pnpm video:voice` turns each line of `script.json` into one clip and writes [`src/data/narration.json`](src/data/narration.json) with its length and word timings (ElevenLabs `with-timestamps`). [`src/timeline.ts`](src/timeline.ts) lays the lines end to end, so rewording a line moves everything after it. Visual beats hang off words: `beat('leadtime-1', 'six')` is the frame "six" is said on.
 - **One map, one camera.** [`src/FireMap.tsx`](src/FireMap.tsx) draws `src/data/map.json` in kilometres with a virtual camera, and [`src/MapStage.tsx`](src/MapStage.tsx) flies it from the valley to one street across the map scenes instead of cutting. `pnpm video:data` rebuilds `map.json` from `data/` with the backend's own route code (no network: cached routes).
 - **The rest** is in [`src/Scenes.tsx`](src/Scenes.tsx) (the alert, the pipeline graph, the call, the command post, the close) and [`src/Chrome.tsx`](src/Chrome.tsx) (chapters, clock, subtitles). The call's waveform is the clip's real audio (`@remotion/media-utils`).
-- **Sound.** Music ducks under speech; effects land on beats (`src/HackFireVideo.tsx`).
+- **Sound.** The generated music builds up by 10 dB or more, so the mix evens it out: `src/data/music-envelope.json` holds its loudness second by second, and each moment is turned down to -24 LUFS between lines, about 9 dB lower under the voice, with 12-frame ramps (`src/HackFireVideo.tsx`). Effects land on beats.
+- **Sources.** Every scene carries a small line at the bottom left naming where its data comes from (`SOURCES` in `src/Chrome.tsx`).
 
 ## Audio
 
@@ -37,6 +38,6 @@ Everything is in English, with word-by-word subtitles. The call is shown in Engl
 |---|---|---|
 | `pnpm video:voice` | `public/audio/lines/*.mp3`, `src/data/narration.json` | A line's text, `say`, voice or settings change |
 | `pnpm video:sfx` | `public/audio/sfx/*.mp3` | The file is missing |
-| `pnpm video:music` | `public/audio/music.mp3` | The file is missing |
+| `pnpm video:music` | `public/audio/music.mp3` (135 s) and `src/data/music-envelope.json` | The file is missing; the loudness curve is always remeasured |
 
 Voices: Christopher (narrator), Adam (agent), Charlotte (resident, filtered like a phone line). A line's `say` is a spelling for the voice only (`Burgo-ondo`, `N-four-oh-three`), with the same number of words as its `text`. The generated audio is committed, so a render needs no key. Whisper was used to check every clip against its text.

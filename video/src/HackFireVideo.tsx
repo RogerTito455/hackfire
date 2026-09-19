@@ -1,10 +1,27 @@
 // The whole video: the map underneath, opaque scenes over it, the frame's chrome, and the sound.
 
 import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion'
-import { Backdrop, Header, Subtitles, Vignette } from './Chrome'
+import { Backdrop, Header, SceneSources, Subtitles, Vignette } from './Chrome'
 import { MapStage } from './MapStage'
 import { Brand, Call, Close, Command, Compare, Problem, Roadmap } from './Scenes'
+import envelope from './data/music-envelope.json'
 import { ALL_LINES, SCENES, TOTAL, beat, line, lineEnd, scene } from './timeline'
+import { FPS } from './theme'
+
+// The music sits at MUSIC_LUFS between lines and about 9 dB lower under the voice (narration is at
+// -16 LUFS). The generated track builds up by 10 dB or more, so each moment is turned down by how
+// far its loudness (src/data/music-envelope.json) is over the target; nothing is turned up.
+const MUSIC_LUFS = -24
+const DUCK = 0.35
+const LUFS: number[] = (envelope as { lufs: number[] }).lufs
+
+function evenOut(frame: number): number {
+  const second = frame / FPS
+  // The power over the three seconds around this moment, so the level glides instead of stepping.
+  const around = [second - 1, second, second + 1].map((s) => LUFS[Math.max(0, Math.min(LUFS.length - 1, Math.floor(s)))])
+  const loudness = 10 * Math.log10(around.reduce((sum, l) => sum + Math.pow(10, l / 10), 0) / around.length)
+  return Math.min(1, Math.pow(10, (MUSIC_LUFS - loudness) / 20))
+}
 
 const OPAQUE = ['problem', 'brand', 'call', 'command', 'compare', 'roadmap', 'close']
 
@@ -26,6 +43,7 @@ export function HackFireVideo() {
       <Close f={f} />
       <Vignette />
       <Header f={f} sceneId={current.id} />
+      <SceneSources f={f} />
       <Subtitles f={f} />
       <Sound />
     </AbsoluteFill>
@@ -59,13 +77,13 @@ function Sound() {
       <Sfx at={beat('problem-1', 'left')} name="tick" />
       <Sfx at={beat('problem-1', 'move')} name="tick" />
       <Sfx at={beat('problem-1', 'never')} name="tick" />
-      <Sfx at={scene('brand').start + 6} name="hit" volume={0.45} />
+      <Sfx at={scene('brand').start + 6} name="hit" volume={0.32} />
       <Sfx at={lineEnd('brand-0')} name="scan" volume={0.25} />
       <Sfx at={scene('forecast').start} name="rewind" volume={0.4} />
       <Sfx at={beat('forecast-0', 'satellite')} name="scan" volume={0.3} />
       <Sfx at={beat('forecast-1', 'atalaya')} name="blip" />
-      <Sfx at={beat('leadtime-0', 'nine')} name="hit" volume={0.4} />
-      <Sfx at={beat('leadtime-1', 'six')} name="hit" volume={0.5} />
+      <Sfx at={beat('leadtime-0', 'nine')} name="hit" volume={0.28} />
+      <Sfx at={beat('leadtime-1', 'six')} name="hit" volume={0.32} />
       <Sfx at={beat('order-0', 'approves')} name="stamp" volume={0.45} />
       <Sfx at={scene('call').start + 4} name="ring" volume={0.4} />
       <Sfx at={lineEnd('call-2') + 6} name="blip" volume={0.4} />
@@ -84,9 +102,11 @@ function Sound() {
       <Audio
         src={staticFile('audio/music.mp3')}
         volume={(g) => {
-          const base = interpolate(g, [0, 24, TOTAL - 60, TOTAL], [0, 0.42, 0.42, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
-          const speaking = talking.some(([a, b]) => g >= a - 6 && g <= b + 8)
-          return base * (speaking ? 0.38 : 1)
+          const fadeInOut = interpolate(g, [0, 24, TOTAL - 45, TOTAL], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+          // Frames to the nearest speech: under the voice the music drops, and comes back over 12 frames.
+          const away = Math.min(...talking.map(([a, b]) => (g < a - 6 ? a - 6 - g : g > b + 8 ? g - b - 8 : 0)))
+          const duck = DUCK + (1 - DUCK) * Math.min(1, away / 12)
+          return fadeInOut * evenOut(g) * duck
         }}
       />
     </>

@@ -79,8 +79,29 @@ export function SimulationTag({ opacity, top = 132 }: { opacity: number; top?: n
   )
 }
 
-export function Source({ children, opacity }: { children: string; opacity: number }) {
-  return <div style={{ position: 'absolute', left: 48, bottom: 14, opacity, ...mono(15, 400, C.ink2), zIndex: 60 }}>{children}</div>
+// Where the data each scene shows comes from, in small type at the bottom left. The press figures are
+// the checked ones (docs/findings/2026-09-19-press-figures.md).
+const SOURCES: Record<string, string> = {
+  open: 'Sources: hotspots from Deepfire (satellites MTG, VIIRS, MODIS, Sentinel-3). Figures: Tribuna de Ávila and Ávilared, 23 July 2026.',
+  problem: 'Source: ES-Alert text as published by Ávilared, 23 July 2026, translated from Spanish.',
+  brand: 'Built on Deepfire (hotspots), SLNG (voice agents), openrouteservice and OpenStreetMap (routes), Vonage (video).',
+  forecast: "Sources: hotspots from Deepfire, up to 15:30. Forecast: HackFire's spread model on those hotspots only.",
+  leadtime: 'Source: HackFire, from Deepfire hotspots (docs/findings/2026-09-19-lead-time.md). Range over 2 to 5 km, as published on the site.',
+  order: "Simulation with demo residents, at the demo autopilot's times. The order is HackFire's proposal, approved by hand.",
+  call: 'Simulated call, condensed. Voice agent: SLNG. Route: openrouteservice on OpenStreetMap data.',
+  understood: "Classified by the voice agent's language model (SLNG) from what the resident said.",
+  rescue: "Routes: openrouteservice on OpenStreetMap data, planned around the fire. Time to impact: HackFire's forecast.",
+  command: 'Coordinator agent: SLNG. Live map for the crews: Vonage Video.',
+  compare: "Sources: Junta de Castilla y León via Ávilared, 21 Aug (provisional); Tribuna de Ávila, 23 Jul; Idealista's estimate via Ávilared, 31 Jul.",
+  roadmap: 'Transfer to a person: SLNG transfer_call, which needs an outbound phone line (SIP).',
+}
+
+export function SceneSources({ f }: { f: number }) {
+  const s = [...SCENES].reverse().find((x) => f >= x.start)
+  const words = s && SOURCES[s.id]
+  if (!s || !words) return null
+  const opacity = Math.min(fade(f - s.start - 6, 10), fade(s.end - f, 8))
+  return <div style={{ position: 'absolute', left: 48, bottom: 14, maxWidth: 1350, opacity, ...mono(15, 400, C.ink2), zIndex: 60 }}>{words}</div>
 }
 
 const SPEAKER = { agent: ['Agent', C.agent], resident: ['Resident', C.ink] } as const

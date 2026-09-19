@@ -6,7 +6,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { AbsoluteFill, staticFile } from 'remotion'
 import { DATA, FireMap, camAt } from './FireMap'
 import { Icon } from './Icon'
-import { SimulationTag, Source } from './Chrome'
+import { SimulationTag } from './Chrome'
 import { ALL_LINES, beat, line, lineEnd, scene, type TimedLine } from './timeline'
 import { C, FPS, MONO, clamp01, ease, easeOut, fade, mono, pop, sp, text } from './theme'
 
@@ -73,7 +73,6 @@ export function Problem({ f }: { f: number }) {
         ))}
       </div>
       <div style={{ position: 'absolute', left: 900, top: 150, ...pop(f - every - 6), ...mono(22, 500, C.ink2) }}>Same message, every phone in the area. No way to answer.</div>
-      <Source opacity={fade(t - 10, 10)}>Alert text: Ávilared, 23 July 2026, translated from Spanish</Source>
     </Overlay>
   )
 }
@@ -517,9 +516,6 @@ export function Compare({ f }: { f: number }) {
           </div>
         </div>
       )}
-      <Source opacity={fade(f - cards[0], 10) * (1 - 0.4 * k)}>
-        Junta de Castilla y León via Ávilared, 21 Aug (provisional); Tribuna de Ávila, 23 Jul; Idealista's estimate via Ávilared, 31 Jul
-      </Source>
     </Overlay>
   )
 }
