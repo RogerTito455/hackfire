@@ -1,7 +1,7 @@
 # Deepfire
 
 **Used for:** step 1 (hotspots, live fires) and step 2 (predicted spread). Slices 2, 3 and 10 (#3, #4, #11).
-**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`); replay spread done with our own cone, not with this API (see below); the Deepfire simulation is not used yet
+**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`); spread not started
 **Owners:** Bryan (hotspots, live mode), Rosa (spread)
 
 ## Access
@@ -33,13 +33,24 @@ First run on 2026-09-19: about a minute, 7,068 hotspots, one cluster, no 3-hour 
 
 The backend caches the answer for 60 s and reuses one token for the life of the process. If Deepfire fails, it serves the last good answer marked `stale: true`; with nothing cached, it returns a 503, which the dashboard shows as a message. The dashboard polls every 60 s, only while live mode is on.
 
-### Spread simulation
+### Predicted spread in the replay (`backend/app/spread.py`)
+
+Deepfire cannot simulate 23 July, so the replay extrapolates from the hotspots themselves (the fallback in PLAN.md):
+
+1. The last 6 hours of hotspots, split into two 3-hour halves, with isolated detections dropped (fewer than 2 others within 2 km).
+2. **Direction:** from the older half's centroid to the recent half's. **Speed:** how far the leading edge (90th percentile along that direction) moved, per hour.
+3. **Cone:** the leading edge swept forward speed × t, fanning ±25°, plus the burned area. One polygon per hour, up to 6 h.
+4. **Time to impact** for a zone: the first 10-minute step at which the cone touches it (binary search); 0 if already burned; null if the cone does not reach it within 6 h.
+
+On 23 July the front runs east-north-east (about 75°) at 1.5–2.4 km/h through the afternoon. **La Atalaya is first flagged at 14:00 UTC (16:00 CEST) with about 5 h to impact**; at the default scenario time (18:30 UTC) it is about 2 h 10 min away. These are the raw inputs for the lead time (#5). It is a heuristic with no wind or terrain, and it says so wherever it is shown.
+
+Zones come from OpenStreetMap (`pnpm data:zones` → `data/zones.geojson`): 85 settlements, 12 care homes, 21 schools and 16 health centres in the demo box, as circles sized by kind. Risk is computed in 15-minute steps and cached. `GET /api/spread?at=`, `GET /api/zones/risk?at=` and `GET /api/zones` feed the dashboard; `get_fire_status` answers at the scenario time.
+
+### Spread simulation (live mode only)
 
 `POST /v1/fire-spread/simulations` with `clusterId` or `latitude`/`longitude`, and `durationHours` (1–24). Optional: `model` (`elmfire` default, or `forefire`), `ensembleMembers` (1–50), `sources`, `lookbackHours` (1–168, default 24).
 
 It answers `202` with a `Location` header. Poll `GET /v1/fire-spread/simulations/{id}` about every 10 s until `COMPLETED`, `NO_SPREAD` or `FAILED`. The result is a GeoJSON FeatureCollection with one cumulative MultiPolygon per hour (`hour`, `elapsed_seconds`, and `burn_probability` for ensembles).
-
-**The replay does not use it.** The 23 July spread in `data/spread_2026-07-23.geojson` is our own cone from the front's velocity (`backend/app/spread.py`, [the finding](../findings/2026-09-19-spread-cone-model.md)). The simulation is still the plan for live mode (#11).
 
 **There is no start-time parameter**: a simulation starts from the latest observations, and `lookbackHours` counts back from now. See [the finding](../findings/2026-09-19-deepfire-no-historical-simulation.md) before planning the 23 July replay around it.
 

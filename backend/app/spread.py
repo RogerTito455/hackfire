@@ -1,175 +1,143 @@
-"""Predicted fire spread for the replay: a cone from the front's velocity.
+"""Where the fire is heading: a cone from the front's velocity over the last hours of hotspots.
 
-Deepfire's simulation cannot start from a past date, so the replay of 23 July estimates how fast
-and in which direction the front is moving from the satellite hotspots seen so far, and projects
-the current footprint forward hour by hour. See
-docs/findings/2026-09-19-deepfire-no-historical-simulation.md.
+The replay's predicted spread (PLAN.md section 6). Deepfire's simulation cannot start in the past
+(docs/findings/2026-09-19-deepfire-no-historical-simulation.md), so for 23 July we extrapolate:
 
-Only hotspots observed at or before `issued_at` are used: a forecast never sees the future.
+1. Take the hotspots of the last 2 × WINDOW_H hours and drop isolated ones (fewer than
+   MIN_NEIGHBOURS others within NEIGHBOUR_M): stray detections should not steer the front.
+2. Direction: from the centroid of the older half to the centroid of the recent half.
+3. Speed: how far the leading edge (the LEADING_QUANTILE of positions along that direction)
+   moved between the halves, per hour.
+4. The predicted area after t hours is the burned area plus the leading edge swept forward
+   speed × t, fanning out HALF_ANGLE_DEG either side.
+
+Everything is in local metres (geo.py). It is a heuristic with no wind or terrain: it says where
+the recent run points, not what the fire will do.
 """
 
 import math
-from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
+from functools import cache
 
-from shapely import MultiPoint, Polygon
-from shapely.affinity import translate
-from shapely.geometry import MultiPolygon
-from shapely.ops import transform
+import numpy as np
+from shapely.geometry import MultiPoint
+from shapely.geometry.base import BaseGeometry
 
-KM_PER_DEG_LAT = 110.57
-KM_PER_DEG_LON_AT_EQUATOR = 111.32
+from . import geo, replay
 
-# The front is measured over the last 3 hours: the recent half against the earlier half.
-LOOKBACK = timedelta(hours=3)
-MIN_HOTSPOTS_PER_WINDOW = 5
-# A satellite pixel is 375 m (VIIRS) or larger; the footprint is padded by the same amount.
-PIXEL_KM = 0.4
-# A burning front is never assumed slower than this: over-warning beats under-warning, and on
-# 23 July a lower floor un-flagged La Atalaya while the front sat 3 km away (satellite gap, stall).
-MIN_SPEED_KMH = 1.0
-MAX_SPEED_KMH = 6.0
-# Spread to the flanks and backwards, as a fraction of the head's speed.
-FLANK_FRACTION = 0.3
-# The leading edge is the 90th percentile of the hotspots along the heading: robust to strays.
-LEADING_EDGE_PERCENTILE = 0.9
-# Below this the centroid did not move enough to define a heading.
-MIN_HEADING_DISPLACEMENT_KM = 0.1
-# One noisy window (thin satellite coverage, a change of sensor) must not erase a run: the speed is
-# the strongest estimate of the last 3 hours, taken every 30 minutes, losing 10% per step of age.
-PEAK_STEP = timedelta(minutes=30)
-PEAK_STEPS = 6
-PEAK_DECAY = 0.9
-
-
-def km_per_degree(lat: float) -> tuple[float, float]:
-    """Kilometres per degree of longitude and of latitude at `lat` (equirectangular, fine at 40 km)."""
-    return KM_PER_DEG_LON_AT_EQUATOR * math.cos(math.radians(lat)), KM_PER_DEG_LAT
+WINDOW_H = 3
+HORIZON_H = 6
+HALF_ANGLE_DEG = 25
+LEADING_QUANTILE = 90
+NEIGHBOUR_M = 2_000
+MIN_NEIGHBOURS = 2
+MIN_HOTSPOTS = 10
 
 
 @dataclass(frozen=True)
-class Hotspot:
-    lon: float
-    lat: float
-    observed_at: datetime
-    # Provenance, for reporting; the model does not use them.
-    source: str | None = None
-    confidence: str | None = None
+class FrontMotion:
+    at: datetime
+    direction: tuple[float, float]  # unit vector, x east, y north
+    speed_m_per_h: float
+    leading_edge: tuple[tuple[float, float], ...]  # metres
+
+    @property
+    def bearing_deg(self) -> float:
+        return (math.degrees(math.atan2(self.direction[0], self.direction[1])) + 360) % 360
 
 
-@dataclass(frozen=True)
-class Forecast:
-    issued_at: datetime
-    # None when the front did not move enough to define a direction: it then grows evenly.
-    heading_deg: float | None
-    speed_kmh: float
-    # spread[h] is the area predicted burning h hours after issued_at, cumulative and nested.
-    # spread[0] is the footprint seen now. Coordinates are (lon, lat).
-    spread: list[Polygon | MultiPolygon]
+@cache
+def _arrays() -> tuple[np.ndarray, np.ndarray]:
+    times, points = replay._hotspot_times_and_points()
+    seconds = np.array([t.timestamp() for t in times])
+    metres = np.array([[p.x, p.y] for p in (geo.point_m(lon, lat) for lon, lat in points)]).reshape(-1, 2)
+    return seconds, metres
 
 
-def forecast(
-    hotspots: Sequence[Hotspot], issued_at: datetime, horizon_hours: int = 6
-) -> Forecast | None:
-    """Predict the spread `horizon_hours` ahead, or None when the recent hotspots do not say enough."""
-    recent, earlier = _windows(hotspots, issued_at)
-    if min(len(recent), len(earlier)) < MIN_HOTSPOTS_PER_WINDOW:
+def _clustered(points: np.ndarray) -> np.ndarray:
+    """Drop hotspots with fewer than MIN_NEIGHBOURS others within NEIGHBOUR_M."""
+    if len(points) == 0:
+        return points
+    distances = np.linalg.norm(points[:, None, :] - points[None, :, :], axis=2)
+    neighbours = (distances <= NEIGHBOUR_M).sum(axis=1) - 1
+    return points[neighbours >= MIN_NEIGHBOURS]
+
+
+@cache
+def front_motion(at: datetime) -> FrontMotion | None:
+    """The fire front's direction and speed at `at`, or None when it cannot be told apart.
+
+    None when either half of the window has too few hotspots (for example the detection gap on
+    23 July between 15:10 and 18:08 UTC) or when the leading edge is not advancing.
+    """
+    seconds, metres = _arrays()
+    now, window = at.timestamp(), WINDOW_H * 3600
+    older = _clustered(metres[(seconds > now - 2 * window) & (seconds <= now - window)])
+    recent = _clustered(metres[(seconds > now - window) & (seconds <= now)])
+    if len(older) < MIN_HOTSPOTS or len(recent) < MIN_HOTSPOTS:
         return None
-
-    lon0 = sum(h.lon for h in recent) / len(recent)
-    lat0 = sum(h.lat for h in recent) / len(recent)
-    km_per_deg_lon, _ = km_per_degree(lat0)
-
-    def to_km(hotspot: Hotspot) -> tuple[float, float]:
-        return ((hotspot.lon - lon0) * km_per_deg_lon, (hotspot.lat - lat0) * KM_PER_DEG_LAT)
-
-    def to_lonlat(x: float, y: float, z: float | None = None) -> tuple[float, float]:
-        return (lon0 + x / km_per_deg_lon, lat0 + y / KM_PER_DEG_LAT)
-
-    footprint = MultiPoint([to_km(h) for h in recent]).convex_hull.buffer(PIXEL_KM)
-    heading, speed = _strongest_recent_front(hotspots, issued_at, to_km)
-
-    if heading is None:
-        polygons = [footprint.buffer(speed * hours) for hours in range(horizon_hours + 1)]
-        heading_deg = None
-    else:
-        ux, uy = heading
-        polygons = []
-        for hours in range(horizon_hours + 1):
-            reach = speed * hours
-            sweep = reach * (1 - FLANK_FRACTION)
-            swept = MultiPoint(
-                [*footprint.exterior.coords, *translate(footprint, ux * sweep, uy * sweep).exterior.coords]
-            ).convex_hull
-            polygons.append(swept.buffer(reach * FLANK_FRACTION))
-        heading_deg = math.degrees(math.atan2(ux, uy)) % 360
-
-    return Forecast(
-        issued_at=issued_at,
-        heading_deg=heading_deg,
-        speed_kmh=speed,
-        spread=[transform(to_lonlat, polygon) for polygon in polygons],
+    drift = recent.mean(axis=0) - older.mean(axis=0)
+    if np.linalg.norm(drift) < 1:
+        return None
+    direction = drift / np.linalg.norm(drift)
+    edge_old = np.percentile(older @ direction, LEADING_QUANTILE)
+    edge_new = np.percentile(recent @ direction, LEADING_QUANTILE)
+    speed = (edge_new - edge_old) / WINDOW_H
+    if speed <= 0:
+        return None
+    leading = recent[recent @ direction >= edge_new]
+    return FrontMotion(
+        at=at,
+        direction=(float(direction[0]), float(direction[1])),
+        speed_m_per_h=float(speed),
+        leading_edge=tuple((float(x), float(y)) for x, y in leading),
     )
 
 
-def _windows(hotspots: Sequence[Hotspot], at: datetime) -> tuple[list[Hotspot], list[Hotspot]]:
-    """The last 3 hours of hotspots split in halves: (recent, earlier). Nothing after `at` is used."""
-    seen = [h for h in hotspots if at - LOOKBACK < h.observed_at <= at]
-    middle = at - LOOKBACK / 2
-    return [h for h in seen if h.observed_at > middle], [h for h in seen if h.observed_at <= middle]
+def _rotate(vector: np.ndarray, degrees: float) -> np.ndarray:
+    a = math.radians(degrees)
+    return np.array([vector[0] * math.cos(a) - vector[1] * math.sin(a), vector[0] * math.sin(a) + vector[1] * math.cos(a)])
 
 
-def _front_velocity(
-    hotspots: Sequence[Hotspot], at: datetime, to_km: Callable[[Hotspot], tuple[float, float]]
-) -> tuple[tuple[float, float] | None, float] | None:
-    """Heading (unit vector east, north; None if the front did not move) and speed in km/h at `at`."""
-    recent, earlier = _windows(hotspots, at)
-    if min(len(recent), len(earlier)) < MIN_HOTSPOTS_PER_WINDOW:
+def _swept(motion: FrontMotion, hours: float) -> BaseGeometry:
+    """The leading edge swept forward `hours`, fanning out ±HALF_ANGLE_DEG."""
+    edge = np.array(motion.leading_edge)
+    reach = motion.speed_m_per_h * hours
+    direction = np.array(motion.direction)
+    tips = [edge + _rotate(direction, angle) * reach for angle in (-HALF_ANGLE_DEG, 0, HALF_ANGLE_DEG)]
+    return MultiPoint(np.vstack([edge, *tips])).convex_hull.buffer(replay.HOTSPOT_RADIUS_M)
+
+
+def predicted_area(at: datetime, hours: float) -> BaseGeometry:
+    """Burned area at `at` plus where the front is heading within `hours` (metres)."""
+    burned = replay.burned_area_m(at)
+    motion = front_motion(at)
+    return burned if motion is None or hours <= 0 else burned.union(_swept(motion, hours))
+
+
+def minutes_to_impact(zone: BaseGeometry, at: datetime, step_minutes: int = 10) -> int | None:
+    """Minutes until the predicted area first touches `zone` (metres), within HORIZON_H.
+
+    0 when the zone is already inside the burned area; None when the prediction does not reach it.
+    """
+    if replay.burned_area_m(at).intersects(zone):
+        return 0
+    motion = front_motion(at)
+    if motion is None or not _swept(motion, HORIZON_H).intersects(zone):
         return None
-    recent_km = [to_km(h) for h in recent]
-    earlier_km = [to_km(h) for h in earlier]
-    heading = _heading(_centroid(earlier_km), _centroid(recent_km))
-    if heading is None:
-        return None, MIN_SPEED_KMH
-    ux, uy = heading
-    advance_km = _leading_edge(recent_km, ux, uy) - _leading_edge(earlier_km, ux, uy)
-    elapsed_h = (_mean_time(recent) - _mean_time(earlier)).total_seconds() / 3600
-    return heading, min(MAX_SPEED_KMH, max(MIN_SPEED_KMH, advance_km / elapsed_h))
+    # The swept area only grows with time, so search for the first step that touches the zone.
+    low, high = 1, HORIZON_H * 60 // step_minutes
+    while low < high:
+        middle = (low + high) // 2
+        if _swept(motion, middle * step_minutes / 60).intersects(zone):
+            high = middle
+        else:
+            low = middle + 1
+    return low * step_minutes
 
 
-def _strongest_recent_front(
-    hotspots: Sequence[Hotspot], at: datetime, to_km: Callable[[Hotspot], tuple[float, float]]
-) -> tuple[tuple[float, float] | None, float]:
-    best = _front_velocity(hotspots, at, to_km) or (None, MIN_SPEED_KMH)
-    for steps_ago in range(1, PEAK_STEPS + 1):
-        past = _front_velocity(hotspots, at - steps_ago * PEAK_STEP, to_km)
-        if past is None or past[0] is None:
-            continue
-        decayed = past[1] * PEAK_DECAY**steps_ago
-        if decayed > best[1]:
-            best = (past[0], decayed)
-    return best
+def hourly_cone(at: datetime) -> list[tuple[int, BaseGeometry]]:
+    """(hour, predicted area) for each hour up to HORIZON_H: nested, outermost last."""
+    return [(hour, predicted_area(at, hour)) for hour in range(1, HORIZON_H + 1)]
 
-
-def _centroid(points: Sequence[tuple[float, float]]) -> tuple[float, float]:
-    return (sum(p[0] for p in points) / len(points), sum(p[1] for p in points) / len(points))
-
-
-def _heading(
-    before: tuple[float, float], after: tuple[float, float]
-) -> tuple[float, float] | None:
-    dx, dy = after[0] - before[0], after[1] - before[1]
-    length = math.hypot(dx, dy)
-    return None if length < MIN_HEADING_DISPLACEMENT_KM else (dx / length, dy / length)
-
-
-def _leading_edge(points: Sequence[tuple[float, float]], ux: float, uy: float) -> float:
-    along = sorted(p[0] * ux + p[1] * uy for p in points)
-    return along[min(len(along) - 1, int(LEADING_EDGE_PERCENTILE * len(along)))]
-
-
-def _mean_time(hotspots: Sequence[Hotspot]) -> datetime:
-    origin = hotspots[0].observed_at
-    offsets = sum((h.observed_at - origin for h in hotspots), timedelta()) / len(hotspots)
-    return origin + offsets

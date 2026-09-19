@@ -13,22 +13,26 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
-import type { SpreadPolygon } from '../domain/spread'
-import type { FireArea, Neighbor, Route } from '../domain/triage'
-import type { ZoneImpact } from '../domain/zones'
+import type { SpreadCollection, ZoneRiskList, ZoneShapes } from '../domain/spread'
+import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import type { MapMode } from '../hooks/useMapMode'
+import { placeMarkerSvg, statusMarkerSvg } from './markers'
 import {
   FIRE_AREA_COLOR,
+  formatImpact,
   formatSpanishTime,
   HOTSPOT_AGE_COLORS,
   HOTSPOT_RADIUS_BY_FRP,
   LIVE_RADIUS_BY_HOURS,
   LIVE_RECENCY_COLORS,
   ROUTE_COLOR,
-  SPREAD_HOUR_COLORS,
+  SPREAD_COLOR,
+  SPREAD_OPACITY_BY_HOUR,
   STATUS_COLOR,
+  STATUS_ICON,
   STATUS_LABEL,
-  ZONE_URGENCY_COLORS,
+  ZONE_KIND_LABEL,
+  ZONE_RISK_COLORS,
 } from './theme'
 
 // MapLibre v6 inside a bundler cannot find its worker on its own.
@@ -62,33 +66,13 @@ const OSM_STYLE: StyleSpecification = {
 const HOTSPOTS = 'hotspots'
 const LIVE_FIRES = 'live-fires'
 const FIRE_AREA = 'fire-area'
-const ROUTE = 'route'
 const SPREAD = 'spread'
 const ZONES = 'zones'
+const ROUTE = 'route'
 const EMPTY: GeoJSONData = { type: 'FeatureCollection', features: [] }
 
 type GeoJSONData = Parameters<GeoJSONSource['setData']>[0]
 type GeoJSONGeometry = Extract<GeoJSONData, { type: 'Feature' }>['geometry']
-
-// Spread and zone geometries arrive from the backend as opaque GeoJSON, so the collections below are
-// cast at this boundary.
-function spreadToFeatureCollection(spread: readonly SpreadPolygon[]): GeoJSONData {
-  return {
-    type: 'FeatureCollection',
-    features: spread.map(({ hour, geometry }) => ({ type: 'Feature', geometry, properties: { hour } })),
-  } as unknown as GeoJSONData
-}
-
-function zonesToFeatureCollection(zones: readonly ZoneImpact[]): GeoJSONData {
-  return {
-    type: 'FeatureCollection',
-    features: zones.map(({ zone, minutes }) => ({
-      type: 'Feature',
-      geometry: zone.geometry,
-      properties: { kind: zone.kind, minutes },
-    })),
-  } as unknown as GeoJSONData
-}
 
 // Feature times are minutes since the first hotspot: small numbers keep map expressions exact.
 function toFeatureCollection(hotspots: readonly Hotspot[], origin: number): GeoJSONData {
@@ -138,40 +122,41 @@ const liveRadius = [
   ...LIVE_RADIUS_BY_HOURS.flat(),
 ] as ExpressionSpecification
 
+/** Only the zones the prediction reaches, with their minutes to impact. */
+function zonesAtRiskCollection(shapes: ZoneShapes | null, risk: ZoneRiskList | null): GeoJSONData {
+  const minutes = new Map((risk?.zones ?? []).map((zone) => [zone.id, zone.minutes_to_impact]))
+  return {
+    type: 'FeatureCollection',
+    features: (shapes?.features ?? [])
+      .filter((zone) => minutes.get(zone.id) != null)
+      .map((zone) => ({
+        type: 'Feature',
+        geometry: zone.geometry as GeoJSONGeometry,
+        properties: { ...zone.properties, minutes: minutes.get(zone.id) },
+      })),
+  }
+}
+
+const zoneColor = [
+  'interpolate',
+  ['linear'],
+  ['get', 'minutes'],
+  ...ZONE_RISK_COLORS.flat(),
+] as ExpressionSpecification
+
+const spreadOpacity = [
+  'interpolate',
+  ['linear'],
+  ['get', 'hour'],
+  ...SPREAD_OPACITY_BY_HOUR.flat(),
+] as ExpressionSpecification
+
 const radiusByFrp = [
   'interpolate',
   ['linear'],
   ['get', 'frp'],
   ...HOTSPOT_RADIUS_BY_FRP.flat(),
 ] as ExpressionSpecification
-
-const spreadColor = [
-  'interpolate',
-  ['linear'],
-  ['get', 'hour'],
-  ...SPREAD_HOUR_COLORS.flat(),
-] as ExpressionSpecification
-
-const zoneColor = [
-  'interpolate',
-  ['linear'],
-  ['get', 'minutes'],
-  ...ZONE_URGENCY_COLORS.flat(),
-] as ExpressionSpecification
-
-// Facilities are a few pixels wide at this zoom: a thick outline keeps them visible.
-const zoneLineWidth = [
-  'match',
-  ['get', 'kind'],
-  ['estate', 'town'],
-  2,
-  'road',
-  2.5,
-  3.5,
-] as ExpressionSpecification
-
-// Predicted spread and the zones it reaches belong to the replay; live mode hides them.
-const REPLAY_LAYERS = ['spread-fill', 'spread-outline', 'zones-fill', 'zones-outline']
 
 interface TriageMapProps {
   mode: MapMode
@@ -182,13 +167,14 @@ interface TriageMapProps {
   live: LiveFires | null
   selectedNeighborId: string | null
   route: Route | null
+  routeKind: RouteKind
   /** The area the route avoids; drawn only while a route is shown. */
   fireArea: FireArea | null
+  /** Predicted spread and places at risk at the replay time; null in live mode. */
+  cone: SpreadCollection | null
+  zones: ZoneShapes | null
+  risk: ZoneRiskList | null
   onSelectNeighbor: (neighborId: string) => void
-  /** Predicted spread of the forecast in force, largest first. */
-  spread: SpreadPolygon[]
-  /** Zones the predicted fire reaches, with their minutes to impact. */
-  zones: ZoneImpact[]
 }
 
 export function TriageMap({
@@ -199,15 +185,18 @@ export function TriageMap({
   live,
   selectedNeighborId,
   route,
+  routeKind,
   fireArea,
-  onSelectNeighbor,
-  spread,
+  cone,
   zones,
+  risk,
+  onSelectNeighbor,
 }: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<Map<string, Marker>>(new Map())
   const [styleReady, setStyleReady] = useState(false)
+  const endpoint = useRef<Marker | null>(null)
   const onSelect = useRef(onSelectNeighbor)
   useEffect(() => {
     onSelect.current = onSelectNeighbor
@@ -237,32 +226,36 @@ export function TriageMap({
         source: FIRE_AREA,
         paint: { 'line-color': FIRE_AREA_COLOR, 'line-width': 1.5, 'line-dasharray': [2, 2] },
       })
-      // Predicted spread and zones at risk go under the hotspots, which stay on top.
-      instance.addSource(SPREAD, { type: 'geojson', data: EMPTY, attribution: 'Spread: HackFire model' })
-      instance.addSource(ZONES, { type: 'geojson', data: EMPTY, attribution: 'Places: © OpenStreetMap' })
+      // The predicted spread, one polygon per hour: overlapping fills make the nearest hours darkest.
+      instance.addSource(SPREAD, { type: 'geojson', data: EMPTY })
       instance.addLayer({
-        id: 'spread-fill',
+        id: SPREAD,
         type: 'fill',
         source: SPREAD,
-        paint: { 'fill-color': spreadColor, 'fill-opacity': 0.2 },
+        paint: { 'fill-color': SPREAD_COLOR, 'fill-opacity': spreadOpacity },
       })
+      // Places the prediction reaches, coloured by how soon.
+      instance.addSource(ZONES, { type: 'geojson', data: EMPTY })
       instance.addLayer({
-        id: 'spread-outline',
-        type: 'line',
-        source: SPREAD,
-        paint: { 'line-color': spreadColor, 'line-width': 1.2, 'line-opacity': 0.9 },
-      })
-      instance.addLayer({
-        id: 'zones-fill',
+        id: ZONES,
         type: 'fill',
         source: ZONES,
-        paint: { 'fill-color': zoneColor, 'fill-opacity': 0.55 },
+        paint: { 'fill-color': zoneColor, 'fill-opacity': 0.35 },
       })
       instance.addLayer({
-        id: 'zones-outline',
+        id: `${ZONES}-outline`,
         type: 'line',
         source: ZONES,
-        paint: { 'line-color': zoneColor, 'line-width': zoneLineWidth },
+        paint: { 'line-color': zoneColor, 'line-width': 2 },
+      })
+      instance.on('click', ZONES, (event) => {
+        const feature = event.features?.[0]
+        if (!feature) return
+        const { name, kind, minutes } = feature.properties as { name: string; kind: keyof typeof ZONE_KIND_LABEL; minutes: number }
+        new Popup({ offset: 8 })
+          .setLngLat(event.lngLat)
+          .setText(`${name} · ${ZONE_KIND_LABEL[kind]} · fire ${formatImpact(minutes)}`)
+          .addTo(instance)
       })
       instance.addSource(HOTSPOTS, {
         type: 'geojson',
@@ -358,23 +351,16 @@ export function TriageMap({
 
   useEffect(() => {
     if (!styleReady || !map.current) return
-    map.current.getSource<GeoJSONSource>(SPREAD)?.setData(spreadToFeatureCollection(spread))
-  }, [styleReady, spread])
-
-  useEffect(() => {
-    if (!styleReady || !map.current) return
-    map.current.getSource<GeoJSONSource>(ZONES)?.setData(zonesToFeatureCollection(zones))
-  }, [styleReady, zones])
-
-  useEffect(() => {
-    if (!styleReady || !map.current) return
     map.current.setLayoutProperty(HOTSPOTS, 'visibility', mode === 'replay' ? 'visible' : 'none')
-    for (const layer of REPLAY_LAYERS) {
-      map.current.setLayoutProperty(layer, 'visibility', mode === 'replay' ? 'visible' : 'none')
-    }
     map.current.setLayoutProperty(LIVE_FIRES, 'visibility', mode === 'live' ? 'visible' : 'none')
     map.current.fitBounds(mode === 'live' ? IBERIA_BOUNDS : DEMO_BOUNDS, { padding: 24, duration: 800 })
   }, [styleReady, mode])
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(SPREAD)?.setData(cone ?? EMPTY)
+    map.current.getSource<GeoJSONSource>(ZONES)?.setData(zonesAtRiskCollection(zones, risk))
+  }, [styleReady, cone, zones, risk])
 
   // The route and the area it avoids belong to the replay; live mode hides them.
   const showRoute = mode === 'replay' && route?.geometry != null
@@ -388,8 +374,16 @@ export function TriageMap({
     instance.getSource<GeoJSONSource>(FIRE_AREA)?.setData(
       showRoute && fireArea ? { type: 'Feature', geometry: fireArea.geometry as GeoJSONGeometry, properties: {} } : EMPTY,
     )
+    endpoint.current?.remove()
+    endpoint.current = null
     if (showRoute) {
       const coordinates = route!.geometry!.coordinates
+      const element = document.createElement('div')
+      element.className = 'place-marker'
+      element.innerHTML = placeMarkerSvg(routeKind === 'rescue' ? 'fire-truck' : 'flag')
+      endpoint.current = new Marker({ element })
+        .setLngLat(routeKind === 'rescue' ? coordinates[0] : coordinates[coordinates.length - 1])
+        .addTo(instance)
       const lons = coordinates.map(([lon]) => lon)
       const lats = coordinates.map(([, lat]) => lat)
       instance.fitBounds(
@@ -400,7 +394,7 @@ export function TriageMap({
         { padding: { top: 80, right: 80, bottom: 150, left: 80 }, duration: 800, maxZoom: 14 },
       )
     }
-  }, [styleReady, showRoute, route, fireArea])
+  }, [styleReady, showRoute, route, routeKind, fireArea])
 
   // Markers are rebuilt only when what they show changes, so a click is never lost to a poll.
   const drawn = useRef<Map<string, string>>(new Map())
@@ -412,9 +406,14 @@ export function TriageMap({
       let marker = markers.current.get(neighbor.id)
       if (marker === undefined || drawn.current.get(neighbor.id) !== look) {
         marker?.remove()
-        marker = new Marker({ color: STATUS_COLOR[neighbor.status] })
+        const element = document.createElement('div')
+        element.className = 'status-marker'
+        element.setAttribute('role', 'button')
+        element.setAttribute('aria-label', `${neighbor.name}: ${STATUS_LABEL[neighbor.status]}`)
+        element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
+        marker = new Marker({ element, anchor: 'bottom' })
           .setLngLat([neighbor.lon, neighbor.lat])
-          .setPopup(new Popup({ offset: 24 }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
+          .setPopup(new Popup({ offset: [0, -38] }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
           .addTo(map.current)
         marker.getElement().addEventListener('click', () => onSelect.current(neighbor.id))
         markers.current.set(neighbor.id, marker)

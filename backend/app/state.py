@@ -4,7 +4,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from . import impact
+from . import zones
 from .config import DATA_DIR, settings
 from .models import CrewAlert, Neighbor, ReportStatusRequest, Rescue, TriageStatus
 
@@ -16,12 +16,11 @@ _REGISTRY_CANDIDATES = [
 ]
 
 
+
 class TriageState:
     def __init__(self) -> None:
         self._neighbors: dict[str, Neighbor] = {}
         self._alerts: list[CrewAlert] = []
-        # The replay moment the dashboard's slider is on; the agent answers for the same moment.
-        self.replay_time: datetime | None = None
         self.load()
 
     def load(self) -> None:
@@ -65,32 +64,24 @@ class TriageState:
         """Crew alerts, newest first. One per resident each time they become needs_rescue."""
         return list(reversed(self._alerts))
 
-    def clock(self) -> datetime:
-        """The replay moment every answer refers to: the slider's, or the scenario's until it moves.
-
-        The scenario time (HACKFIRE_SCENARIO_TIME) is the moment the calls happen at, and the one
-        the routes avoid the burned area of, so the agent's words and its routes agree.
-        """
-        moment = self.replay_time or settings.scenario_time
-        return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
-
     def minutes_to_impact(self, zone: str) -> int | None:
-        return impact.minutes_to_impact(zone, self.clock())
+        """From the predicted spread at the scenario time (spread.py, zones.py)."""
+        return zones.minutes_to_impact(zone, settings.scenario_time)
 
     def rescue_queue(self) -> list[Rescue]:
-        minutes = {
-            n.id: self.minutes_to_impact(n.zone)
-            for n in self._neighbors.values()
-            if n.status == TriageStatus.NEEDS_RESCUE
-        }
-        pending = [self._neighbors[neighbor_id] for neighbor_id in minutes]
+        pending = [n for n in self._neighbors.values() if n.status == TriageStatus.NEEDS_RESCUE]
         # Most urgent first: least time to impact, then the largest group.
-        pending.sort(key=lambda n: (minutes[n.id] if minutes[n.id] is not None else 10**6, -(n.people or 1)))
+        pending.sort(
+            key=lambda n: (
+                self.minutes_to_impact(n.zone) if self.minutes_to_impact(n.zone) is not None else 10**6,
+                -(n.people or 1),
+            )
+        )
         return [
             Rescue(
                 rescue_id=f"rescue-{n.id}",
                 neighbor=n,
-                minutes_to_impact=minutes[n.id],
+                minutes_to_impact=self.minutes_to_impact(n.zone),
                 priority=index + 1,
             )
             for index, n in enumerate(pending)

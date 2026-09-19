@@ -1,7 +1,6 @@
 // Visual vocabulary for triage states. Change the look here; logic does not import colours.
 
 import type { TriageStatus } from '../domain/triage'
-import type { ZoneKind } from '../domain/zones'
 
 export const STATUS_LABEL: Record<TriageStatus, string> = {
   pending: 'Not called yet',
@@ -49,45 +48,6 @@ export function formatSpanishTime(epochMs: number): string {
   return replayTimeFormat.format(epochMs)
 }
 
-// Predicted spread by hours after the forecast: red is the fire now, yellow is furthest ahead.
-export const SPREAD_HOUR_COLORS: readonly (readonly [hours: number, color: string])[] = [
-  [0, '#e8261a'],
-  [1, '#f2551a'],
-  [2, '#f7811f'],
-  [4, '#fbb02a'],
-  [6, '#ffe066'],
-]
-
-// Zones at risk by minutes to impact: a darker purple is sooner. Purple keeps them apart from the spread.
-export const ZONE_URGENCY_COLORS: readonly (readonly [minutes: number, color: string])[] = [
-  [0, '#4a0d67'],
-  [60, '#7b1fa2'],
-  [180, '#ab47bc'],
-  [360, '#d1a3dc'],
-]
-
-export const ZONE_KIND_LABEL: Record<ZoneKind, string> = {
-  estate: 'Housing estate',
-  town: 'Town',
-  care_home: 'Care home',
-  health_centre: 'Health centre',
-  school: 'School',
-  road: 'Road',
-}
-
-/** "45 min", "4 h" or "4 h 30 min", from minutes. (formatDuration below takes seconds.) */
-export function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`
-  const hours = Math.floor(minutes / 60)
-  const rest = minutes % 60
-  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`
-}
-
-/** "now" or a duration: how the panel says when the fire arrives. */
-export function formatMinutesToImpact(minutes: number): string {
-  return minutes <= 0 ? 'now' : formatMinutes(minutes)
-}
-
 // Live fires: colour by hours since the last detection, radius by hours burning.
 export const LIVE_RECENCY_COLORS: readonly (readonly [hours: number, color: string])[] = [
   [0, '#ff5a1f'],
@@ -103,8 +63,10 @@ export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: nu
 ]
 
 export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const
+export const MAP_MODE_ICON = { replay: 'replay', live: 'live' } as const
 
 export const ROUTE_KIND_LABEL = { car: 'By car', walking: 'On foot', rescue: 'Crew route' } as const
+export const ROUTE_KIND_ICON = { car: 'car', walking: 'walk', rescue: 'fire-truck' } as const
 
 export const ROUTE_COLOR = '#1a73e8'
 export const FIRE_AREA_COLOR = '#d93025'
@@ -137,3 +99,33 @@ export const STATUS_ICON: Record<TriageStatus, import('./Icon').IconName> = {
 // and the dark grey ink of the white place markers (safe point, crew base).
 export const MARKER_OUTLINE_COLOR = '#fff'
 export const PLACE_MARKER_INK = '#3c4043'
+
+// Predicted spread: the nearest hour is the strongest orange, the sixth the faintest.
+export const SPREAD_COLOR = '#ff8c1a'
+export const SPREAD_OPACITY_BY_HOUR: readonly (readonly [hour: number, opacity: number])[] = [
+  [1, 0.3],
+  [6, 0.06],
+]
+
+// Places at risk, by minutes to impact: reached, within 2 h, within the 6 h horizon.
+export const ZONE_RISK_COLORS: readonly (readonly [minutes: number, color: string])[] = [
+  [0, '#7a1f12'],
+  [120, '#d93025'],
+  [360, '#e0a100'],
+]
+
+export const ZONE_KIND_LABEL = {
+  settlement: 'Town or estate',
+  care_home: 'Care home',
+  school: 'School',
+  health: 'Health centre',
+} as const
+
+/** "reached", "in 45 min", "in 2 h 10 min". */
+export function formatImpact(minutes: number): string {
+  if (minutes === 0) return 'reached'
+  if (minutes < 60) return `in ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return rest === 0 ? `in ${hours} h` : `in ${hours} h ${rest} min`
+}

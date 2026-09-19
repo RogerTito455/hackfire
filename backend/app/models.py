@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class TriageStatus(StrEnum):
@@ -44,10 +44,6 @@ class FireStatus(BaseModel):
     )
     summary: str
     stub: bool = False
-
-
-class ReplayTimeRequest(BaseModel):
-    at: AwareDatetime = Field(description="Replay moment the dashboard's slider is on")
 
 
 class EvacuationRouteRequest(BaseModel):

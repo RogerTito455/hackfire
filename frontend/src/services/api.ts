@@ -1,11 +1,9 @@
 // Backend client. The only file that knows URLs and HTTP.
 
 import type { HotspotCollection } from '../domain/hotspots'
-import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
-import type { SpreadCollection } from '../domain/spread'
+import type { SpreadCollection, ZoneRiskList, ZoneShapes } from '../domain/spread'
 import type { CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode } from '../domain/triage'
-import type { ImpactTable, ZoneCollection } from '../domain/zones'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -25,18 +23,12 @@ export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
 export const fetchRoute = (neighborId: string, mode: TravelMode) =>
   request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
-export const fetchFireArea = () => request<FireArea>('/api/fire-area')
+export const fetchFireArea = (crew: boolean) => request<FireArea>(`/api/fire-area${crew ? '?crew=true' : ''}`)
 export const fetchRescueRoute = (neighborId: string) =>
   request<Route>(`/api/rescue-routes/${encodeURIComponent(neighborId)}`)
 export const fetchAlerts = () => request<CrewAlert[]>('/api/alerts')
-export const fetchSpread = () => request<SpreadCollection>('/api/spread')
-export const fetchZones = () => request<ZoneCollection>('/api/zones')
-export const fetchImpact = () => request<ImpactTable>('/api/impact')
-export const fetchLeadTime = () => request<LeadTime>('/api/lead-time')
-/** Tell the backend which replay moment the slider is on, so `get_fire_status` answers for it. */
-export const setReplayTime = (isoTime: string) =>
-  request<{ at: string }>('/api/replay/time', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ at: isoTime }),
-  })
+export const fetchSpread = (at: number) =>
+  request<SpreadCollection>(`/api/spread?at=${encodeURIComponent(new Date(at).toISOString())}`)
+export const fetchZoneRisk = (at: number) =>
+  request<ZoneRiskList>(`/api/zones/risk?at=${encodeURIComponent(new Date(at).toISOString())}`)
+export const fetchZoneShapes = () => request<ZoneShapes>('/api/zones')
