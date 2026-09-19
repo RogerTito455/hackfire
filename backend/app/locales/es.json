@@ -182,5 +182,18 @@
     "vonageOff": "Sin vídeo en directo ni SMS con el enlace.",
     "vonageOn": "Configurado (sin probar: probarlo enviaría un mensaje).",
     "vonageVideoOnly": "Vídeo configurado, SMS no: los enlaces se muestran, no se envían."
+  },
+  "cap": {
+    "language": "es-ES",
+    "event": "Incendio forestal",
+    "senderName": "HackFire, borrador para Protección Civil",
+    "headline": "Incendio forestal cerca de {place}",
+    "headlineMany": {
+      "one": "Incendio forestal cerca de {place} y de otro lugar",
+      "other": "Incendio forestal cerca de {place} y de otros {count} lugares"
+    },
+    "description": "Borrador basado en la simulación de propagación {model} que Deepfire hizo a las {time}. Es una predicción, no un aviso oficial. Los tiempos cuentan desde la simulación.",
+    "instruction": "Siga las indicaciones de Protección Civil y del 112. Esté preparado para salir si las autoridades se lo piden.",
+    "note": "Borrador redactado por HackFire a partir de una simulación. No enviado. Para revisión de Protección Civil."
   }
 }

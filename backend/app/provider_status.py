@@ -20,7 +20,7 @@ import httpx
 from .config import settings
 from .i18n import t
 from .models import ProviderState, ProviderStatus
-from .providers import deepfire, overpass, routing, sms, voice, vonage
+from .providers import deepfire, dgt, overpass, routing, sms, voice, vonage
 
 TIMEOUT_S = 4.0
 WAIT_S = 5.0
@@ -141,6 +141,15 @@ def check_vonage(_client: httpx.Client) -> Check:
     return Check(ProviderState.CONFIGURED, "vonageOn" if vonage.sms_configured() else "vonageVideoOnly")
 
 
+def check_dgt(client: httpx.Client) -> Check:
+    """The DGT's public DATEX II feed: no key, so up or down."""
+    try:
+        code = dgt.ping(client)
+    except httpx.HTTPError as error:
+        return _failure(error)
+    return _by_code(code)
+
+
 PROVIDERS: list[Provider] = [
     Provider("deepfire", "Deepfire", check_deepfire),
     Provider("openrouteservice", "openrouteservice", check_routing, ORS_TTL_S),
@@ -148,9 +157,7 @@ PROVIDERS: list[Provider] = [
     Provider("slng", "SLNG", check_slng),
     Provider("twilio", "Twilio SMS", check_twilio),
     Provider("vonage", "Vonage SMS", check_vonage),
-    # The DGT traffic feed (providers/dgt.py) is being added in another branch. When it lands, add
-    # Provider("dgt", "DGT", check_dgt) here, with a check_dgt like check_deepfire's, and a
-    # "dgt..." reason in app/locales.
+    Provider("dgt", "DGT", check_dgt),
 ]
 
 

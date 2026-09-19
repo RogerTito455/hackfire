@@ -34,3 +34,6 @@ video/out/
 .vscode/
 .idea/
 .DS_Store
+# Live mode's last DGT answer: forest-fire incidents and closures (backend/app/live_dgt.py)
+data/live_dgt.json
+data/live_dgt.tmp

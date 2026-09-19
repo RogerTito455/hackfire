@@ -7,6 +7,7 @@ import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { LiveSpreadResponse } from '../domain/liveSpread'
 import type { LiveOperationsResponse } from '../domain/liveOperations'
+import type { DgtOverviewResponse } from '../domain/liveDgt'
 import type { SpreadCollection } from '../domain/spread'
 import type { TextClassification } from '../domain/textTriage'
 import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
@@ -47,6 +48,10 @@ export const fetchLiveSpread = () => request<LiveSpreadResponse>('/api/live/spre
 /** Places at risk, alert drafts and roads to close for one live fire with a Deepfire run. */
 export const fetchLiveOperations = (fireId: string) =>
   request<LiveOperationsResponse>(`/api/live/operations/${encodeURIComponent(fireId)}`)
+/** Official DGT forest-fire incidents and road closures across Spain. */
+export const fetchLiveDgt = () => request<DgtOverviewResponse>('/api/live/dgt')
+/** Where the fire's alert drafts download as one CAP 1.2 document (status Draft). A plain link. */
+export const liveOperationsCapUrl = (fireId: string) => `${API_URL}/api/live/operations/${encodeURIComponent(fireId)}/cap`
 export const fetchRoute = (neighborId: string, mode: TravelMode) =>
   request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
 export const fetchFireArea = (crew: boolean) => request<FireArea>(`/api/fire-area${crew ? '?crew=true' : ''}`)

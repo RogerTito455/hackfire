@@ -2,6 +2,7 @@
 // drafts and the roads to close to residents. A prediction for the coordinator, never a warning sent
 // to anyone. Pure types and functions.
 
+import { parseDgtNear, type DgtNear, type DgtNearResponse } from './liveDgt'
 import type { Bounds } from './scenario'
 import type { GeoJsonGeometry } from './spread'
 import type { SimulatedFire } from './liveSpread'
@@ -38,6 +39,8 @@ export interface LiveOperationsResponse {
   places_stale: boolean
   /** Deepfire did not answer: the last simulation the backend had. */
   spread_stale: boolean
+  /** Official DGT forest-fire incidents and closures near the footprint (absent from older backends). */
+  dgt?: DgtNearResponse
   computed_at: string
 }
 
@@ -76,6 +79,8 @@ export interface LiveOperations {
   placesFetchedAt: number
   placesStale: boolean
   spreadStale: boolean
+  /** Official DGT data near this fire, kept apart from HackFire's own suggestions. */
+  dgt: DgtNear
 }
 
 export function parseLiveOperations(response: LiveOperationsResponse): LiveOperations {
@@ -106,6 +111,7 @@ export function parseLiveOperations(response: LiveOperationsResponse): LiveOpera
     placesFetchedAt: Date.parse(response.places_fetched_at),
     placesStale: response.places_stale,
     spreadStale: response.spread_stale,
+    dgt: parseDgtNear(response.dgt),
   }
 }
 

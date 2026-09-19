@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { parseLiveOperations, type LiveOperations } from '../domain/liveOperations'
 import { simulationFor, type LiveSpread } from '../domain/liveSpread'
-import { fetchLiveOperations } from '../services/api'
+import { fetchLiveOperations, liveOperationsCapUrl } from '../services/api'
 
 /** Times to impact count down and Deepfire reruns a fire every few hours; the backend caches the places. */
 const POLL_MS = 300_000
@@ -17,6 +17,8 @@ export interface LiveOperationsView {
   status: LiveOperationsStatus
   /** Only ever the selected fire's; null while it loads. */
   data: LiveOperations | null
+  /** Where the selected fire's alert drafts download as CAP 1.2 (status Draft); null with no drafts. */
+  capUrl: string | null
   select: (fireId: string | null) => void
   retry: () => void
 }
@@ -81,6 +83,7 @@ export function useLiveOperations(enabled: boolean, spread: LiveSpread | null): 
     fireId: enabled ? fireId : null,
     status,
     data: shown,
+    capUrl: shown !== null && shown.alerts.length > 0 ? liveOperationsCapUrl(shown.fireId) : null,
     select,
     retry: () => {
       setFailed(false)

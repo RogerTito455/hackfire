@@ -132,6 +132,7 @@ export function Dashboard({
           time={replay.time}
           live={live.data}
           liveSpread={live.spread}
+          dgt={live.dgt}
           liveOperations={liveOperations.data}
           onSelectLiveFire={liveOperations.select}
           selectedNeighborId={selection.neighborId}

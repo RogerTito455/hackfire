@@ -17,6 +17,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [SLNG](services/slng.md) | Voice agent, outbound calls, SMS |
 | | [openrouteservice](services/openrouteservice.md) | Evacuation and rescue routes |
 | | [Overpass (OpenStreetMap)](services/overpass.md) | Towns, care homes, schools, health centres and roads for the zones at risk |
+| | [DGT (DATEX II)](services/dgt.md) | Official road incidents: forest fires and closures in live mode |
 | | [Galtea](services/galtea.md) | Simulated residents, some adversarial, that test the resident agent's triage (`pnpm eval:galtea`) |
 | | [Supabase](services/supabase.md) | Hosted Postgres; not adopted, see the page |
 | | [Vonage Video](services/vonage.md) | Extension 2: live video from a resident who needs rescue |

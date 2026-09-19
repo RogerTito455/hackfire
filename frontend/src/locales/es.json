@@ -225,7 +225,10 @@
     "liveFire": "Detectado durante {hours} h; visto por última vez: {time}",
     "liveSimulation": "Simulación {model} de Deepfire: {hours} h, ejecutada el {time}",
     "liveSimulationModel": "Modelo físico: terreno, combustible y meteorología",
-    "resident": "{name}: {status}"
+    "resident": "{name}: {status}",
+    "dgtFire": "Incidencia oficial de la DGT: incendio forestal en la {road}",
+    "dgtWhere": "{place}, desde {time}",
+    "dgtSource": "Fuente: DGT (DATEX II). Datos oficiales, no de Deepfire."
   },
   "video": {
     "request": "Pedir vídeo en directo",
@@ -430,7 +433,37 @@
     "roadsNote": "Carreteras principales que la simulación alcanza en menos de una hora: cortadas para los vecinos, los equipos de emergencia siguen usándolas.",
     "roadsNone": "Ninguna carretera principal en la próxima hora.",
     "calls": "Aquí no hay llamadas: llamar a los vecinos requiere un registro de quién vive en estos lugares, que es trabajo futuro.",
-    "source": "Lugares: © colaboradores de OpenStreetMap, consultados el {time}."
+    "source": "Lugares: © colaboradores de OpenStreetMap, consultados el {time}.",
+    "cap": "Descargar borradores en CAP (XML)",
+    "capNote": "Formato estándar de alertas, listo para entregar a Protección Civil. Estado: borrador, no enviado.",
+    "dgt": "Cortes e incidencias oficiales de la DGT",
+    "official": "Oficial",
+    "dgtNote": "Datos oficiales: lo que la DGT publica a menos de {km} km del recorrido simulado. No es una sugerencia de HackFire.",
+    "dgtNone": "La DGT no publica ahora ningún corte ni incendio forestal en esta zona.",
+    "dgtUnavailable": "El servicio de la DGT no responde; no se pueden mostrar sus cortes.",
+    "dgtStale": "El servicio de la DGT no responde: su lista de las {time}.",
+    "dgtSince": "Desde {time}",
+    "dgtKm": "km {km}",
+    "dgtNoRoad": "Vía sin nombre",
+    "dgtSource": "Fuente: DGT, Punto de Acceso Nacional (DATEX II).",
+    "dgtType": {
+      "forestFire": "Incendio forestal",
+      "roadClosed": "carretera cortada",
+      "carriagewayClosures": "calzada cortada",
+      "laneClosures": "carriles cortados",
+      "other": "otra restricción"
+    },
+    "dgtCause": {
+      "roadMaintenance": "obras",
+      "accident": "accidente",
+      "vehicleObstruction": "vehículo en la vía",
+      "obstruction": "obstáculo",
+      "environmentalObstruction": "riesgo natural",
+      "infrastructureDamageObstruction": "vía dañada",
+      "poorEnvironment": "malas condiciones",
+      "publicEvent": "evento público",
+      "other": "otra causa"
+    }
   },
   "audit": {
     "empty": "Aún no hay nada registrado. Aquí aparecen aprobaciones, llamadas, estados y cortes.",
