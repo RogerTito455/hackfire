@@ -57,7 +57,7 @@ Done on 2026-09-19. Railway's import reads the pnpm workspace and configures the
    | `ORS_API_KEY` | Any route not in `data/routes_cache.json` answers 503 (a new registry, or a changed scenario time) |
    | `HACKFIRE_CREW_PHONE`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Crew alerts stay on the dashboard, no SMS |
 
-   Checked on 2026-09-19 at 18:30: live mode answered 503 and typed answers were off on the deployed service. Never set `HACKFIRE_NEIGHBORS_FILE` to a laptop path. See [Environment variables](environment.md).
+   Set on 2026-09-19 at 18:50: `HACKFIRE_PUBLIC_URL`, `DEEPFIRE_CLIENT_ID`, `DEEPFIRE_CLIENT_SECRET` (alongside the team's `SLNG_API_KEY`). Checked after the redeploy: live mode lists 139 active clusters, a typed answer ("Mi madre no puede andar y somos dos…") came back `needs_rescue`, 2 people, and the crew alert links to the Railway URL. Still unset: `ORS_API_KEY` (the key's quota ran out; demo routes are cached), Twilio, and `HACKFIRE_NEIGHBORS_JSON` (the deployed registry is still the 5-resident sample, #12). Never set `HACKFIRE_NEIGHBORS_FILE` to a laptop path. See [Environment variables](environment.md).
 
 Railway's config-as-code file (`railway.toml`) is not an option for this service: new services cannot use it. See [the finding](../findings/2026-09-19-railway-config-as-code-deprecated.md).
 
