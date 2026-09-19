@@ -300,3 +300,34 @@ class SafePoint(BaseModel):
     lat: float
     lon: float
     safe: bool = Field(description="Outside the forecast and at least 3 km from the fire at the scenario time")
+
+
+class AuditEvent(BaseModel):
+    """One decision or outcome in the audit log (app/audit.py). Never carries a phone number."""
+
+    id: str
+    at: AwareDatetime
+    action: str = Field(description="The event's kind, such as order.approved or status.reported")
+    actor: str = Field(description="coordinator, agent, autopilot or system")
+    source: str | None = Field(default=None, description="Where a status came from: agent_tool, typed_answer, ...")
+    subject: str | None = Field(default=None, description="A resident id, a zone id or a closure id")
+    values: dict[str, str | int | float | bool | None] = Field(default_factory=dict)
+    message: str = Field(description="The event as a sentence, in the request's language")
+
+
+class ProviderState(StrEnum):
+    UP = "up"
+    DEGRADED = "degraded"
+    DOWN = "down"
+    CONFIGURED = "configured"  # set up; not checked, because checking would send something
+    NOT_CONFIGURED = "not_configured"
+
+
+class ProviderStatus(BaseModel):
+    """Whether an external service answers (app/provider_status.py)."""
+
+    id: str
+    name: str
+    state: ProviderState
+    reason: str = Field(description="A short sentence in the request's language")
+    checked_at: AwareDatetime | None = Field(default=None, description="None: the first check has not answered yet")

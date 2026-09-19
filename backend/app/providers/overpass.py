@@ -33,3 +33,9 @@ def elements(client: httpx.Client, query: str, deadline: float | None = None) ->
             error = failure
     assert error is not None, "no Overpass server configured"
     raise error
+
+
+def ping(client: httpx.Client, url: str) -> int:
+    """For the status page (app/provider_status.py): the status code of the smallest query there is."""
+    response = client.get(url, params={"data": "[out:json][timeout:3];node(1);out ids;"}, headers=_HEADERS)
+    return response.status_code

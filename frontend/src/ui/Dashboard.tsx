@@ -19,6 +19,8 @@ import type { CrewPlanView } from '../hooks/useCrewPlan'
 import type { CrewRoomHost } from '../hooks/useCrewRoom'
 import type { Closures } from '../hooks/useClosures'
 import type { Triage } from '../hooks/useTriage'
+import type { ActivityLog as ActivityLogView, ServiceStatus as ServiceStatusView } from '../hooks/useOperationsLog'
+import { ActivityLog } from './ActivityLog'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
 import { CrewAlerts } from './CrewAlerts'
@@ -39,6 +41,7 @@ import { ClosuresPanel } from './ClosuresPanel'
 import { ShareWithCrewsPanel } from './ShareWithCrewsPanel'
 import { RoutePanel } from './RoutePanel'
 import { ScriptedCallCard } from './ScriptedCallCard'
+import { ServiceStatus } from './ServiceStatus'
 import { TalkPanel } from './TalkPanel'
 import { AskAgentPanel } from './AskAgentPanel'
 import { SpreadLegend } from './SpreadLegend'
@@ -72,6 +75,9 @@ interface DashboardProps {
   crewPlan: CrewPlanView
   crewRoom: CrewRoomHost
   closures: Closures
+  /** The audit log's latest events and the service status (docs/setup/operations.md). */
+  activity: ActivityLogView
+  services: ServiceStatusView
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -98,6 +104,8 @@ export function Dashboard({
   crewPlan,
   crewRoom,
   closures,
+  activity,
+  services,
 }: DashboardProps) {
   const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
@@ -364,6 +372,27 @@ export function Dashboard({
         {selected === null && (
           <p className="hint">{t('app.tapResident')}</p>
         )}
+
+        {/* Operations: the activity log, then the service status at the bottom of the sidebar. */}
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="flag" size={18} />
+            {t('section.activity')}
+          </h2>
+          <ActivityLog
+            events={activity.events}
+            loaded={activity.loaded}
+            failed={activity.failed}
+            downloadUrl={activity.downloadUrl}
+          />
+        </section>
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="satellite" size={18} />
+            {t('section.services')}
+          </h2>
+          <ServiceStatus providers={services.providers} loaded={services.loaded} failed={services.failed} />
+        </section>
 
         <button type="button" className="reset icon-button" onClick={reset}>
           <Icon name="reset" size={16} />

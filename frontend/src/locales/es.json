@@ -39,7 +39,9 @@
     "typedBackup": "¿Falla la voz? Escribe la respuesta",
     "callResident": "Llamar a este vecino",
     "crewPlan": "Plan de los equipos",
-    "closures": "Carreteras cortadas"
+    "closures": "Carreteras cortadas",
+    "activity": "Registro de actuaciones",
+    "services": "Estado de los servicios"
   },
   "time": {
     "now": "ya"
@@ -429,5 +431,22 @@
     "roadsNone": "Ninguna carretera principal en la próxima hora.",
     "calls": "Aquí no hay llamadas: llamar a los vecinos requiere un registro de quién vive en estos lugares, que es trabajo futuro.",
     "source": "Lugares: © colaboradores de OpenStreetMap, consultados el {time}."
+  },
+  "audit": {
+    "empty": "Aún no hay nada registrado. Aquí aparecen aprobaciones, llamadas, estados y cortes.",
+    "download": "Descargar (JSON)",
+    "unavailable": "El registro de actuaciones no está disponible ahora."
+  },
+  "providers": {
+    "loading": "Comprobando los servicios…",
+    "unavailable": "El estado de los servicios no está disponible ahora.",
+    "checkedAt": "Comprobado a las {time}",
+    "state": {
+      "up": "Funciona",
+      "degraded": "Con problemas",
+      "down": "Caído",
+      "configured": "Configurado",
+      "not_configured": "Sin configurar"
+    }
   }
 }

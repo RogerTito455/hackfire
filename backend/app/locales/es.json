@@ -89,5 +89,98 @@
       "school": "un colegio sin nombre",
       "road": "una carretera sin número"
     }
+  },
+  "audit": {
+    "status": {
+      "reported": "{name}: {status}, según {source}."
+    },
+    "statuses": {
+      "pending": "sin llamar",
+      "evacuating": "evacuando",
+      "no_answer": "no contesta",
+      "needs_rescue": "necesita rescate"
+    },
+    "sources": {
+      "agent_tool": "el agente de voz",
+      "typed_answer": "una respuesta escrita",
+      "manual_button": "los botones del coordinador",
+      "autopilot": "la simulación de llamadas",
+      "safety_net": "la red de seguridad (la llamada terminó sin nada registrado)",
+      "campaign": "la campaña de llamadas (sin respuesta)",
+      "dashboard": "el panel"
+    },
+    "order": {
+      "approved": "Orden para {zone} aprobada: salir hacia {destination}.",
+      "approvedShelter": "Orden para {zone} aprobada: quedarse en casa.",
+      "changed": "Orden para {zone} cambiada: salir hacia {destination}.",
+      "changedShelter": "Orden para {zone} cambiada: quedarse en casa."
+    },
+    "call": {
+      "webStarted": "Llamada con {name} iniciada en el navegador.",
+      "phoneStarted": "Llamada telefónica a {name} realizada.",
+      "ended": "Llamada con {name} terminada."
+    },
+    "campaign": {
+      "started": {
+        "one": "Llamadas a {zone} iniciadas: {count} llamada realizada, {refused} rechazadas.",
+        "other": "Llamadas a {zone} iniciadas: {count} llamadas realizadas, {refused} rechazadas."
+      }
+    },
+    "alert": {
+      "createdSms": "Aviso a la dotación por {name}, enviándose por SMS.",
+      "createdDashboard": "Aviso a la dotación por {name}, solo en el panel.",
+      "smsSent": "Aviso por {name} enviado a la dotación por SMS.",
+      "smsFailed": "Falló el SMS a la dotación por {name}: el aviso queda en el panel."
+    },
+    "closure": {
+      "added": {
+        "one": "Carretera cortada en {place} ({radius} m): {count} vecino salía por ahí.",
+        "other": "Carretera cortada en {place} ({radius} m): {count} vecinos salían por ahí."
+      },
+      "removed": "Carretera reabierta en {place}."
+    },
+    "video": {
+      "linkTexted": "Enlace de vídeo para {name} enviado por SMS.",
+      "linkShown": "Enlace de vídeo para {name} creado, sin SMS."
+    },
+    "autopilot": {
+      "on": "Simulación de llamadas activada.",
+      "off": "Simulación de llamadas desactivada: vuelve el estado de antes."
+    },
+    "demo": {
+      "reset": "Demo reiniciada: registro recargado; órdenes, cortes y llamadas borrados."
+    }
+  },
+  "providers": {
+    "ok": "Responde.",
+    "rejected": "Clave rechazada (HTTP {code}).",
+    "busy": "Saturado (HTTP {code}).",
+    "http": "Respuesta inesperada (HTTP {code}).",
+    "timeout": "Sin respuesta en {seconds} s.",
+    "unreachable": "Inalcanzable.",
+    "checking": "Comprobando: sin respuesta en {seconds} s.",
+    "deepfireOff": "La reproducción usa los focos guardados.",
+    "deepfireBusy": "Saturado (HTTP {code}): el modo en vivo mantiene su última respuesta.",
+    "orsOff": "Se usan las rutas guardadas.",
+    "orsQuota": "Cuota agotada: se usan las rutas guardadas.",
+    "orsRate": "Demasiadas peticiones este minuto: se usan las rutas guardadas.",
+    "orsDown": "No responde: se usan las rutas guardadas.",
+    "overpassAll": {
+      "one": "El espejo responde.",
+      "other": "Los {count} espejos responden."
+    },
+    "overpassSome": {
+      "one": "Responde {up} de {count} espejo.",
+      "other": "Responden {up} de {count} espejos."
+    },
+    "overpassNone": "Ningún espejo responde: la reproducción usa los lugares guardados.",
+    "slngOff": "No hay llamadas de voz.",
+    "slngNoAgent": "La clave funciona, pero no se encuentra el agente de vecinos.",
+    "twilioOff": "Los avisos a la dotación quedan en el panel.",
+    "twilioNoCrew": "Sin teléfono de la dotación: los avisos quedan en el panel.",
+    "twilioOn": "Configurado (sin probar: probarlo enviaría un mensaje).",
+    "vonageOff": "Sin vídeo en directo ni SMS con el enlace.",
+    "vonageOn": "Configurado (sin probar: probarlo enviaría un mensaje).",
+    "vonageVideoOnly": "Vídeo configurado, SMS no: los enlaces se muestran, no se envían."
   }
 }

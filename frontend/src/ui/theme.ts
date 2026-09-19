@@ -157,3 +157,26 @@ export const PLACE_MARKER_INK = '#3c4043'
 export const CLOSURE_COLOR = '#3c4043'
 
 export const ORDER_STATE_COLOR = { proposed: '#e0a100', approved: '#2e9e5b' } as const
+
+// Service status (ServiceStatus.tsx): the status colours, so a dot reads like a resident's state.
+// Configured-but-not-checked shares the green of "up" and is drawn hollow.
+export const PROVIDER_STATE_COLOR: Record<import('../domain/operations').ProviderState, string> = {
+  up: '#0e9f6e',
+  configured: '#0e9f6e',
+  degraded: '#e9a100',
+  down: '#e0302a',
+  not_configured: '#64708f',
+}
+
+// Activity log (ActivityLog.tsx): an icon per kind of event; a status report takes its status's icon.
+export const AUDIT_ICON: Record<string, import('./Icon').IconName> = {
+  order: 'flag',
+  call: 'phone',
+  campaign: 'phone',
+  alert: 'bell',
+  closure: 'road-closed',
+  video: 'live',
+  autopilot: 'replay',
+  demo: 'reset',
+}
+

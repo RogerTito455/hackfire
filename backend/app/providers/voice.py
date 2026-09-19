@@ -118,3 +118,13 @@ def set_goodbye(agent_id: str, goodbye: str) -> None:
             "goodbye_message": {"segments": [{"type": "literal", "value": goodbye}]},
         }
     _request("PUT", agent_id, body=body)
+
+
+def ping(client: httpx.Client) -> int:
+    """For the status page (app/provider_status.py): the status code of reading the resident agent,
+    an authenticated call that starts nothing."""
+    response = client.get(
+        f"{_AGENTS_URL}/{settings.slng_resident_agent_id}",
+        headers={"Authorization": f"Bearer {settings.slng_api_key}"},
+    )
+    return response.status_code

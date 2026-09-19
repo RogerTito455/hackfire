@@ -11,7 +11,7 @@ import logging
 import threading
 import time
 
-from . import briefing, orders
+from . import audit, briefing, orders
 from .models import CampaignCall, TriageStatus
 from .providers import voice
 from .state import state
@@ -51,11 +51,13 @@ def start(zone: str) -> list[CampaignCall]:
             call_id = voice.call_resident(resident.phone, briefing.call_variables(resident))
         except voice.VoiceUnavailable as error:
             logger.warning("SLNG refused the call to %s: %s", resident.id, error)
-            state.no_answer_if_pending(resident.id)
+            if state.no_answer_if_pending(resident.id):
+                audit.status_reported(state.get(resident.id), source="campaign", actor="system")
             calls.append(CampaignCall(neighbor_id=resident.id, call_id=None))
             continue
         with _active_lock:
             _active[resident.id] = call_id
+        audit.record("call.phoneStarted", actor="system", source="campaign", subject=resident.id, name=resident.name)
         calls.append(CampaignCall(neighbor_id=resident.id, call_id=call_id))
     return calls
 
@@ -74,7 +76,9 @@ def watch(calls: list[CampaignCall]) -> None:
                 del waiting[neighbor_id]
                 with _active_lock:
                     _active.pop(neighbor_id, None)
-                state.no_answer_if_pending(neighbor_id)
+                audit.record("call.ended", actor="system", source="campaign", subject=neighbor_id, name=audit.resident_name(neighbor_id))
+                if state.no_answer_if_pending(neighbor_id):
+                    audit.status_reported(state.get(neighbor_id), source="campaign", actor="system")
         if waiting:
             time.sleep(POLL_SECONDS)
     with _active_lock:

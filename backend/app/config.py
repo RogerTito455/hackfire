@@ -103,6 +103,12 @@ class Settings:
 
     ors_api_key: str = field(default_factory=lambda: _env("ORS_API_KEY"))
 
+    # The audit log (app/audit.py): one JSON object per line, append-only, git-ignored. Never holds
+    # a phone number. docs/setup/operations.md.
+    audit_file: Path = field(
+        default_factory=lambda: Path(_env("HACKFIRE_AUDIT_FILE", str(DATA_DIR / "audit.jsonl")))
+    )
+
     # Galtea, for `pnpm eval:galtea` only (simulated residents against the resident agent). The app never reads it.
     galtea_api_key: str = field(default_factory=lambda: _env("GALTEA_API_KEY"))
 

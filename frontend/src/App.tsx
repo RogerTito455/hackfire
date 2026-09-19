@@ -17,6 +17,7 @@ import { useVoiceConversations } from './hooks/useConversation'
 import { useRescueVideo } from './hooks/useRescueVideo'
 import { useCrewPlan } from './hooks/useCrewPlan'
 import { useClosures } from './hooks/useClosures'
+import { useActivityLog, useServiceStatus } from './hooks/useOperationsLog'
 import { useCrewRoomHost } from './hooks/useCrewRoom'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
@@ -43,6 +44,8 @@ function App() {
   const autopilot = useAutopilot(triage.refresh)
   const crewPlan = useCrewPlan()
   const crewRoom = useCrewRoomHost()
+  const activity = useActivityLog(locale)
+  const services = useServiceStatus()
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
@@ -91,6 +94,8 @@ function App() {
       closures={closures}
       forecast={forecast}
       leadTime={leadTime}
+      activity={activity}
+      services={services}
     />
   )
 }
