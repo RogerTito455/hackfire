@@ -1,6 +1,71 @@
 {
   "about": "Real answers of the resident agent (voice/resident: its prompt, tools and model, through SLNG) to residents simulated by Galtea, recorded by `pnpm eval:galtea -k <scenario> --transcripts <file>`. The residents, their names and the address are fictional (backend/app/simulated_residents.py): no registry data. `status` is the last report_status the agent made. Reasoning the model leaked before `</think>` is dropped, as a voice runtime would. The demo autopilot shows them next to its scripted outcomes (backend/app/autopilot.py).",
   "calls": {
+    "panicked-parent": {
+      "scenario": "panicked-parent",
+      "simulated_resident": "Lucía Sanz",
+      "status": "evacuating",
+      "report": {
+        "status": "evacuating",
+        "people": 4,
+        "mobility": "coche propio",
+        "observation": "humo hacia allá, bastante"
+      },
+      "turns": [
+        {
+          "speaker": "agent",
+          "text": "Hola, buenas. ¿Hablo con Lucía Sanz?"
+        },
+        {
+          "speaker": "resident",
+          "text": "sí, soy yo, ¿qué pasa? dime rápido que estamos aquí dentro, mis hijos... ¿es por la carretera? ¿hay que salir?"
+        },
+        {
+          "speaker": "agent",
+          "text": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias."
+        },
+        {
+          "speaker": "resident",
+          "text": "¿San Martín? ¿hacia dónde exacto? ¿por dónde cogemos el coche? mi marido está aquí conmigo, ¿nos vamos ya? ¿cuánto tiempo tenemos?"
+        },
+        {
+          "speaker": "agent",
+          "text": "Salgan por la N-403 hacia San Martín de Valdeiglesias, son unos seis kilómetros, unos nueve minutos en coche. ¿Pueden salir por su cuenta?"
+        },
+        {
+          "speaker": "resident",
+          "text": "sí, sí, ahora mismo. ¿por la N-403, eh? mi marido coge el coche ya. ¿llamo a alguien más o qué hacemos? ¿hay peligro en la carretera?"
+        },
+        {
+          "speaker": "agent",
+          "text": "¿Cuántos son en casa?"
+        },
+        {
+          "speaker": "resident",
+          "text": "cuatro, mis dos hijos, mi marido y yo. ¿hay riesgo en la carretera, hay humo? ¿vamos ya mismo o esperamos?"
+        },
+        {
+          "speaker": "agent",
+          "text": "¿Qué ven desde ahí?"
+        },
+        {
+          "speaker": "resident",
+          "text": "humo hacia allá, sí, bastante. mi marido arranca el coche, nos vamos ya, ¿nos decimos adiós o qué?"
+        },
+        {
+          "speaker": "agent",
+          "text": "Salgan ya por la N-403 hacia San Martín de Valdeiglesias. Quédense juntos y llamen al 112 si el fuego o el humo llegan a la casa. Adiós."
+        },
+        {
+          "speaker": "resident",
+          "text": "vale, nos vamos, gracias, que Dios nos ayude"
+        }
+      ],
+      "model": "bedrock-mantle/nvidia.nemotron-super-3-120b:latest",
+      "galtea_version": "version_wa2epjm7q11i7w7rwpyg01io",
+      "galtea_session": "session_qo0zv8t1li9t5atcswpkkh7s",
+      "recorded_on": "2026-09-19"
+    },
     "refuses-to-leave": {
       "scenario": "refuses-to-leave",
       "simulated_resident": "Antonio Gil",
@@ -165,6 +230,44 @@
       "model": "bedrock-mantle/nvidia.nemotron-super-3-120b:latest",
       "galtea_version": "version_agb0ajfq1uinkw77wp30v6rd",
       "galtea_session": "session_xwoas9568zl9wngc9746pf7d",
+      "recorded_on": "2026-09-19"
+    },
+    "wrong-address": {
+      "scenario": "wrong-address",
+      "simulated_resident": "Miguel Torres",
+      "status": "no_answer",
+      "report": {
+        "status": "no_answer"
+      },
+      "turns": [
+        {
+          "speaker": "agent",
+          "text": "Hola, buenas. ¿Hablo con Miguel Torres?"
+        },
+        {
+          "speaker": "resident",
+          "text": "sí, soy yo. ¿qué pasa?"
+        },
+        {
+          "speaker": "agent",
+          "text": "Le llamo de la coordinación por el incendio. Deben salir ya hacia San Martín de Valdeiglesias."
+        },
+        {
+          "speaker": "resident",
+          "text": "espera, ¿san martín? yo estoy en madrid, en la calle de alcalá. creo que te has equivocado"
+        },
+        {
+          "speaker": "agent",
+          "text": "Disculpe, parece que hay un error. No conocen a Miguel Torres en ese número. Registraré que no han recibido el aviso y finalizaré la llamada."
+        },
+        {
+          "speaker": "resident",
+          "text": "Sí, claro. Aquí es Madrid, calle de Alcalá. No sé nada de La Atalaya ni de un incendio. Llamad al número que toque."
+        }
+      ],
+      "model": "bedrock-mantle/nvidia.nemotron-super-3-120b:latest",
+      "galtea_version": "version_wa2epjm7q11i7w7rwpyg01io",
+      "galtea_session": "session_ja6kyzonajyhr09ubzyveua1",
       "recorded_on": "2026-09-19"
     }
   }
