@@ -6,6 +6,7 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
+| 2026-09-19 | [Which press figures hold up against their sources](2026-09-19-press-figures.md) | Pitch |
 | 2026-09-19 | [Which LLMs an SLNG agent accepts for Spanish in Europe](2026-09-19-slng-agent-llms-for-spanish.md) | SLNG |
 | 2026-09-19 | [SLNG passes a tool's arguments to our backend unchecked](2026-09-19-slng-tool-arguments-unchecked.md) | SLNG |
 | 2026-09-19 | [Sending everyone to one safe point walked some residents into the fire](2026-09-19-evacuation-destinations.md) | Routes |
