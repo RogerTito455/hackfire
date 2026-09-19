@@ -21,6 +21,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [Devin (Cognition)](services/devin.md) | Extension 3: self-improving spread model |
 | **Demo** | [Runbook](demo/runbook.md) | Before the demo, and what to do when something fails on stage |
 | | [Pitch script](demo/pitch.md) | The three minutes, the checked figures, questions to prepare |
+| | [Workflow review](demo/workflow-review.md) | The demo end to end: what is real, what is simulated, weak points, how to make it stronger |
 | **Development** | [Workflow](development/workflow.md) | Slices, branches, checks, the tool contract |
 | **Design** | [DESIGN.md](../DESIGN.md) | Colours, type, the mobile layout, old-browser rules, languages |
 | | [Icons](../frontend/src/ui/icons/README.md) | The hand-drawn icon set: format rules, map markers, catalogue |
