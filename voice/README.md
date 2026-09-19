@@ -90,6 +90,18 @@ To deploy it again, in order (steps 1–2 done on 2026-09-19):
 3. Test agent → Web session: "¿Qué rescates tengo y en qué orden?", then "Dame la ruta al más urgente", and watch the dashboard.
 4. For a firefighter to reach it by phone: an inbound number attached in SLNG's Telephony (the same trunk question as #8).
 
+## After every deploy: the goodbye
+
+SLNG's `end_call` says **"Thanks for calling. Goodbye!"** in English unless its attachment carries a `goodbye_message`, and unmute 0.5.5 cannot set one (it refuses `inject:` on `end_call`). A push replaces the agent and brings the English goodbye back, so after every `unmute deploy` of either agent run:
+
+```bash
+set -a; . ./.env; set +a
+python3 voice/set_goodbye.py 0f035ccc-10d8-4de8-8142-abf4dc484fd8 "Hasta luego."   # resident
+python3 voice/set_goodbye.py 6d1a743a-4a0e-42b2-aa3f-5052c247137c "Hasta luego."   # coordinator
+```
+
+It downloads the agent's config, sets the goodbye and PUTs it back; nothing else changes (checked on 2026-09-19). A scan of both agents' transcripts that day found no other English: they retell the backend's English fire status and routes in Spanish.
+
 ## What the agent knows before it speaks
 
 A call starts with six variables (`backend/app/campaign.py`, `call_variables`): `neighbor_id`, `resident_name`, `address`, `zone`, and since 2026-09-19 evening `fire_status` (what `get_fire_status` would answer: the fire at the replay moment plus the zone's approved order) and `route` (the resident's route by car under that order). The agent opens with the order and the route, then asks the three questions; it calls a tool only for a route on foot or when `route` is empty. Before, it looked up the fire mid-call, the resident waited, and a slider left on a quiet moment made it say "no risk" and then give a route. The dashboard test panel uses the defaults in `agent.yaml`.
