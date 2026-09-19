@@ -24,8 +24,23 @@ function App() {
   const textTriage = useTextTriage()
   const voice = useVoiceCapabilities()
   const campaign = useCampaign()
-  const conversation = useResidentCall()
-  const coordinatorCall = useCoordinatorCall()
+  const residentCall = useResidentCall()
+  const coordinatorAgentCall = useCoordinatorCall()
+  // One conversation at a time: the microphone must reach one agent only.
+  const conversation = {
+    ...residentCall,
+    start: (neighborId: string) => {
+      coordinatorAgentCall.hangUp()
+      return residentCall.start(neighborId)
+    },
+  }
+  const coordinatorCall = {
+    ...coordinatorAgentCall,
+    start: (id: string) => {
+      residentCall.hangUp()
+      return coordinatorAgentCall.start(id)
+    },
+  }
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.

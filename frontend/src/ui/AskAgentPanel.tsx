@@ -16,7 +16,10 @@ export function AskAgentPanel({ available, state, onAsk, onHangUp }: AskAgentPan
   if (state === 'live') {
     return (
       <div className="talk">
-        <p className="talk-live">Ask: “¿Qué rescates tengo y en qué orden?” or “Dame la ruta al más urgente”.</p>
+        <p className="talk-live">
+          You are talking to the coordinator agent. Ask: “¿Qué rescates tengo y en qué orden?”, then “Dame la ruta al
+          más urgente”.
+        </p>
         <button type="button" className="talk-hang-up icon-button" onClick={onHangUp}>
           <Icon name="close" size={16} />
           Hang up
@@ -28,7 +31,7 @@ export function AskAgentPanel({ available, state, onAsk, onHangUp }: AskAgentPan
     <div className="talk">
       <button type="button" className="text-triage-send icon-button" onClick={onAsk}>
         <Icon name="live" size={16} />
-        Ask the agent
+        Ask the coordinator agent
       </button>
       {state === 'error' && <p className="empty">Could not reach the agent. Read the queue below.</p>}
     </div>

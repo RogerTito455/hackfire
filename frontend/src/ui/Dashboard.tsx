@@ -142,12 +142,13 @@ export function Dashboard({
           <section>
             <h2 className="icon-button">
               <Icon name="live" size={16} />
-              Talk to the agent
+              Call this resident
             </h2>
             <TalkPanel
               neighbor={selected}
               available={voice.web_sessions}
               orderApproved={orders.orders.some((order) => order.zone === selected.zone && order.approved)}
+              zoneName={orders.orders.find((order) => order.zone === selected.zone)?.zone_name ?? selected.zone}
               activeId={conversation.neighborId}
               state={conversation.state}
               onTalk={() => conversation.start(selected.id)}

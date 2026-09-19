@@ -20,8 +20,8 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `DEEPFIRE_CLIENT_SECRET` | Same | Shown once when the API client is created |
 | `SLNG_API_KEY` | Voice agent, calls, SMS (#7, #8, #9, #10) | https://app.slng.ai → Projects → Generate key |
 | `SLNG_BASE_URL` | Same | See [SLNG](../services/slng.md) |
-| `SLNG_RESIDENT_AGENT_ID` | The call campaign and the dashboard's *Take the call here* (#8) | The resident agent's id; defaults to `hackfire-resident-slng` (`0f035ccc-…`). `voiceai agents list` shows it |
-| `SLNG_COORDINATOR_AGENT_ID` | The dashboard's *Ask the agent* (#10) | The coordinator agent's id; defaults to `hackfire-coordinator-slng` (`6d1a743a-…`) |
+| `SLNG_RESIDENT_AGENT_ID` | The call campaign and the dashboard's *Call … (answer here)* (#8) | The resident agent's id; defaults to `hackfire-resident-slng` (`0f035ccc-…`). `voiceai agents list` shows it |
+| `SLNG_COORDINATOR_AGENT_ID` | The dashboard's *Ask the coordinator agent* (#10) | The coordinator agent's id; defaults to `hackfire-coordinator-slng` (`6d1a743a-…`) |
 | `HACKFIRE_PHONE_CALLS` | Phoning residents from the call campaign (#8) | `1` once an outbound SIP trunk is attached to the agent in SLNG; anything else keeps phones off and the dashboard offers browser calls |
 | `SLNG_LLM_URL` | The backend's LLM: typed answers on the dashboard and `pnpm eval:triage`, with `SLNG_API_KEY` | SLNG's Context Router. Default `https://eu-north.context-router.slng.ai/v1` |
 | `SLNG_LLM_MODEL` | Same | Default `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, the model the voice agents think with |
