@@ -29,7 +29,10 @@ export function useSelectedRoute(): SelectedRoute {
   const [mode, setMode] = useState<RouteKind>(() => (rescueFromUrl() === null ? 'car' : 'rescue'))
   const [route, setRoute] = useState<Route | null>(null)
   const [status, setStatus] = useState<RouteStatus>(() => (rescueFromUrl() === null ? 'idle' : 'loading'))
-  const [fireArea, setFireArea] = useState<FireArea | null>(null)
+  const [areas, setAreas] = useState<{ residents: FireArea | null; crews: FireArea | null }>({
+    residents: null,
+    crews: null,
+  })
 
   const select = useCallback((next: string | null) => {
     setNeighborId(next)
@@ -73,13 +76,16 @@ export function useSelectedRoute(): SelectedRoute {
     }
   }, [neighborId, mode])
 
+  // Residents' routes avoid the fire plus an hour of predicted spread; crews' only what has burned.
+  const crew = mode === 'rescue'
+  const fireArea = crew ? areas.crews : areas.residents
   const wantsFireArea = neighborId !== null && fireArea === null
   useEffect(() => {
     if (!wantsFireArea) return
     let cancelled = false
-    fetchFireArea()
+    fetchFireArea(crew)
       .then((area) => {
-        if (!cancelled) setFireArea(area)
+        if (!cancelled) setAreas((current) => ({ ...current, [crew ? 'crews' : 'residents']: area }))
       })
       .catch(() => {
         // The route still draws without the area; nothing to tell the user.
@@ -87,7 +93,7 @@ export function useSelectedRoute(): SelectedRoute {
     return () => {
       cancelled = true
     }
-  }, [wantsFireArea])
+  }, [wantsFireArea, crew])
 
   return { neighborId, mode, route, status, fireArea, select, setMode: changeMode, showRescue }
 }

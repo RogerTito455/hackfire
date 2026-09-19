@@ -1,6 +1,7 @@
 // Backend client. The only file that knows URLs and HTTP.
 
 import type { HotspotCollection } from '../domain/hotspots'
+import type { EvacuationOrder, OrderDecision, SafePoint } from '../domain/orders'
 import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { SpreadCollection } from '../domain/spread'
@@ -25,7 +26,7 @@ export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
 export const fetchRoute = (neighborId: string, mode: TravelMode) =>
   request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
-export const fetchFireArea = () => request<FireArea>('/api/fire-area')
+export const fetchFireArea = (crew: boolean) => request<FireArea>(`/api/fire-area${crew ? '?crew=true' : ''}`)
 export const fetchRescueRoute = (neighborId: string) =>
   request<Route>(`/api/rescue-routes/${encodeURIComponent(neighborId)}`)
 export const fetchAlerts = () => request<CrewAlert[]>('/api/alerts')
@@ -39,4 +40,12 @@ export const setReplayTime = (isoTime: string) =>
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ at: isoTime }),
+  })
+export const fetchOrders = () => request<EvacuationOrder[]>('/api/orders')
+export const fetchSafePoints = () => request<SafePoint[]>('/api/safe-points')
+export const approveOrder = (zone: string, decision: OrderDecision) =>
+  request<EvacuationOrder>(`/api/orders/${encodeURIComponent(zone)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(decision),
   })

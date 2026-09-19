@@ -7,6 +7,7 @@ a gap in the satellite data does not un-flag a zone. Everything the dashboard sh
 """
 
 import json
+import math
 from bisect import bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -126,3 +127,32 @@ def timeline(step: timedelta = timedelta(minutes=5)) -> dict | None:
         "forecast": [f.issued_at.isoformat().replace("+00:00", "Z") if f else None for f in in_force],
         "zones": {zone: [minutes_to_impact(zone, m) for m in moments] for zone in at_risk},
     }
+
+
+@cache
+def _footprints() -> dict[datetime, dict[int, object]]:
+    """Every cached forecast's polygons, by issue time and hour ahead (lon/lat)."""
+    if not SPREAD_FILE.exists():
+        return {}
+    polygons: dict[datetime, dict[int, object]] = {}
+    for feature in json.loads(SPREAD_FILE.read_text(encoding="utf-8"))["features"]:
+        properties = feature["properties"]
+        polygons.setdefault(datetime.fromisoformat(properties["issued_at"]), {})[properties["hour"]] = shape(
+            feature["geometry"]
+        )
+    return polygons
+
+
+def predicted_footprint(at: datetime, hours_ahead: float):
+    """Where the forecast in force at `at` puts the fire `hours_ahead` from `at` (lon/lat), or None.
+
+    The forecast's own hour steps, counted from its issue time and rounded up, capped at HORIZON_HOURS.
+    """
+    forecast = forecast_at(at)
+    if forecast is None:
+        return None
+    hourly = _footprints().get(forecast.issued_at, {})
+    age_hours = (at - forecast.issued_at).total_seconds() / 3600
+    wanted = min(HORIZON_HOURS, math.ceil(age_hours + hours_ahead))
+    usable = [hour for hour in hourly if hour <= wanted]
+    return hourly[max(usable)] if usable else None

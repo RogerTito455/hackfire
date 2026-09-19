@@ -62,7 +62,7 @@ The registry with the team's own phone numbers (#12) reaches the deployed backen
 
 A malformed value stops the backend at start-up with a message that names the variable and the field, never the content, so the deploy log does not leak a number. Changing the variable redeploys the service and wipes the triage state.
 
-The routes are cached by coordinates (`data/routes_cache.json`, see [openrouteservice](../services/openrouteservice.md)): a resident that is not in the cache costs a live openrouteservice call, and without `ORS_API_KEY` on Railway that route answers 503. After changing the registry, run `pnpm data:routes` with the key and commit the file; it holds coordinates and directions, never names or phones.
+The routes are cached by coordinates (`data/routes_cache.json`, see [openrouteservice](../services/openrouteservice.md)): a resident that is not in the cache costs a live openrouteservice call, and without `ORS_API_KEY` on Railway that route answers 503. After changing the registry, run `pnpm data:routes` with a key that still has quota and commit the file; it holds coordinates and directions, never names or phones. Today only n01 to n05 are cached: n06 to n10 answer 503 until it is rerun.
 
 ## Checking a deploy
 

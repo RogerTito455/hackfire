@@ -4,8 +4,11 @@ import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
+import type { Orders } from '../hooks/useOrders'
 import type { Triage } from '../hooks/useTriage'
 import { CrewAlerts } from './CrewAlerts'
+import { Icon } from './Icon'
+import { OrdersPanel } from './OrdersPanel'
 import { LeadTimeCard } from './LeadTimeCard'
 import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
@@ -27,6 +30,7 @@ interface DashboardProps {
   selection: SelectedRoute
   forecast: FireForecast
   leadTime: LeadTimeView
+  orders: Orders
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -39,6 +43,7 @@ export function Dashboard({
   selection,
   forecast,
   leadTime,
+  orders,
 }: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
@@ -46,7 +51,10 @@ export function Dashboard({
     <div className="layout">
       <aside className="panel">
         <header>
-          <h1>HackFire</h1>
+          <h1 className="brand">
+            <Icon name="logo" size={28} />
+            HackFire
+          </h1>
           <p className={online ? 'conn ok' : 'conn down'}>
             {online ? 'Backend connected' : 'Backend unreachable'}
           </p>
@@ -65,7 +73,10 @@ export function Dashboard({
             </section>
 
             <section>
-              <h2>Where the fire is heading</h2>
+              <h2 className="icon-button">
+                <Icon name="flame" size={16} />
+                Where the fire is heading
+              </h2>
               {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
               <ZonesAtRisk
                 status={forecast.status}
@@ -77,25 +88,47 @@ export function Dashboard({
         )}
 
         <section>
-          <h2>Evacuation route</h2>
+          <h2 className="icon-button">
+            <Icon name="flag" size={16} />
+            Evacuation orders
+          </h2>
+          <OrdersPanel
+            orders={orders.orders}
+            safePoints={orders.safePoints}
+            saving={orders.saving}
+            onApprove={orders.approve}
+          />
+        </section>
+
+        <section>
+          <h2 className="icon-button">
+            <Icon name="route" size={16} />
+            Evacuation route
+          </h2>
           <RoutePanel
             neighbor={selected}
             mode={selection.mode}
             route={selection.route}
             status={selection.status}
-            avoidsUntil={selection.fireArea?.properties.until ?? null}
+            avoids={selection.fireArea}
             onModeChange={selection.setMode}
             onClose={() => selection.select(null)}
           />
         </section>
 
         <section>
-          <h2>Rescue queue</h2>
+          <h2 className="icon-button">
+            <Icon name="lifebuoy" size={16} />
+            Rescue queue
+          </h2>
           <RescueQueue rescues={rescues} />
         </section>
 
         <section>
-          <h2>Crew alerts</h2>
+          <h2 className="icon-button">
+            <Icon name="bell" size={16} />
+            Crew alerts
+          </h2>
           <CrewAlerts
             alerts={alerts}
             onShowRoute={(neighborId) => {
@@ -105,7 +138,8 @@ export function Dashboard({
           />
         </section>
 
-        <button type="button" className="reset" onClick={reset}>
+        <button type="button" className="reset icon-button" onClick={reset}>
+          <Icon name="reset" size={16} />
           Reset demo
         </button>
       </aside>
@@ -118,6 +152,7 @@ export function Dashboard({
           live={live.data}
           selectedNeighborId={selection.neighborId}
           route={selection.route}
+          routeKind={selection.mode}
           fireArea={selection.fireArea}
           onSelectNeighbor={selection.select}
           spread={forecast.spread}

@@ -27,6 +27,7 @@ backend/app/spread.py      Predicted spread: a cone from the front's velocity (p
 backend/app/impact.py      Cached spread x zones: which zones the fire reaches and in how many minutes
 backend/app/lead_time.py   Lead time: first flag of a zone to first hotspot within the radius (pure)
 backend/app/replay.py      Cached replay files under data/, served as-is
+backend/app/evacuation.py  Routes that avoid the fire and safe points; orders.py: evacuation orders per zone
 backend/app/config.py      Every key, URL and path, read from the environment
 backend/app/providers/     One module per external service (deepfire, routing, llm, voice)
 backend/app/pipelines/     One-off data downloads that write to data/
@@ -48,7 +49,7 @@ Dockerfile                 The one deployed image, backend plus built dashboard 
 pnpm bootstrap       # pnpm install + uv sync (never `pnpm setup`: it is a pnpm built-in)
 pnpm dev:api         # http://localhost:8000, docs at /docs
 pnpm dev:web         # http://localhost:5173
-pnpm check           # backend tests, then frontend type-check and build
+pnpm check           # backend tests, icon format check, then frontend type-check and build
 pnpm data:hotspots   # download Deepfire hotspots into data/
 pnpm data:zones      # download towns, care homes, schools, health centres and roads from OSM into data/
 pnpm data:spread     # rebuild the predicted spread from the cached hotspots (no network)

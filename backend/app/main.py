@@ -6,9 +6,12 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import evacuation, impact, live, replay
+from . import evacuation, impact, live, orders, replay
 from .config import settings
 from .models import (
+    EvacuationOrder,
+    OrderDecision,
+    SafePoint,
     CrewAlert,
     EvacuationRouteRequest,
     FireStatus,
@@ -119,7 +122,7 @@ def neighbor_route(neighbor_id: str, mode: TravelMode = TravelMode.CAR) -> Route
     neighbor = state.get(neighbor_id)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
-    return _route_or_503(lambda: evacuation.evacuation_route(neighbor, mode))
+    return _route_or_503(lambda: orders.route_for(neighbor, mode))
 
 
 @app.get("/api/rescue-routes/{neighbor_id}")
@@ -137,10 +140,31 @@ def list_alerts() -> list[CrewAlert]:
     return state.alerts()
 
 
+@app.get("/api/orders")
+def list_orders() -> list[EvacuationOrder]:
+    """One evacuation order per zone with residents: proposed, or approved by the coordinator."""
+    return orders.orders()
+
+
+@app.post("/api/orders/{zone}")
+def approve_order(zone: str, decision: OrderDecision) -> EvacuationOrder:
+    """The coordinator approves or changes a zone's order; the agent reads it from then on."""
+    order = orders.approve(zone, decision)
+    if order is None:
+        raise HTTPException(status_code=404, detail=f"Unknown zone {zone} or destination {decision.destination_id}")
+    return order
+
+
+@app.get("/api/safe-points")
+def list_safe_points() -> list[SafePoint]:
+    """Candidate destinations, and whether each is safe at the scenario time."""
+    return orders.safe_point_list()
+
+
 @app.get("/api/fire-area")
-def fire_area() -> dict:
-    """The area routes avoid: everything burned up to the scenario time."""
-    return evacuation.fire_area()
+def fire_area(crew: bool = False) -> dict:
+    """The area routes avoid at the scenario time: residents' routes, or crews' with `crew=true`."""
+    return evacuation.fire_area(crew=crew)
 
 
 @app.post("/api/reset")
@@ -162,8 +186,14 @@ def get_fire_status(request: FireStatusRequest) -> FireStatus:
         zone=request.zone,
         at_risk=minutes is not None,
         minutes_to_impact=minutes,
-        summary=_fire_summary(request.zone, minutes),
+        summary=_with_order(request.zone, _fire_summary(request.zone, minutes)),
     )
+
+
+def _with_order(zone: str, summary: str) -> str:
+    """Append the coordinator's approved order for the zone, the one thing every resident must hear."""
+    order = orders.approved_order(zone)
+    return f"{summary} {order.message}" if order else summary
 
 
 def _spoken_span(minutes: int) -> str:
@@ -195,11 +225,11 @@ def _route_or_503(plan) -> Route:
 
 @app.post("/tools/get_evacuation_route")
 def get_evacuation_route(request: EvacuationRouteRequest) -> Route:
-    """Route from a registered resident's home to the safe point farthest from the fire."""
+    """Route from a registered resident's home to the nearest safe point the fire is not heading for."""
     neighbor = state.find_by_address(request.address)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Address not in the registry: {request.address}")
-    return _route_or_503(lambda: evacuation.evacuation_route(neighbor, request.mode))
+    return _route_or_503(lambda: orders.route_for(neighbor, request.mode))
 
 
 @app.post("/tools/report_status")

@@ -41,7 +41,7 @@ def isolated_routing(monkeypatch: pytest.MonkeyPatch):
     """No disk cache, no memory cache, and a recorder instead of openrouteservice."""
     calls: list[dict] = []
 
-    def fake_route(_client, start, end, mode, avoid):
+    def fake_route(_client, start, end, mode, avoid, *_):
         calls.append({"start": start, "end": end, "mode": mode, "avoid": avoid})
         return fake_feature()
 
@@ -77,7 +77,8 @@ def test_evacuation_route_tool_returns_a_real_route(isolated_routing) -> None:
     assert route["geometry"]["type"] == "LineString"
     assert route["distance_m"] == 12_600
     assert isolated_routing[0]["mode"] == TravelMode.WALKING
-    assert route["spoken_directions"].startswith(f"Walk to {evacuation.safest_point(settings.scenario_time).name}")
+    home = (first_neighbor()["lon"], first_neighbor()["lat"])
+    assert route["spoken_directions"].startswith(f"Walk to {evacuation.safest_point(settings.scenario_time, home).name}")
 
 
 def test_spoken_directions_name_the_main_roads_in_order() -> None:
@@ -85,6 +86,8 @@ def test_spoken_directions_name_the_main_roads_in_order() -> None:
     assert text.startswith("Drive to Cebreros along AV-512, then N-403, then AV-512.")
     assert "about 13 kilometres, around 18 minutes by car" in text
     assert "keeps away from the area the fire has already burned" in text
+    ahead = evacuation.spoken_directions(fake_feature(), TravelMode.CAR, "Cebreros", avoided_fire=True, ahead_h=1)
+    assert ahead.endswith("keeps away from the fire and from where it is expected to spread in the next hour.")
 
 
 def test_long_walks_are_said_in_hours() -> None:
@@ -152,8 +155,10 @@ def test_committed_cache_covers_the_sample_registry(monkeypatch: pytest.MonkeyPa
     sample = json.loads((DATA_DIR / "neighbors.sample.json").read_text(encoding="utf-8"))
     for raw in sample:
         neighbor = Neighbor(**raw)
+        # Served from the cache (ORS would raise). A resident with no safe way out gets the
+        # "no route" answer, which is cached too; crews always get a line.
         for mode in TravelMode:
-            assert evacuation.evacuation_route(neighbor, mode).geometry is not None
+            assert evacuation.evacuation_route(neighbor, mode).spoken_directions
         assert evacuation.rescue_route(neighbor).geometry is not None
 
 
@@ -163,3 +168,57 @@ def test_dashboard_rescue_route_starts_at_the_crew_base(isolated_routing) -> Non
     assert isolated_routing[0]["start"] == (evacuation.crew_base().lon, evacuation.crew_base().lat)
     assert route["mode"] == "car"
     assert client.get("/api/rescue-routes/nobody").status_code == 404
+
+
+def test_crews_get_the_direct_route_with_a_warning_when_the_fire_blocks_every_road(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = []
+
+    def blocked_unless_direct(_client, start, end, mode, avoid):
+        calls.append(avoid)
+        if avoid is not None:
+            raise routing.NoRouteFound("no route")
+        return fake_feature()
+
+    monkeypatch.setattr(routing, "route_avoiding", blocked_unless_direct)
+    route = client.get(f"/api/rescue-routes/{first_neighbor()['id']}").json()
+    assert route["spoken_directions"].startswith("Warning: no route avoids the burned area. Drive to")
+    assert route["geometry"] is not None
+    assert calls[-1] is None
+
+
+def test_residents_never_get_a_route_through_the_fire(monkeypatch: pytest.MonkeyPatch) -> None:
+    def blocked_unless_direct(_client, start, end, mode, avoid):
+        if avoid is not None:
+            raise routing.NoRouteFound("no route")
+        return fake_feature()
+
+    monkeypatch.setattr(routing, "route_avoiding", blocked_unless_direct)
+    # Whatever the scenario time, pretend there is fire to avoid around this route.
+    monkeypatch.setattr(evacuation, "avoid_polygon", lambda *_args, **_kw: {"type": "Polygon", "coordinates": []})
+    route = client.get(f"/api/routes/{first_neighbor()['id']}?mode=car").json()
+    assert route["geometry"] is None
+
+
+def test_crew_routes_avoid_only_what_has_burned() -> None:
+    residents = client.get("/api/fire-area").json()
+    crews = client.get("/api/fire-area?crew=true").json()
+    assert residents["properties"]["ahead_hours"] == evacuation.AVOID_AHEAD_H
+    assert crews["properties"]["ahead_hours"] == 0
+    assert shape(crews["geometry"]).area <= shape(residents["geometry"]).area
+
+
+def test_safe_point_is_outside_the_forecast_and_clear_of_the_fire() -> None:
+    home = (-4.4588, 40.3829)
+    target = evacuation.safest_point(settings.scenario_time, home)
+    area = geo.point_m(target.lon, target.lat).buffer(evacuation.SAFE_POINT_RADIUS_M)
+    assert not evacuation.fire_m(settings.scenario_time, 6).intersects(area)
+
+
+def test_burned_area_before_the_first_hotspot_is_empty() -> None:
+    from datetime import datetime
+
+    from app import replay
+
+    assert replay.burned_area_m(datetime.fromisoformat("2026-07-22T08:00:00+00:00")).is_empty

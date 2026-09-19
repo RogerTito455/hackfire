@@ -49,6 +49,8 @@ def lead_time_json() -> bytes | None:
 
 # Satellite pixels are 375 m (VIIRS) to about 2 km (MTG): a hotspot stands for an area, not a point.
 HOTSPOT_RADIUS_M = 750
+# MTG repeats the same pixel every 10 minutes: snapping to this grid drops ~70% of the points.
+GRID_M = 200
 
 
 @cache
@@ -68,7 +70,14 @@ def burned_area_m(until: datetime) -> BaseGeometry:
     to 100 m so it stays small enough to send to openrouteservice.
     """
     times, points = _hotspot_times_and_points()
-    seen = [geo.point_m(lon, lat) for (lon, lat), t in zip(points, times, strict=True) if t <= until]
+    seen = sorted(
+        {
+            (round(p.x / GRID_M) * GRID_M, round(p.y / GRID_M) * GRID_M)
+            for p in (geo.point_m(lon, lat) for (lon, lat), t in zip(points, times, strict=True) if t <= until)
+        }
+    )
+    if not seen:
+        return shapely.Polygon()
     # One buffer per hotspot, then a tree union: buffering the MultiPoint in one pass peaked at
     # ~1.9 GB and 17 s, enough for Railway to kill the process.
-    return shapely.union_all(shapely.buffer(seen, HOTSPOT_RADIUS_M)).simplify(100)
+    return shapely.union_all(shapely.buffer(shapely.points(seen), HOTSPOT_RADIUS_M, quad_segs=8)).simplify(100)

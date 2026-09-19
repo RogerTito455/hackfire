@@ -103,8 +103,10 @@ export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: nu
 ]
 
 export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const
+export const MAP_MODE_ICON = { replay: 'replay', live: 'live' } as const
 
 export const ROUTE_KIND_LABEL = { car: 'By car', walking: 'On foot', rescue: 'Crew route' } as const
+export const ROUTE_KIND_ICON = { car: 'car', walking: 'walk', rescue: 'fire-truck' } as const
 
 export const ROUTE_COLOR = '#1a73e8'
 export const FIRE_AREA_COLOR = '#d93025'
@@ -137,3 +139,6 @@ export const STATUS_ICON: Record<TriageStatus, import('./Icon').IconName> = {
 // and the dark grey ink of the white place markers (safe point, crew base).
 export const MARKER_OUTLINE_COLOR = '#fff'
 export const PLACE_MARKER_INK = '#3c4043'
+
+export const ORDER_STATE_LABEL = { proposed: 'Proposed', approved: 'Approved' } as const
+export const ORDER_STATE_COLOR = { proposed: '#e0a100', approved: '#2e9e5b' } as const
