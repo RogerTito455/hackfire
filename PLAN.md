@@ -17,7 +17,7 @@ A voice agent that **calls residents before the fire reaches them**, tells them 
 
 ## 2. The problem
 
-On 23 July 2026 the Burgohondo wildfire (Ávila), the largest in Spain, ran 3 km in 40 minutes and reached the La Atalaya housing estate (El Tiemblo). Between 1,200 and 1,300 people were evacuated, 5 homes were destroyed, and a care home for the elderly was evacuated at night. In total, more than 13,000 people were evacuated or confined.
+On 23 July 2026 the Burgohondo wildfire (Ávila) ran 3 km in 40 minutes and reached the La Atalaya housing estate (El Tiemblo). Between 1,200 and 1,300 people were evacuated from it, 1,500 in total, and 5 homes were destroyed. An ES-Alert ordered El Tiemblo, Burgohondo and Navaluenga to stay indoors because of the smoke. (Every figure checked against its source: docs/findings/2026-09-19-press-figures.md.)
 
 Public alerting today has three gaps:
 
@@ -27,7 +27,7 @@ Public alerting today has three gaps:
 
 The result: firefighters spend resources locating and extracting people instead of fighting the fire.
 
-**A limitation we acknowledge:** in that fire, 16 municipalities lost mobile coverage. A phone call needs a network, exactly as ES-Alert does. Our answer: calls are triggered by the **prediction**, hours before the fire arrives, while the cell towers still work; and the "no answer" state tells the coordinator which homes need a patrol sent to them.
+**A limitation we acknowledge:** in the late-July fires, 16 municipalities lost mobile or landline coverage (The Objective, 29 July, not broken down by fire). A phone call needs a network, exactly as ES-Alert does. Our answer: calls are triggered by the **prediction**, hours before the fire arrives, while the cell towers still work; and the "no answer" state tells the coordinator which homes need a patrol sent to them.
 
 ## 3. The solution: four steps
 
