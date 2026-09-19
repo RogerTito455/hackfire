@@ -1,7 +1,7 @@
 # openrouteservice
 
 **Used for:** step 3 (resident's route out) and step 4 (crew's route to a rescue). Slice 5 (#6), reused by #9 and #10.
-**Status:** working. Both routing tools are real; 15 demo routes cached in `data/routes_cache.json`
+**Status:** working. Both routing tools are real; 30 demo routes cached in `data/routes_cache.json`, for the sample registry and the 10-resident one, so neither needs `ORS_API_KEY` at run time
 **Owner:** Bryan
 
 ## Access
