@@ -13,7 +13,15 @@ from datetime import datetime
 
 from . import evacuation, impact
 from .config import settings
-from .models import EvacuationOrder, Neighbor, OrderAction, OrderDecision, Route, SafePoint, TravelMode
+from .models import (
+    EvacuationOrder,
+    Neighbor,
+    OrderAction,
+    OrderDecision,
+    Route,
+    SafePoint,
+    TravelMode,
+)
 from .state import state
 
 

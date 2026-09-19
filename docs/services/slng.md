@@ -42,7 +42,7 @@ POST https://api.agents.slng.ai/v1/agents/{agent_id}/calls
 
 SLNG's "Send SMS" tool goes through Twilio only: it needs a Twilio Account SID, Auth Token and an SMS-capable number, and a successful test before publishing. Same dependency as the phone number. It is a tool an *agent* calls, not an API our backend can call.
 
-What works today: every new rescue creates a crew alert (`GET /api/alerts`) with the address, people, mobility and a link (`HACKFIRE_PUBLIC_URL/?rescue=<id>`) that opens the dashboard on the crew's route. The dashboard shows it and says "dashboard only, SMS not set up". To send it by SMS, fill in `providers/voice.notify_crew` (the `TODO(voice)` in `report_status`) and set `sent_by_sms`.
+What works: every new rescue creates a crew alert (`GET /api/alerts`) with the address, people, mobility and a link (`HACKFIRE_PUBLIC_URL/?rescue=<id>`) that opens the dashboard on the crew's route, shown on the dashboard. **With Twilio set up** (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` and `HACKFIRE_CREW_PHONE`), the backend also texts it to the crew through `providers/sms.py`, after answering the tool call so the agent never waits, and marks the alert "sent by SMS". A Twilio failure is logged and the alert stays on the dashboard. Not yet run against the live API.
 
 ## Spanish
 

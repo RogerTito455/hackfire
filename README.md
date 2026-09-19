@@ -34,9 +34,9 @@ Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app**
 - Evacuation routes: `get_evacuation_route` and `get_rescue_route` are real. Routes avoid the area burned up to the scenario time and send residents to the safe point farthest from the fire. Click a resident on the map to see their route by car or on foot, and the directions the agent reads them. Demo routes are cached in `data/`.
 - Evacuation orders per zone: the system proposes a destination (or staying indoors) for each zone with residents, the coordinator approves or changes it, and the agent reads that order to everyone in the zone, then gives each resident their own route to it.
 - Demo mode: a typed answer (classified by the LLM) or three buttons replace a failed call, map tiles are cached for a flaky network, and Reset restores everything between rehearsals. See [docs/demo/runbook.md](docs/demo/runbook.md).
-- Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard; SMS is not wired yet.
+- Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard, and texted to the crew by SMS once Twilio credentials are set.
 
-Still to build: the voice agent and outbound calls, crew alerts by SMS. See [PLAN.md](PLAN.md) and the issues.
+Still to build: outbound calls (#8) and the coordinator asking by voice (#10). See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 
