@@ -4,6 +4,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from . import impact
 from .config import DATA_DIR, settings
 from .models import CrewAlert, Neighbor, ReportStatusRequest, Rescue, TriageStatus
@@ -16,6 +18,36 @@ _REGISTRY_CANDIDATES = [
 ]
 
 
+def _build_registry(text: str, source: str) -> dict[str, Neighbor]:
+    """The registry from JSON text, whether it came from HACKFIRE_NEIGHBORS_JSON or from a file.
+
+    Errors name the source, the resident's position and the field, but never echo the input: it holds
+    real phone numbers, and start-up errors end up in the deploy logs.
+    """
+    try:
+        raw = json.loads(text)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{source} is not valid JSON ({error.msg}, line {error.lineno} column {error.colno})") from None
+    if not isinstance(raw, list) or not raw:
+        raise ValueError(f"{source} must be a non-empty list of residents")
+
+    registry: dict[str, Neighbor] = {}
+    for position, item in enumerate(raw, start=1):
+        try:
+            if not isinstance(item, dict):
+                raise ValueError("expected an object")
+            neighbor = Neighbor(**item)
+        except ValidationError as error:
+            problems = "; ".join(f"{'.'.join(str(part) for part in e['loc'])}: {e['msg']}" for e in error.errors())
+            raise ValueError(f"{source}: resident {position} is invalid ({problems})") from None
+        except ValueError as error:
+            raise ValueError(f"{source}: resident {position} is invalid ({error})") from None
+        if neighbor.id in registry:
+            raise ValueError(f"{source}: resident {position} repeats the id {neighbor.id!r}")
+        registry[neighbor.id] = neighbor
+    return registry
+
+
 class TriageState:
     def __init__(self) -> None:
         self._neighbors: dict[str, Neighbor] = {}
@@ -26,10 +58,12 @@ class TriageState:
 
     def load(self) -> None:
         self._alerts = []
+        if settings.neighbors_json:
+            self._neighbors = _build_registry(settings.neighbors_json, "HACKFIRE_NEIGHBORS_JSON")
+            return
         for candidate in _REGISTRY_CANDIDATES:
             if candidate and Path(candidate).exists():
-                raw = json.loads(Path(candidate).read_text(encoding="utf-8"))
-                self._neighbors = {n["id"]: Neighbor(**n) for n in raw}
+                self._neighbors = _build_registry(Path(candidate).read_text(encoding="utf-8"), Path(candidate).name)
                 return
         self._neighbors = {}
 

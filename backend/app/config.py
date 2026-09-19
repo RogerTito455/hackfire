@@ -31,6 +31,9 @@ class Settings:
         default_factory=lambda: _origins("HACKFIRE_CORS_ORIGINS", "http://localhost:5173")
     )
     neighbors_file: str = field(default_factory=lambda: _env("HACKFIRE_NEIGHBORS_FILE"))
+    # The registry itself as JSON, for a deployment where the file cannot be in the image (it holds
+    # the team's real phone numbers). Wins over the files when set.
+    neighbors_json: str = field(default_factory=lambda: _env("HACKFIRE_NEIGHBORS_JSON"))
     # The built dashboard (frontend/dist). Set in the Dockerfile; empty locally, where Vite serves it.
     dashboard_dir: str = field(default_factory=lambda: _env("HACKFIRE_DASHBOARD_DIR"))
     crew_phone: str = field(default_factory=lambda: _env("HACKFIRE_CREW_PHONE"))

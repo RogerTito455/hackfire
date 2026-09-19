@@ -73,7 +73,7 @@ Run `pnpm check` before every commit.
 ## Secrets and personal data
 
 - Keys live in `.env` (git-ignored). Never commit them; add new ones to `.env.example` with an empty value.
-- `data/neighbors.local.json` holds the team's real phone numbers and is git-ignored. `Neighbor.phone` is excluded from serialisation on purpose; do not expose it through the API.
+- `data/neighbors.local.json` holds the team's real phone numbers and is git-ignored; on Railway the same content is the variable `HACKFIRE_NEIGHBORS_JSON`. `Neighbor.phone` is excluded from serialisation on purpose; do not expose it through the API, and never put real registry contents in a log line, an error message, a test fixture or a chat.
 - `NOTES.internal.md` is git-ignored team material. Do not copy its contents into tracked files.
 
 ## Tone

@@ -65,7 +65,7 @@ pnpm check              # backend tests, then frontend type-check and build
 ## 6. Optional
 
 - **Claude Code with the project's MCP servers and skills:** [claude-code.md](claude-code.md).
-- **Demo registry with real phones:** copy `data/neighbors.sample.json` to `data/neighbors.local.json` (git-ignored) and set `HACKFIRE_NEIGHBORS_FILE` in `.env`. Never commit it.
+- **Demo registry with real phones:** `data/neighbors.local.json` (git-ignored) is picked up automatically when it exists; `HACKFIRE_NEIGHBORS_FILE` points elsewhere. It holds 10 residents on real streets of La Atalaya and El Tiemblo with `REPLACE-ME-NN` where a phone goes: ask a teammate for the team's copy, or fill in your own. Never commit it. Tests ignore it and use the sample registry. On Railway it is a variable, see [Deployment](deployment.md#the-real-registry).
 - **Cached fire data:** `pnpm data:hotspots` needs the Deepfire keys. See [Deepfire](../services/deepfire.md). The committed files in `data/` are enough to run the demo: `pnpm data:zones` (no key, see [Overpass](../services/overpass.md)) and `pnpm data:spread` (no network) only regenerate them.
 
 ## Troubleshooting
