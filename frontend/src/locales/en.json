@@ -240,41 +240,48 @@
     "error": "The camera could not be opened. If you need help, call 112."
   },
   "landing": {
-    "title": "HackFire: reach every resident before the fire does",
+    "title": "HackFire: evacuation calls ahead of a wildfire",
     "home": "HackFire home",
     "nav": {
       "demo": "Open the demo"
     },
     "hero": {
-      "title": "Reach every resident before the fire does",
-      "lead": "A voice agent calls the residents in a wildfire's predicted path, tells each one how to get out and asks whether they can leave on their own. The emergency coordinator sees on a map who is evacuating, who is not answering and who needs rescue.",
+      "title": "Call every resident in a wildfire's path and know who needs help",
+      "lead": "HackFire predicts where a wildfire is heading, phones the residents in its path with a way out that avoids the fire, and shows the emergency coordinator who is leaving, who did not answer and who needs rescue.",
       "cta": "Open the live demo",
       "how": "See how it works",
-      "event": "Built at HackBarna 2026 for the Norrsken and Deepfire “AI for Wildfire” challenge, track 4: values at risk."
+      "event": "Built at HackBarna 2026 for the Norrsken and Deepfire AI for Wildfire challenge, track 4: values at risk.",
+      "shot": "The HackFire dashboard on a phone during the replay: satellite hotspots, the predicted spread, residents pinned by triage state and a count for each state.",
+      "caption": "The coordinator's dashboard replaying 23 July 2026, with sample residents."
     },
     "leadTime": {
-      "label": "of lead time for {zone}",
-      "start": "Flagged in the fire's predicted path",
+      "start": "{zone} flagged in the fire's predicted path",
       "end": "First satellite hotspot within {radius} km",
       "body": "With only the satellite hotspots seen up to {flagged} on 23 July 2026, HackFire put {zone} in the fire's predicted path. The first hotspot within {radius} km of the estate came at {reached}.",
-      "caveat": "Computed from satellite data only. It says nothing about when the authorities warned anyone."
+      "caveat": "Computed from satellite data only. It says nothing about when anyone was warned.",
+      "title": "About {hours} hours of lead time",
+      "range": "Between {min} and {max} hours depending on the distance used ({near}–{far} km)",
+      "timeline": "Timeline of 23 July 2026 for {zone}",
+      "window": "First hotspot within {far} km at {early}, within {near} km at {late}",
+      "whyTitle": "Why a range",
+      "why": "A single satellite pixel of medium confidence decides the minute the fire counts as arrived, and the prediction's constants were tuned on this same fire. It has not yet been tested on another one."
     },
     "problem": {
       "title": "The fire we replay",
       "body": "On 23 July 2026 the Burgohondo wildfire in Ávila ran 3 km in 40 minutes and reached the La Atalaya housing estate in El Tiemblo. Between 1,200 and 1,300 people were evacuated from it and 5 homes were destroyed.",
-      "gap": "Public alerts are one-way. ES-Alert sends the same message to a whole area and does not listen: the coordinator does not know who has left, who never got the message and who cannot move."
+      "gap": "Public alerts are one-way. ES-Alert sends one message to a whole area and cannot hear back: the coordinator does not know who has left, who never got the message and who cannot move."
     },
     "how": {
       "title": "How it works",
-      "lead": "One day of the real fire, in twenty seconds.",
+      "lead": "The afternoon of 23 July 2026, in a short loop. Choose a step to go to that moment.",
       "fireTitle": "The fire and where it is heading",
-      "fireBody": "Deepfire's satellite hotspots, fresh in yellow, older in red, and a predicted spread projected from the speed and heading of the front.",
+      "fireBody": "Satellite hotspots from Deepfire, fresh in yellow and older in red, and a predicted spread from the speed and heading of the front.",
       "zonesTitle": "Who is in its path",
       "zonesBody": "The prediction is crossed with towns, housing estates, care homes and schools from OpenStreetMap. Each place gets a time to impact.",
       "callTitle": "A call to every resident at risk",
       "callBody": "The voice agent gives each resident a way out that avoids the fire and asks whether they can leave on their own.",
       "triageTitle": "Triage for the coordinator",
-      "triageBody": "Each answer becomes a state on the map. Evacuees get their route to a safe point; each rescue goes to the fire crew with the way to the door.",
+      "triageBody": "Each answer becomes a state on the map. Evacuees get a route to a safe point; each rescue goes to the fire crew with the way to the door.",
       "play": "Play the animation",
       "pause": "Pause the animation",
       "jump": "Go to step {step}: {title}",
@@ -290,15 +297,14 @@
       "resident": "Resident",
       "agentLine": "I'm calling from the emergency coordination about the fire. You need to leave now for San Martín de Valdeiglesias.",
       "agentAsk": "Can you leave on your own?",
-      "residentLine": "My mother can't walk.",
-      "quote": "Every resident who evacuates on their own is a rescue the firefighters don't have to make.",
-      "network": "Calls start from the prediction, hours ahead, while the cell towers still work. No answer is a signal too: it tells the coordinator where to send a patrol."
+      "residentLine": "My mother can't walk."
     },
     "outcomes": {
-      "title": "The three outcomes of a call",
+      "title": "Every call ends in one of three states",
       "evacuating": "Leaving on their own, with a route to a safe point that avoids the fire.",
       "no_answer": "Nobody picked up. The agent calls again, and the coordinator knows where to send a patrol.",
-      "needs_rescue": "Cannot leave alone. Ranked by time to impact and sent to the fire crew with the route to the door."
+      "needs_rescue": "Cannot leave alone. Ranked by time to impact and sent to the fire crew with the route to the door.",
+      "lead": "Calls start from the prediction, hours ahead, while the cell towers still work."
     },
     "demo": {
       "title": "Try the demo",
@@ -306,9 +312,7 @@
       "select": "Tap a resident on the map to see their way out, by car or on foot.",
       "call": "Approve the zone's evacuation order, then take the resident's call in the browser and answer as them.",
       "ask": "Ask the coordinator agent which rescues come first.",
-      "line": "Phone calls need a phone line the project does not have yet, so in the demo you take the resident's call in the browser.",
-      "shot": "The HackFire dashboard on a phone during the replay: satellite hotspots, the predicted spread, residents pinned by triage state and a count for each state.",
-      "caption": "The coordinator's dashboard replaying 23 July 2026, with sample residents."
+      "line": "Phone calls need a phone line the project does not have yet, so in the demo you take the resident's call in the browser."
     },
     "stack": {
       "title": "What it is built on",

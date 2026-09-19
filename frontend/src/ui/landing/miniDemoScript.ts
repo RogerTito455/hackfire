@@ -17,9 +17,12 @@ export const STEP_FRAMES = [6.9, 10.9, 16.9, 24] as const
 /** 00:00 CEST on 23 July 2026, the zero of the data's minutes. */
 export const DAY_START = Date.parse('2026-07-22T22:00:00Z')
 
-// Seconds of the loop to minutes of 23 July: fast through the morning, slow around the calls.
+/** The loop, and the frame shown before it plays, open at 14:30, when the fire already fills the map's west. */
+const OPENING_MINUTE = 14 * 60 + 30
+
+// Seconds of the loop to minutes of 23 July: fast through the early afternoon, slow around the calls.
 const CLOCK: readonly (readonly [seconds: number, minute: number])[] = [
-  [0, 0],
+  [0, OPENING_MINUTE],
   [7, MINI.flaggedMinute],
   [11, MINI.flaggedMinute + 30],
   [17, MINI.flaggedMinute + 70],
