@@ -9,7 +9,8 @@
     "offline": "Sin conexión",
     "language": "Idioma: {name}",
     "tapResident": "Toca un vecino en el mapa para ver su salida.",
-    "reset": "Reiniciar la demo"
+    "reset": "Reiniciar la demo",
+    "about": "Qué es HackFire"
   },
   "sheet": {
     "label": "Panel de coordinación",

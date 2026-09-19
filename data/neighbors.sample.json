@@ -1,45 +1,45 @@
 [
   {
     "id": "n01",
-    "name": "Resident 01",
+    "name": "Hogar de la avenida del Ebro (oeste)",
     "phone": "+34000000001",
-    "address": "PLACEHOLDER street 1, La Atalaya, El Tiemblo",
+    "address": "Avenida del Ebro, La Atalaya, El Tiemblo (Ávila)",
     "zone": "la-atalaya",
     "lat": 40.3829,
     "lon": -4.4588
   },
   {
     "id": "n02",
-    "name": "Resident 02",
+    "name": "Hogar de la avenida del Ebro (este)",
     "phone": "+34000000002",
-    "address": "PLACEHOLDER street 2, La Atalaya, El Tiemblo",
+    "address": "Avenida del Ebro, La Atalaya, El Tiemblo (Ávila)",
     "zone": "la-atalaya",
     "lat": 40.3834,
     "lon": -4.4546
   },
   {
     "id": "n03",
-    "name": "Resident 03",
+    "name": "Hogar de la calle del Júcar",
     "phone": "+34000000003",
-    "address": "PLACEHOLDER street 3, La Atalaya, El Tiemblo",
+    "address": "Calle del Júcar, La Atalaya, El Tiemblo (Ávila)",
     "zone": "la-atalaya",
     "lat": 40.3817,
     "lon": -4.4603
   },
   {
     "id": "n04",
-    "name": "Resident 04",
+    "name": "Hogar de la calle de las Capellanías",
     "phone": "+34000000004",
-    "address": "PLACEHOLDER street 4, El Tiemblo",
+    "address": "Calle de las Capellanías, El Tiemblo (Ávila)",
     "zone": "el-tiemblo",
     "lat": 40.4146,
     "lon": -4.4985
   },
   {
     "id": "n05",
-    "name": "Resident 05",
+    "name": "Hogar de la travesía de la Iglesia",
     "phone": "+34000000005",
-    "address": "PLACEHOLDER street 5, El Tiemblo",
+    "address": "Travesía de la Iglesia, El Tiemblo (Ávila)",
     "zone": "el-tiemblo",
     "lat": 40.4161,
     "lon": -4.5012

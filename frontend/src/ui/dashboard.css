@@ -749,6 +749,20 @@ body,
   letter-spacing: -0.01em;
 }
 
+/* The brand opens the landing page (/about): the way back from the app. */
+.brand-link {
+  display: inherit;
+  gap: inherit;
+  align-items: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-link:hover .brand-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .topbar .brand .icon {
   color: var(--fire-3);
 }

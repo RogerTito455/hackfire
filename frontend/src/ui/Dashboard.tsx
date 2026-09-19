@@ -129,8 +129,10 @@ export function Dashboard({
 
       <header className="topbar">
         <h1 className="brand">
-          <Icon name="logo" size={26} />
-          <span className="brand-name">HackFire</span>
+          <a className="brand-link" href="/about" aria-label={t('app.about')}>
+            <Icon name="logo" size={26} />
+            <span className="brand-name">HackFire</span>
+          </a>
         </h1>
         <span className={online ? 'conn ok' : 'conn down'} role="status">
           <span className="conn-dot" aria-hidden="true" />
