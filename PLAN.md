@@ -65,7 +65,7 @@ On volunteers: sending untrained people towards a wildfire is a serious risk. If
 2. **Vonage Video:** a resident in the "needs rescue" state gets an SMS with a link, opens their camera in the browser, and the coordinator sees them on the dashboard, anchored to the map, with live captions. 2 to 3 hours. Go/no-go at 19:30.
 3. **Devin (Cognition):** iterate the spread model against the real hotspots, with an IoU-style metric as the validator. 3 hours or more. Most likely only mentioned in the pitch.
 
-**Out:** early detection (Deepfire already does it), a generic alerts app, neighbourhood chat, photos to feed the AI, firefighting protocols, volunteers and materials, a second case in Huelva, Catalan (SLNG does not support it).
+**Out:** early detection (Deepfire already does it), a generic alerts app, neighbourhood chat, photos to feed the AI, firefighting protocols, volunteers and materials, a second case in Huelva, Catalan (SLNG's catalogue lists it, but the demo residents speak Spanish; see `docs/findings/2026-09-19-slng-lists-catalan.md`).
 
 ## 5. The pitch number: lead time
 
@@ -78,11 +78,11 @@ It is computed from satellite data only. It claims nothing about when the author
 | Piece | Technology | Notes |
 |---|---|---|
 | Fire data | Deepfire API (OGC Features, GeoJSON) with token | Downloaded once and stored as static files for the replay |
-| Predicted spread | Deepfire fire-spread simulation (team confirms it works over Spain and has the history needed for 23 July) | Fallback only if a call fails: cone from the front's velocity over the last hours of hotspots (ML, ~2 h) |
+| Predicted spread | **Replay:** cone from the front's velocity over the last hours of hotspots (ML, ~2 h). **Live mode:** Deepfire fire-spread simulation | The documented simulation API seeds from at most 168 hours back and has no start-time field, so it cannot replay 23 July unless the Deepfire mentors offer another way. See `docs/findings/2026-09-19-deepfire-no-historical-simulation.md` |
 | At-risk zones | OSM via Overpass, precomputed; shapely / geopandas | Time to impact = distance to front / rate of spread |
-| Routing | openrouteservice, `avoid_polygons`, `driving-car` and `foot-walking` profiles | Max 200 km² and 20 km per polygon: always clip to the 15 km box |
+| Routing | openrouteservice, `avoid_polygons`, `driving-car` and `foot-walking` profiles | Max 200 km² and 20 km in height or width per polygon: clip the fire to a square of at most 14 km around the route. See `docs/findings/2026-09-19-ors-avoid-polygon-limit.md` |
 | Voice | SLNG Agent Builder + Deepfire MCP + our own tools | 45-minute timebox; if it cannot call our tools or route to Nebius, build our own STT → LLM → TTS pipeline on the SLNG gateway |
-| Calls and SMS | SLNG/Twilio number provided by the mentors | Fallback: push-to-talk button on the web |
+| Calls and SMS | SLNG does not supply numbers: outbound calls need our own SIP trunk (e.g. Twilio) and SMS needs Twilio. Ask the mentors what they can lend us | Likely fallback: push-to-talk on the web, and crew notifications shown on the dashboard. Agent tools must be reachable over HTTPS, so deploy early. See `docs/findings/2026-09-19-slng-bring-your-own-number.md` |
 | LLM | Nebius Token Factory (OpenAI-compatible API) | Structured extraction from the call, and the agent's reasoning |
 | Backend | FastAPI (Python) | One service; state in SQLite or in memory |
 | Dashboard | React + MapLibre GL or Leaflet | Updates by polling every 2 s, or SSE |
@@ -156,7 +156,7 @@ This is the interface between voice and everything else. Fix it in the first hou
 - Norma at the end. Devin, later.
 - Project name: **HackFire**.
 - The team organises the work split itself.
-- The Deepfire simulation works over Spain and has the history needed for the replay.
+- The Deepfire simulation works over Spain. (The team also understood it could replay 23 July; the API docs contradict that, so it is listed under Open until the mentors settle it.)
 - One project can enter several challenges at once.
 - Crew notification for every new rescue, and a live mode in addition to the replay.
 - Code submission is Sunday at 11:00.
@@ -174,6 +174,8 @@ This is the interface between voice and everything else. Fix it in the first hou
 
 **Open**
 
+- Can Deepfire produce a spread for 23 July 2026 some other way (internal parameter, a run from the web app, an existing `auto: true` run)? Ask the mentors. Until then the replay uses the front-velocity cone.
+- What can the SLNG mentors lend us: a number on their trunk, Twilio credentials, or nothing?
 - Who presents: decide before 21:00, which is when that person stops coding.
 
 ## 11. Reference products: Watch Duty and focs.cat
