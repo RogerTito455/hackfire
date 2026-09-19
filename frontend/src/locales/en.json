@@ -1,7 +1,8 @@
 {
   "_meta": {
     "name": "English",
-    "intl": "en-GB"
+    "intl": "en-GB",
+    "flag": "gb"
   },
   "app": {
     "connected": "Connected",

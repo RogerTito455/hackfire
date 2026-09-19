@@ -1,4 +1,4 @@
-/* The language pill: the code on show, the phone's native picker underneath. */
+/* The language pill: the flag on show, the phone's native picker underneath. */
 .language {
   position: relative;
   display: inline-flex;
@@ -13,6 +13,16 @@
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.02em;
+}
+
+/* A round flag with a hairline, so white stripes do not melt into a white pill. */
+.language-flag {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgb(15 27 61 / 18%);
 }
 
 .language select {

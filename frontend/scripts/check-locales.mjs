@@ -1,8 +1,9 @@
 // Fails when the locales drift apart: every src/locales/*.json must have exactly the keys of en.json
 // (plural forms aside) with the same {placeholders}, and every key the code asks for must exist.
+// A `_meta.flag` must name a file in src/ui/flags/.
 // Keys built at run time (t(`status.${status}`)) are checked by their fixed prefix.
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname
@@ -39,6 +40,10 @@ const reference = leaves(catalogue[REFERENCE])
 
 for (const [code, messages] of Object.entries(catalogue)) {
   if (!messages._meta?.name || !messages._meta?.intl) problems.push(`${code}.json: _meta needs "name" and "intl"`)
+  const flag = messages._meta?.flag
+  if (flag && !existsSync(join(ROOT, 'src/ui/flags', `${flag}.svg`))) {
+    problems.push(`${code}.json: _meta.flag "${flag}" has no src/ui/flags/${flag}.svg`)
+  }
   if (code === REFERENCE) continue
   const keys = leaves(messages)
   for (const [key, vars] of reference) {
