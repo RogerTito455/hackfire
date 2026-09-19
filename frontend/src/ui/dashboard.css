@@ -273,13 +273,26 @@
   color: var(--text);
 }
 
-.maplibregl-marker {
+.status-marker {
   cursor: pointer;
+  line-height: 0;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%));
 }
 
-.maplibregl-marker.selected {
+.status-marker.selected {
   z-index: 2;
-  filter: drop-shadow(0 0 4px #1a73e8);
+  filter: drop-shadow(0 0 5px #1a73e8);
+}
+
+.place-marker {
+  line-height: 0;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%));
+}
+
+/* MapLibre popups are white in both themes: keep their text dark. */
+.maplibregl-popup-content {
+  color: #202124;
+  font-size: 13px;
 }
 
 .alerts {
@@ -414,4 +427,29 @@
   margin: 6px 0 0;
   font-size: 13px;
   color: var(--text);
+}
+
+.brand {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.brand .icon {
+  color: #d93025;
+}
+
+.panel h2.icon-button {
+  display: flex;
+}
+
+.status-icon {
+  display: inline-flex;
+}
+
+.reset.icon-button,
+.mode-toggle button.icon-button,
+.route-modes button.icon-button,
+.alert-route.icon-button {
+  display: inline-flex;
 }

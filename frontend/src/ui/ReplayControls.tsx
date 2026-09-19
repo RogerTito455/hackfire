@@ -1,5 +1,6 @@
 import type { LoadStatus } from '../hooks/useFireReplay'
 import { MINUTE, type TimeRange } from '../domain/hotspots'
+import { Icon } from './Icon'
 import { formatSpanishTime, HOTSPOT_AGE_COLORS } from './theme'
 
 interface ReplayControlsProps {
@@ -41,7 +42,7 @@ export function ReplayControls({
         onClick={onTogglePlay}
         aria-label={playing ? 'Pause replay' : 'Play replay'}
       >
-        {playing ? '❚❚' : '▶'}
+        <Icon name={playing ? 'pause' : 'play'} size={18} />
       </button>
       <div className="replay-body">
         <div className="replay-head">

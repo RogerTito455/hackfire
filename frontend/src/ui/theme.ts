@@ -103,8 +103,10 @@ export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: nu
 ]
 
 export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const
+export const MAP_MODE_ICON = { replay: 'replay', live: 'live' } as const
 
 export const ROUTE_KIND_LABEL = { car: 'By car', walking: 'On foot', rescue: 'Crew route' } as const
+export const ROUTE_KIND_ICON = { car: 'car', walking: 'walk', rescue: 'fire-truck' } as const
 
 export const ROUTE_COLOR = '#1a73e8'
 export const FIRE_AREA_COLOR = '#d93025'

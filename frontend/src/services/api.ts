@@ -25,7 +25,7 @@ export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
 export const fetchRoute = (neighborId: string, mode: TravelMode) =>
   request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
-export const fetchFireArea = () => request<FireArea>('/api/fire-area')
+export const fetchFireArea = (crew: boolean) => request<FireArea>(`/api/fire-area${crew ? '?crew=true' : ''}`)
 export const fetchRescueRoute = (neighborId: string) =>
   request<Route>(`/api/rescue-routes/${encodeURIComponent(neighborId)}`)
 export const fetchAlerts = () => request<CrewAlert[]>('/api/alerts')

@@ -37,9 +37,10 @@ class Settings:
     # Where the dashboard is reachable, for the link in each crew alert.
     public_url: str = field(default_factory=lambda: _env("HACKFIRE_PUBLIC_URL", "http://localhost:5173").rstrip("/"))
     # The replay moment the calls happen at: routes avoid the fire burned up to then.
-    # Default: 23 July 2026, 20:30 CEST, when the front was ~4 km from La Atalaya.
+    # Default: 23 July 2026, 18:00 CEST: after La Atalaya is first flagged (15:30 CEST, see
+    # data/lead_time_la-atalaya.json), with about 4 h to impact and safe ways out still open.
     scenario_time: datetime = field(
-        default_factory=lambda: datetime.fromisoformat(_env("HACKFIRE_SCENARIO_TIME", "2026-07-23T18:30:00Z"))
+        default_factory=lambda: datetime.fromisoformat(_env("HACKFIRE_SCENARIO_TIME", "2026-07-23T16:00:00Z"))
     )
 
     deepfire_client_id: str = field(default_factory=lambda: _env("DEEPFIRE_CLIENT_ID"))
