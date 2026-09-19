@@ -61,6 +61,7 @@ pnpm data:spread     # rebuild the predicted spread from the cached hotspots (no
 pnpm data:lead-time  # recompute La Atalaya's lead time from the cached files (no network)
 pnpm data:routes     # plan the demo routes that are not cached yet (openrouteservice); resumable; --refresh replaces all, all or nothing
 pnpm check:routes    # prove every route (incl. every order destination) is cached; give it a URL to check a deployment
+pnpm voice:latency   # the resident agent's latency from SLNG's call reports: median and worst per turn (--since, --all)
 ```
 
 Run `pnpm check` before every commit.
