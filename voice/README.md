@@ -130,7 +130,7 @@ Pipecat runs the agent locally and `unmute dev` opens a browser voice loop (it n
 A throwaway copy with those four changes validated for `pipecat` on 2026-09-19. Run it with:
 
 ```bash
-unmute dev --var neighbor_id=n01 --var "resident_name=Resident 01" \
+unmute dev --var neighbor_id=n01 --var "resident_name=Hogar de la avenida del Ebro (oeste)" \
   --var "address=PLACEHOLDER street 1, La Atalaya, El Tiemblo" --var zone=la-atalaya
 ```
 
