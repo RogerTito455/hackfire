@@ -91,12 +91,16 @@ class TriageState:
         with self._lock:
             return self._report(report)
 
-    def no_answer_if_pending(self, neighbor_id: str) -> None:
-        """Mark a resident no_answer unless they already have a status, in one step."""
+    def no_answer_if_pending(self, neighbor_id: str, observation: str | None = None) -> bool:
+        """Mark a resident no_answer unless they already have a status, in one step. True if marked."""
         with self._lock:
             neighbor = self._neighbors.get(neighbor_id)
             if neighbor is not None and neighbor.status == TriageStatus.PENDING:
-                self._report(ReportStatusRequest(neighbor_id=neighbor_id, status=TriageStatus.NO_ANSWER))
+                self._report(
+                    ReportStatusRequest(neighbor_id=neighbor_id, status=TriageStatus.NO_ANSWER, observation=observation)
+                )
+                return True
+            return False
 
     def _report(self, report: ReportStatusRequest) -> Neighbor | None:
         neighbor = self._neighbors.get(report.neighbor_id)

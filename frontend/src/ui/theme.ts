@@ -105,6 +105,8 @@ export const ROUTE_KIND_ICON = { car: 'car', walking: 'walk', rescue: 'fire-truc
 
 // The way out is civil-protection blue (DESIGN.md); the fire keeps the warm colours.
 export const ROUTE_COLOR = '#2447d6'
+/** Roads closed to residents: fire red, dashed, like a cordon. */
+export const ROAD_CLOSED_COLOR = '#e0302a'
 export const FIRE_AREA_COLOR = '#e5301f'
 
 export function formatDistance(metres: number, intl = 'en-GB'): string {

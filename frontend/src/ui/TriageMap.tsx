@@ -15,7 +15,7 @@ import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
-import type { ZoneImpact } from '../domain/zones'
+import { ROAD_CLOSED_WITHIN_MIN, type ZoneImpact } from '../domain/zones'
 import type { MapMode } from '../hooks/useMapMode'
 import { useI18n } from './i18n'
 import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg } from './markers'
@@ -27,6 +27,7 @@ import {
   HOTSPOT_RADIUS_BY_FRP,
   LIVE_RADIUS_BY_HOURS,
   LIVE_RECENCY_COLORS,
+  ROAD_CLOSED_COLOR,
   ROUTE_COLOR,
   SPREAD_HOUR_COLORS,
   STATUS_COLOR,
@@ -194,7 +195,14 @@ const zoneLineWidth = [
 ] as ExpressionSpecification
 
 // Predicted spread and the zones it reaches belong to the replay; live mode hides them.
-const REPLAY_LAYERS = ['spread-fill', 'spread-outline', 'zones-fill', 'zones-outline']
+const REPLAY_LAYERS = ['spread-fill', 'spread-outline', 'zones-fill', 'zones-outline', 'roads-closed-casing', 'roads-closed']
+
+// Roads the fire reaches within the hour: closed to residents, open to crews (domain/zones.ts).
+const ROAD_CLOSED_FILTER = [
+  'all',
+  ['==', ['get', 'kind'], 'road'],
+  ['<=', ['get', 'minutes'], ROAD_CLOSED_WITHIN_MIN],
+] as ExpressionSpecification
 
 // Leave room for what covers the map: the top bar, and on a phone the bottom sheet.
 function routePadding() {
@@ -311,6 +319,21 @@ export function TriageMap({
         type: 'line',
         source: ZONES,
         paint: { 'line-color': zoneColor, 'line-width': zoneLineWidth },
+      })
+      instance.addLayer({
+        id: 'roads-closed-casing',
+        type: 'line',
+        source: ZONES,
+        filter: ROAD_CLOSED_FILTER,
+        layout: { 'line-cap': 'round' },
+        paint: { 'line-color': '#fff', 'line-width': 7 },
+      })
+      instance.addLayer({
+        id: 'roads-closed',
+        type: 'line',
+        source: ZONES,
+        filter: ROAD_CLOSED_FILTER,
+        paint: { 'line-color': ROAD_CLOSED_COLOR, 'line-width': 4, 'line-dasharray': [1.2, 0.8] },
       })
       instance.addSource(HOTSPOTS, {
         type: 'geojson',

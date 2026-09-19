@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -250,6 +251,28 @@ def start_web_session(neighbor_id: str) -> WebSession:
         return voice.web_session(briefing.call_variables(resident), participant_name=resident.name)
     except voice.VoiceUnavailable as error:
         raise HTTPException(status_code=503, detail="The voice agent is unavailable right now") from error
+
+
+# A browser call can end with the agent saying it recorded the outcome when it never called
+# report_status (Galtea, docs/services/galtea.md). The resident must not stay "not called yet":
+# a few seconds after the call ends, one still pending becomes no_answer, so the coordinator calls
+# again. A report that lands in that time wins.
+CALL_END_GRACE_S = 6.0
+
+
+def _follow_up_if_unrecorded(neighbor_id: str, note: str) -> None:
+    time.sleep(CALL_END_GRACE_S)
+    if state.no_answer_if_pending(neighbor_id, observation=note):
+        logger.info("call with %s ended without a report: marked no_answer for a follow-up call", neighbor_id)
+
+
+@app.post("/api/neighbors/{neighbor_id}/call-ended")
+def browser_call_ended(neighbor_id: str, background: BackgroundTasks) -> dict:
+    """The dashboard says a browser call with this resident has ended (the agent or the coordinator hung up)."""
+    if state.get(neighbor_id) is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    background.add_task(_follow_up_if_unrecorded, neighbor_id, i18n.t("call.endedWithoutRecord"))
+    return {"status": "checking"}
 
 
 @app.post("/api/coordinator/web-session")

@@ -90,6 +90,9 @@ export const startCampaign = (zone: string) =>
 export const createWebSession = (neighborId: string) =>
   request<WebSession>(`/api/neighbors/${encodeURIComponent(neighborId)}/web-session`, { method: 'POST' })
 export const createCoordinatorSession = () => request<WebSession>('/api/coordinator/web-session', { method: 'POST' })
+/** A browser call with this resident ended: the backend flags them for a follow-up if nothing was recorded. */
+export const reportCallEnded = (neighborId: string) =>
+  request<{ status: string }>(`/api/neighbors/${encodeURIComponent(neighborId)}/call-ended`, { method: 'POST' })
 export const fetchVideoCapabilities = () => request<VideoCapabilities>('/api/video')
 export const requestRescueVideo = (neighborId: string) =>
   request<RescueVideoLink>(`/api/rescues/${encodeURIComponent(neighborId)}/video`, { method: 'POST' })

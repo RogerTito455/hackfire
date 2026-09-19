@@ -34,6 +34,18 @@ export interface ImpactTable {
   zones: Record<string, (number | null)[]>
 }
 
+/**
+ * A road the predicted fire reaches within this many minutes is closed to residents: their routes
+ * avoid the fire plus its next hour of spread (backend AVOID_AHEAD_H), while crews' routes avoid
+ * only what has burned, so crews still use it.
+ */
+export const ROAD_CLOSED_WITHIN_MIN = 60
+
+/** The roads closed to residents at this moment of the forecast. */
+export function closedRoads(zones: readonly ZoneImpact[]): ZoneImpact[] {
+  return zones.filter(({ zone, minutes }) => zone.kind === 'road' && minutes <= ROAD_CLOSED_WITHIN_MIN)
+}
+
 export interface ZoneImpact {
   zone: Zone
   /** Minutes until the predicted fire reaches the zone; 0 when it is there already. */

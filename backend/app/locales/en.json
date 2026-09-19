@@ -64,5 +64,8 @@
   "demo": {
     "wheelchair": "one person uses a wheelchair",
     "secondCall": "Answered the second call"
+  },
+  "call": {
+    "endedWithoutRecord": "The call ended without a recorded answer: call again."
   }
 }
