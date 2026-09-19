@@ -97,6 +97,9 @@ class Settings:
 
     ors_api_key: str = field(default_factory=lambda: _env("ORS_API_KEY"))
 
+    # Galtea, for `pnpm eval:galtea` only (simulated residents against the resident agent). The app never reads it.
+    galtea_api_key: str = field(default_factory=lambda: _env("GALTEA_API_KEY"))
+
     # Public Overpass instances come and go; set OVERPASS_URL to another one if this refuses connections.
     overpass_url: str = field(
         default_factory=lambda: _env("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
