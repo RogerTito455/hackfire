@@ -1,0 +1,22 @@
+# A tool SLNG hosts: an API Request tool named report_status, created in the
+# SLNG dashboard and pointing at POST <backend>/tools/report_status. This is the
+# call that changes the resident's pin on the coordinator's dashboard.
+slng: report_status
+
+description: >-
+  Record the outcome of this call for the emergency coordinator. Call it once
+  you know whether they can leave on their own, how many people are with them,
+  and what they can see, and always before you say goodbye. Call it again only
+  if something new changes the picture. status is "evacuating" when they can
+  and will leave on their own, "needs_rescue" when they cannot leave on their
+  own or are in danger, and "no_answer" only when the resident's household
+  was not reached: voicemail, silence or a wrong number.
+  people is the number of people at the home. mobility is a few words on how
+  they will leave or what stops them. observation is a few words on what they
+  see or report, in their own words.
+
+# The model never sees or chooses whose pin it updates.
+inject:
+  - neighbor_id: "{{neighbor_id}}"
+
+effect: returns_data

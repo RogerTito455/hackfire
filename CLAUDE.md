@@ -32,6 +32,7 @@ frontend/src/services/     Backend client — the only place that knows URLs and
 frontend/src/hooks/        State and polling; returns plain data
 frontend/src/ui/           Presentational components, theme.ts, CSS
 frontend/src/App.tsx       Composition root only: hook → UI
+voice/                     Unmute packages for the SLNG voice agents; `unmute validate` inside each
 data/                      Static demo data (registry, cached hotspots and spread)
 docs/                      Setup, one page per service, workflow, findings log. Update it as you go
 ```
