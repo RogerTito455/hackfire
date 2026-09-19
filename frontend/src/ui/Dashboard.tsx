@@ -5,10 +5,12 @@ import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Orders } from '../hooks/useOrders'
+import type { TextTriage } from '../hooks/useTextTriage'
 import type { Triage } from '../hooks/useTriage'
 import { CrewAlerts } from './CrewAlerts'
 import { Icon } from './Icon'
 import { OrdersPanel } from './OrdersPanel'
+import { TextTriagePanel } from './TextTriagePanel'
 import { LeadTimeCard } from './LeadTimeCard'
 import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
@@ -31,6 +33,7 @@ interface DashboardProps {
   forecast: FireForecast
   leadTime: LeadTimeView
   orders: Orders
+  textTriage: TextTriage
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -44,6 +47,7 @@ export function Dashboard({
   forecast,
   leadTime,
   orders,
+  textTriage,
 }: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
@@ -115,6 +119,13 @@ export function Dashboard({
             onClose={() => selection.select(null)}
           />
         </section>
+
+        {selected !== null && (
+          <section>
+            <h2>Typed answer (backup)</h2>
+            <TextTriagePanel key={selected.id} neighbor={selected} triage={textTriage} />
+          </section>
+        )}
 
         <section>
           <h2 className="icon-button">

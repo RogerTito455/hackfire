@@ -5,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
-from . import evacuation, impact, live, orders, replay
+from . import evacuation, impact, live, orders, replay, text_triage
 from .config import settings
 from .models import (
     EvacuationOrder,
@@ -167,10 +168,35 @@ def fire_area(crew: bool = False) -> dict:
     return evacuation.fire_area(crew=crew)
 
 
+class TextTriageRequest(BaseModel):
+    neighbor_id: str
+    text: str = Field(min_length=1, max_length=1000, description="What the resident said, typed in")
+
+
+@app.get("/api/triage/text")
+def text_triage_available() -> dict:
+    """Whether typed answers can be classified (an LLM is configured)."""
+    return {"available": text_triage.available()}
+
+
+@app.post("/api/triage/text")
+def triage_from_text(request: TextTriageRequest) -> dict:
+    """The last resort when voice fails: classify a typed answer and record it like a call would."""
+    if state.get(request.neighbor_id) is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
+    try:
+        report, classification = text_triage.report_from_text(request.neighbor_id, request.text)
+    except text_triage.ClassifierUnavailable as error:
+        raise HTTPException(status_code=503, detail="The classifier is unavailable; use the buttons") from error
+    neighbor = report_status(report)
+    return {"neighbor": neighbor.model_dump(mode="json"), "classification": classification.model_dump(mode="json")}
+
+
 @app.post("/api/reset")
 def reset() -> dict:
-    """Reload the registry. Used to restart the demo."""
+    """Reload the registry and forget the replay moment, orders and alerts. Restarts the demo."""
     state.load()
+    state.replay_time = None
     return {"status": "reset", "neighbors": len(state.neighbors())}
 
 
@@ -273,3 +299,8 @@ if settings.dashboard_dir:
     @app.get("/favicon.svg", include_in_schema=False)
     def favicon() -> FileResponse:
         return FileResponse(dashboard_dir / "favicon.svg")
+
+    # The tile cache's service worker must be served from the root to control the whole page.
+    @app.get("/tile-cache-sw.js", include_in_schema=False)
+    def tile_cache_worker() -> FileResponse:
+        return FileResponse(dashboard_dir / "tile-cache-sw.js", media_type="text/javascript")
