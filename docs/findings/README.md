@@ -6,6 +6,7 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
+| 2026-09-19 | [Which LLMs an SLNG agent accepts for Spanish in Europe](2026-09-19-slng-agent-llms-for-spanish.md) | SLNG |
 | 2026-09-19 | [SLNG passes a tool's arguments to our backend unchecked](2026-09-19-slng-tool-arguments-unchecked.md) | SLNG |
 | 2026-09-19 | [Sending everyone to one safe point walked some residents into the fire](2026-09-19-evacuation-destinations.md) | Routes |
 | 2026-09-19 | [The lead time for La Atalaya: 6 h 8 min, and how it was computed](2026-09-19-lead-time.md) | Pitch figure |

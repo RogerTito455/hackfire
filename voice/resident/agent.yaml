@@ -34,18 +34,13 @@ agents:
 models:
   think:
     reasoning:
-      description: Nebius Token Factory model, registered in SLNG as a BYOK LLM client model
-      # PLACEHOLDER(voice): no Nebius model is chosen yet, and SLNG does not
-      # document the model string a BYOK client model is selected by. Register
-      # Nebius in SLNG's BYOK vault first (../README.md), then write here the
-      # exact model string the dashboard's Think dropdown or the agent's JSON
-      # shows for it.
-      #
-      # No `provider:` on purpose. The slng driver sends `provider/model`, but
-      # sends `model` exactly as written when there is no provider, which is
-      # what a BYOK name needs. The Nebius key never goes in this package or in
-      # .env: SLNG reads it from its own BYOK vault.
-      model: "PLACEHOLDER-nebius-model-id"
+      description: NVIDIA Nemotron Super 3 (120B) on Bedrock, served by SLNG without a key of our own
+      # The team dropped Nebius for the agent on 2026-09-19. For Spanish in an EU region, SLNG's
+      # agents accept only the two Nemotron models, and only with the `:latest` suffix; Groq's
+      # gpt-oss-120b is refused for `es` in eu-north and eu-west. Super over Nano 3 (30B): the
+      # triage must be right before it is fast. Nano is the switch if a turn feels slow (#14).
+      # No `provider:` on purpose: the slng driver sends `model` exactly as written.
+      model: "bedrock-mantle/nvidia.nemotron-super-3-120b:latest"
   speak:
     elena:
       description: Fish S2.1 Pro hosted by SLNG, Castilian voice Elena

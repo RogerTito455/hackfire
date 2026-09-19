@@ -2,7 +2,7 @@
 
 The voice agents as [Unmute](https://unmute.ai) packages: SLNG's declarative voice-agent compiler. A package is `agent.yaml`, a Markdown prompt and `targets.yaml`; `unmute deploy` compiles it and pushes it to SLNG, which hosts the agent.
 
-**Status:** the package validates with unmute 0.5.5, and the three API Request tools exist in SLNG (step 2 below, done 2026-09-19). Not yet deployed, and nobody has heard it: it waits on a Nebius key and model (#1).
+**Status:** deployed on 2026-09-19 as `hackfire-resident-slng` (agent `0f035ccc-10d8-4de8-8142-abf4dc484fd8`, `es`, `eu-north`), with its three API Request tools and `end_call`. The team dropped Nebius for the agent: it thinks with NVIDIA Nemotron Super 3 served by SLNG ([finding](../docs/findings/2026-09-19-slng-agent-llms-for-spanish.md)). No number reaches it yet; talk to it from the SLNG dashboard's Test agent panel.
 
 | Package | Slice | What it does |
 |---|---|---|
@@ -26,7 +26,7 @@ The coordinator agent (slice 9, #10), which reads `get_rescue_queue` and `get_re
 |---|---|
 | Listen | Soniox real-time v5, `soniox/speech-ai:rt-v5`, language `es` |
 | Speak | Fish S2.1 Pro hosted by SLNG, `slng/fish/tts:s2.1-pro`, Castilian voice Elena `566359628f6a4d5fabf902f6f64ecec1` |
-| Think | Nebius Token Factory, registered in SLNG as a bring-your-own-key model. **Placeholder**, see below |
+| Think | NVIDIA Nemotron Super 3 (120B), `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, served by SLNG. Nano 3 (30B) is the faster fallback |
 
 The agent never chooses whose pin it updates: `neighbor_id`, `zone` and `address` come from the call variables and are pinned into the tool calls (`inject:`). The model supplies only the travel `mode` and the triage fields.
 
