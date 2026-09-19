@@ -64,5 +64,8 @@
   "demo": {
     "wheelchair": "una persona va en silla de ruedas",
     "secondCall": "Contestó a la segunda llamada"
+  },
+  "call": {
+    "endedWithoutRecord": "La llamada terminó sin respuesta registrada: vuelve a llamar."
   }
 }

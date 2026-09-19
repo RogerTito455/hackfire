@@ -4,10 +4,12 @@ import { formatSpanishTime, SPREAD_HOUR_COLORS } from './theme'
 interface SpreadLegendProps {
   /** When the forecast in force was issued, epoch ms; null when there is none. */
   issuedAt: number | null
+  /** How many roads in the fire's path are closed to residents right now. */
+  closedRoads: number
 }
 
 // What the coloured areas on the map mean.
-export function SpreadLegend({ issuedAt }: SpreadLegendProps) {
+export function SpreadLegend({ issuedAt, closedRoads }: SpreadLegendProps) {
   const { t, intl } = useI18n()
   const gradient = SPREAD_HOUR_COLORS.map(([, color]) => color).join(', ')
   return (
@@ -15,6 +17,12 @@ export function SpreadLegend({ issuedAt }: SpreadLegendProps) {
       <span>{t('fire.legendNow')}</span>
       <span className="replay-ramp" style={{ background: `linear-gradient(to right, ${gradient})` }} />
       <span>{t('fire.legendAhead')}</span>
+      {closedRoads > 0 && (
+        <span className="roads-closed-key">
+          <span className="roads-closed-swatch" aria-hidden="true" />
+          {t('fire.roadsClosed', { count: closedRoads })}
+        </span>
+      )}
       <span className="issued">
         {issuedAt === null ? t('fire.noForecast') : t('fire.issued', { time: formatSpanishTime(issuedAt, intl) })}
       </span>

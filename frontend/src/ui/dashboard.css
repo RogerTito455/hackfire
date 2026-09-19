@@ -368,6 +368,25 @@
   flex-basis: 100%;
 }
 
+.roads-closed-key {
+  display: inline-flex;
+  flex-basis: 100%;
+  gap: 8px;
+  align-items: center;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The map's dashed red cordon, drawn in CSS. */
+.roads-closed-swatch {
+  flex: none;
+  width: 28px;
+  height: 4px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(to right, #e0302a 0 6px, transparent 6px 10px);
+  box-shadow: 0 0 0 2px #fff;
+}
+
 .zones {
   margin: 0;
   padding: 0;

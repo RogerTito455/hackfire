@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ConversationState, WebSession } from '../domain/voice'
-import { createCoordinatorSession, createWebSession } from '../services/api'
+import { createCoordinatorSession, createWebSession, reportCallEnded } from '../services/api'
 import { joinConversation, type Conversation } from '../services/voiceSession'
 
 export interface Conversations {
@@ -30,7 +30,8 @@ export interface VoiceConversations {
 
 /** Both conversations, one at a time: the microphone must reach one agent only. */
 export function useVoiceConversations(): VoiceConversations {
-  const resident = useConversation(createWebSession)
+  // A resident's call that ends with nothing recorded must not leave them "not called yet".
+  const resident = useConversation(createWebSession, (id) => void reportCallEnded(id).catch(() => undefined))
   const coordinator = useConversation(createCoordinatorSession)
   return {
     resident: {
@@ -51,10 +52,22 @@ export function useVoiceConversations(): VoiceConversations {
   }
 }
 
-function useConversation(openSession: (id: string) => Promise<WebSession>): Conversations {
+/** `onEnded` runs once when a conversation that got through ends, whoever hung up. */
+function useConversation(openSession: (id: string) => Promise<WebSession>, onEnded?: (id: string) => void): Conversations {
   const [neighborId, setNeighborId] = useState<string | null>(null)
   const [state, setState] = useState<ConversationState>('idle')
   const current = useRef<Conversation | null>(null)
+  // The id of the conversation that is live, so its end is reported exactly once.
+  const liveId = useRef<string | null>(null)
+  const ended = useRef(onEnded)
+  useEffect(() => {
+    ended.current = onEnded
+  }, [onEnded])
+  const endLive = useCallback(() => {
+    const id = liveId.current
+    liveId.current = null
+    if (id !== null) ended.current?.(id)
+  }, [])
   // Each start (and unmounting) bumps this, so a room that ends late cannot touch a newer one.
   const attempt = useRef(0)
 
@@ -78,17 +91,19 @@ function useConversation(openSession: (id: string) => Promise<WebSession>): Conv
         if (attempt.current !== mine) return
         current.current = null
         setState('idle')
+        endLive()
       })
       if (attempt.current !== mine) {
         conversation.hangUp() // started again, or the dashboard went away, while connecting
         return
       }
       current.current = conversation
+      liveId.current = id
       setState('live')
     } catch {
       if (attempt.current === mine) setState('error')
     }
-  }, [openSession])
+  }, [openSession, endLive])
 
   // Also cancels a conversation still connecting: bumping the attempt makes it hang up on arrival.
   const hangUp = useCallback(() => {
@@ -97,7 +112,8 @@ function useConversation(openSession: (id: string) => Promise<WebSession>): Conv
     current.current = null
     setState('idle')
     conversation?.hangUp()
-  }, [])
+    endLive()
+  }, [endLive])
 
   return { neighborId, state, start, hangUp }
 }

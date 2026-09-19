@@ -170,7 +170,11 @@
     "showMore": "Show {count} more",
     "legendNow": "Now",
     "legendAhead": "6 h ahead",
-    "issued": "Forecast from {time}"
+    "issued": "Forecast from {time}",
+    "roadsClosed": {
+      "one": "{count} road closed to residents, fire within the hour. Crews still use it.",
+      "other": "{count} roads closed to residents, fire within the hour. Crews still use them."
+    }
   },
   "leadTime": {
     "loading": "Loading the lead time…",

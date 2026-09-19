@@ -41,7 +41,7 @@
 
 1. **The resident agent can claim a record it never made.** In Galtea's `confused-elderly` scenario it told an 88-year-old living alone "le he registrado… ya he avisado a la coordinación" without calling `report_status`, 3 runs out of 3. A prompt rule did not fix it ([Galtea](../services/galtea.md)).
    - A phone campaign turns such a call into `no_answer`.
-   - A **browser session has no such safety net**: the pin stays "Not called yet".
+   - **Browser sessions now have the same safety net:** when a call that got through ends, the dashboard reports it (`POST /api/neighbors/{id}/call-ended`). Six seconds later, a resident still pending becomes `no_answer`, with the note "call again". A report that lands in those seconds wins. The agent's false claim remains, but it no longer hides a household.
 2. **The model's reasoning leaked into the spoken text once** (`…</think>`). If SLNG's runtime does not strip it, the voice would read English reasoning aloud. Check on a real call before the demo.
 3. **The prompt fixes of #53 and #55 are not live** until `pnpm voice:deploy`.
 4. **Routes and orders use a fixed scenario time** (`HACKFIRE_SCENARIO_TIME`, 18:00 CEST), while the fire status follows the slider. With the slider elsewhere, the agent can describe the fire at one moment and give a route planned for another. This is deliberate, because routes are cached and openrouteservice's quota is spent. On stage, the call must happen with the slider near 18:00 CEST.
@@ -91,8 +91,8 @@ This would make the replay tell the whole story by itself. Rough effort for one 
 
 1. **Replay-driven calls.** The autopilot calls a zone when it first enters the forecast and its order is approved, instead of at fixed times, so the calls visibly follow the fire. (1 h)
 2. **Real agent answers in the dashboard.** A call log panel plays, for each simulated call, a transcript the real resident agent produced against Galtea's simulated residents. They are real outputs of our agent, with the simulated resident clearly marked. The needs-rescue call would be the wheelchair user; the no-answer call, the wrong number. (1.5 h)
-3. **Routes drawn as outcomes land.** Blue routes for evacuees and the crew route for the rescue. Places at risk of kind `road` are drawn as "closed to residents, crews only", which matches how routing already treats them. (1 h)
-4. **Safety net for browser sessions.** A session that ends without `report_status` flags the resident for a follow-up call. This fixes the most serious weak point above, and is closer to a bug fix than a feature. (45 min)
+3. **Routes drawn as outcomes land.** Blue routes for evacuees and the crew route for the rescue. **Road closures done:** roads the fire reaches within the hour are drawn as a dashed red cordon, with a count in the legend, "closed to residents, crews still use them". That matches the routing: residents avoid the fire plus its next hour, crews only what has burned. (Routes drawn automatically: 1 h)
+4. **Safety net for browser sessions.** **Done:** see weak point 1.
 5. **Crew SMS to more than one crew.** `HACKFIRE_CREW_PHONE` becomes a list, and the crew plan decides who gets which rescue. (45 min)
 
 Live mode stays without simulated residents. Pretending to call people near fires that are burning now would be misleading.

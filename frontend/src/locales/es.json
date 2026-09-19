@@ -170,7 +170,11 @@
     "showMore": "Ver {count} más",
     "legendNow": "Ahora",
     "legendAhead": "Dentro de 6 h",
-    "issued": "Previsión de {time}"
+    "issued": "Previsión de {time}",
+    "roadsClosed": {
+      "one": "{count} carretera cortada a vecinos: el fuego llega en menos de 1 h. Los bomberos sí pasan.",
+      "other": "{count} carreteras cortadas a vecinos: el fuego llega en menos de 1 h. Los bomberos sí pasan."
+    }
   },
   "leadTime": {
     "loading": "Cargando la antelación…",

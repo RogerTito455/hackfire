@@ -1,5 +1,6 @@
 import type { AutopilotControl } from '../hooks/useAutopilot'
 import type { FireForecast } from '../hooks/useFireForecast'
+import { closedRoads } from '../domain/zones'
 import type { FireReplay } from '../hooks/useFireReplay'
 import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { LiveMode } from '../hooks/useLiveFires'
@@ -264,7 +265,9 @@ export function Dashboard({
               {t('section.fire')}
             </h2>
             <LeadTimeCard view={leadTime} />
-            {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
+            {forecast.status === 'ready' && (
+              <SpreadLegend issuedAt={forecast.issuedAt} closedRoads={closedRoads(forecast.zonesAtRisk).length} />
+            )}
             <ZonesAtRisk
               status={forecast.status}
               zones={forecast.zonesAtRisk}
