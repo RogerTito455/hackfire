@@ -21,6 +21,7 @@ agents:
     tools:
       - get_rescue_queue
       - get_rescue_route
+      - get_crew_plan
       - end_call
 
 models:
@@ -51,6 +52,7 @@ models:
 tools:
   - get_rescue_queue
   - get_rescue_route
+  - get_crew_plan
   - end_call
 
 conversation:

@@ -1,0 +1,13 @@
+# A tool SLNG hosts: an API Request tool named get_crew_plan, pointing at POST
+# <backend>/tools/get_crew_plan with an empty JSON body.
+slng: get_crew_plan
+
+description: >-
+  Get the fire crews' plan: for each crew, the rescues it does in order,
+  with when it leaves the fire station (depart_min), when it arrives
+  (eta_min), and the margin against the fire (margin_min; negative means it
+  arrives after the fire) with a verdict: in_time, tight, late or no_route.
+  Minutes count from now. Call it when you are asked what each crew should
+  do, who goes where, or whether the crews arrive in time.
+
+effect: returns_data
