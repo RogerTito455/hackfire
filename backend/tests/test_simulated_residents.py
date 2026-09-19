@@ -95,3 +95,26 @@ def test_galtea_is_off_without_a_key(monkeypatch) -> None:
         assert "GALTEA_API_KEY" in str(error)
     else:
         raise AssertionError("connect() must refuse without a key")
+
+
+def test_a_recorded_call_keeps_what_was_said_and_the_last_report() -> None:
+    messages = [
+        {"role": "system", "content": "prompt"},
+        {"role": "assistant", "content": "Hola, buenas."},
+        {"role": "user", "content": "No puedo salir."},
+        {"role": "assistant", "content": None, "tool_calls": [_tool_call("report_status", {"status": "needs_rescue"})]},
+        {"role": "tool", "tool_call_id": "c1", "content": "{}"},
+        {"role": "assistant", "content": "The user cannot leave.</think> He avisado a la coordinación."},
+    ]
+    reports = [{"status": "evacuating"}, {"status": "needs_rescue", "people": 1}]
+
+    call = sim.recorded_call(_scenario("wheelchair-user"), messages, reports, galtea_session="s1")
+
+    assert call["turns"] == [
+        {"speaker": "agent", "text": "Hola, buenas."},
+        {"speaker": "resident", "text": "No puedo salir."},
+        {"speaker": "agent", "text": "He avisado a la coordinación."},
+    ]
+    assert (call["status"], call["report"], call["galtea_session"]) == ("needs_rescue", reports[-1], "s1")
+    merged = sim.merge_recorded_call({"calls": {"wrong-address": {"scenario": "wrong-address"}}}, call)
+    assert list(merged["calls"]) == ["wheelchair-user", "wrong-address"]

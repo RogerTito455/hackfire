@@ -148,8 +148,13 @@ def set_replay_time(request: ReplayTimeRequest) -> dict:
 
 @app.get("/api/autopilot")
 def get_autopilot() -> Autopilot:
-    """Whether the demo autopilot is on (autopilot.py). Off by default."""
-    return Autopilot(enabled=autopilot.enabled())
+    """Whether the demo autopilot is on (autopilot.py), off by default. While it is on, its scripted
+    outcomes on the replay clock and the recorded calls the dashboard shows with them."""
+    return _autopilot()
+
+
+def _autopilot() -> Autopilot:
+    return Autopilot(enabled=autopilot.enabled(), calls=autopilot.calls(), transcripts=autopilot.used_transcripts())
 
 
 @app.post("/api/autopilot")
@@ -161,7 +166,7 @@ def set_autopilot(request: AutopilotRequest) -> Autopilot:
         autopilot.turn_on(request.at or state.clock())
     else:
         autopilot.turn_off()
-    return Autopilot(enabled=autopilot.enabled())
+    return _autopilot()
 
 
 @app.get("/api/live/fires")

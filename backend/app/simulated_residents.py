@@ -277,3 +277,49 @@ def transcript(messages: list[dict]) -> str:
             for call in message.get("tool_calls") or []:
                 lines.append(f"    agent:    [{call['function']['name']} {call['function'].get('arguments') or ''}]")
     return "\n".join(lines)
+
+
+TRANSCRIPTS_ABOUT = (
+    "Real answers of the resident agent (voice/resident: its prompt, tools and model, through SLNG) to residents "
+    "simulated by Galtea, recorded by `pnpm eval:galtea -k <scenario> --transcripts <file>`. The residents, their "
+    "names and the address are fictional (backend/app/simulated_residents.py): no registry data. `status` is the "
+    "last report_status the agent made. Reasoning the model leaked before `</think>` is dropped, as a voice "
+    "runtime would. The demo autopilot shows them next to its scripted outcomes (backend/app/autopilot.py)."
+)
+
+
+def spoken(text: str) -> str:
+    """What the voice would say: the text after any leaked reasoning (`…</think>`), trimmed.
+
+    The model once returned its reasoning inside the answer (docs/services/galtea.md); the recorded
+    transcript keeps only what follows it."""
+    return text.rsplit("</think>", 1)[-1].strip()
+
+
+def recorded_call(scenario: Scenario, messages: list[dict], reports: list[dict], **about: object) -> dict:
+    """One simulated call as data for `--transcripts` (backend/tests/eval_galtea.py): the turns as the
+    resident heard them and the last report_status, the one the dashboard would show.
+
+    Only the simulated resident and the agent speak: the call data is this module's fictional CALL,
+    never the registry. `about` adds what identifies the run (session, version, model, date)."""
+    turns = []
+    for message in messages:
+        text = spoken(message.get("content") or "")
+        if message["role"] in ("user", "assistant") and text:
+            turns.append({"speaker": "resident" if message["role"] == "user" else "agent", "text": text})
+    report = reports[-1] if reports else None
+    return {
+        "scenario": scenario.key,
+        "simulated_resident": scenario.resident_name,
+        "status": report.get("status") if report else None,
+        "report": report,
+        "turns": turns,
+        **about,
+    }
+
+
+def merge_recorded_call(existing: dict | None, call: dict) -> dict:
+    """The transcripts file with this scenario's call added or replaced, so scenarios can run one at a time."""
+    calls = dict((existing or {}).get("calls") or {})
+    calls[call["scenario"]] = call
+    return {"about": TRANSCRIPTS_ABOUT, "calls": {key: calls[key] for key in sorted(calls)}}

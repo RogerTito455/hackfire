@@ -1,4 +1,5 @@
 import type { AutopilotControl } from '../hooks/useAutopilot'
+import type { ScriptedCallView } from '../hooks/useScriptedCall'
 import type { FireForecast } from '../hooks/useFireForecast'
 import { closedRoads } from '../domain/zones'
 import type { FireReplay } from '../hooks/useFireReplay'
@@ -33,6 +34,7 @@ import { CrewPlanPanel } from './CrewPlanPanel'
 import { ClosuresPanel } from './ClosuresPanel'
 import { ShareWithCrewsPanel } from './ShareWithCrewsPanel'
 import { RoutePanel } from './RoutePanel'
+import { ScriptedCallCard } from './ScriptedCallCard'
 import { TalkPanel } from './TalkPanel'
 import { AskAgentPanel } from './AskAgentPanel'
 import { SpreadLegend } from './SpreadLegend'
@@ -58,6 +60,7 @@ interface DashboardProps {
   coordinatorCall: CoordinatorConversation
   rescueVideo: RescueVideoControl
   autopilot: AutopilotControl
+  scriptedCall: ScriptedCallView
   crewPlan: CrewPlanView
   crewRoom: CrewRoomHost
   closures: Closures
@@ -81,6 +84,7 @@ export function Dashboard({
   coordinatorCall,
   rescueVideo,
   autopilot,
+  scriptedCall,
   crewPlan,
   crewRoom,
   closures,
@@ -164,6 +168,15 @@ export function Dashboard({
           </>
         }
       >
+        {mode === 'replay' && scriptedCall.call && scriptedCall.transcript && (
+          <ScriptedCallCard
+            call={scriptedCall.call}
+            transcript={scriptedCall.transcript}
+            residentName={triage.neighbors.find((n) => n.id === scriptedCall.call?.neighbor_id)?.name ?? null}
+            shown={scriptedCall.shown}
+            typing={scriptedCall.typing}
+          />
+        )}
         {selected !== null && (
           <section className="group group-selected">
             <h2 className="icon-button">

@@ -58,7 +58,15 @@
   },
   "autopilot": {
     "toggle": "Simulate the calls",
-    "note": "Simulation with the demo residents, not what happened on 23 July"
+    "note": "Simulation with the demo residents, not what happened on 23 July",
+    "call": {
+      "title": "Simulated call",
+      "outcome": "Scripted outcome for {name} at {time}",
+      "label": "Real answers from our voice agent to a simulated resident (Galtea)",
+      "agent": "Agent",
+      "resident": "Simulated resident",
+      "recorded": "The agent recorded: {status}"
+    }
   },
   "live": {
     "loading": "Loading the fires burning now…",

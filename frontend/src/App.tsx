@@ -1,4 +1,5 @@
 import { useAutopilot } from './hooks/useAutopilot'
+import { useScriptedCall } from './hooks/useScriptedCall'
 import { useFireForecast } from './hooks/useFireForecast'
 import { useFireReplay } from './hooks/useFireReplay'
 import { useLeadTime } from './hooks/useLeadTime'
@@ -49,6 +50,7 @@ function App() {
     if (replay.range) replay.setTime(replay.range.start)
   }
   const forecast = useFireForecast(replay.time)
+  const scriptedCall = useScriptedCall(autopilot.script, replay.time)
   const leadTime = useLeadTime(replay.time)
 
   const changeMode = (next: MapMode) => {
@@ -77,6 +79,7 @@ function App() {
       coordinatorCall={voiceCalls.coordinator}
       rescueVideo={rescueVideo}
       autopilot={autopilot}
+      scriptedCall={scriptedCall}
       crewPlan={crewPlan}
       crewRoom={crewRoom}
       closures={closures}

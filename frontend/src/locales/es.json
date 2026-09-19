@@ -58,7 +58,15 @@
   },
   "autopilot": {
     "toggle": "Simular las llamadas",
-    "note": "Simulación con los vecinos de la demo, no lo que pasó el 23 de julio"
+    "note": "Simulación con los vecinos de la demo, no lo que pasó el 23 de julio",
+    "call": {
+      "title": "Llamada simulada",
+      "outcome": "Resultado guionizado para {name} a las {time}",
+      "label": "Respuestas reales de nuestro agente de voz ante un vecino simulado (Galtea)",
+      "agent": "Agente",
+      "resident": "Vecino simulado",
+      "recorded": "El agente registró: {status}"
+    }
   },
   "live": {
     "loading": "Cargando los incendios activos…",
