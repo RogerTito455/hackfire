@@ -8,6 +8,7 @@ import type { SpreadCollection } from '../domain/spread'
 import type { TextClassification } from '../domain/textTriage'
 import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
+import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voice'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -64,3 +65,8 @@ export const reportStatus = (neighborId: string, status: TriageStatus) =>
     body: JSON.stringify({ neighbor_id: neighborId, status }),
   })
 export const fetchFocus = () => request<AgentFocus | null>('/api/focus')
+export const fetchVoiceCapabilities = () => request<VoiceCapabilities>('/api/voice')
+export const startCampaign = (zone: string) =>
+  request<CampaignCall[]>(`/api/campaigns/${encodeURIComponent(zone)}`, { method: 'POST' })
+export const createWebSession = (neighborId: string) =>
+  request<WebSession>(`/api/neighbors/${encodeURIComponent(neighborId)}/web-session`, { method: 'POST' })

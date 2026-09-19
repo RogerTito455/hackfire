@@ -81,6 +81,27 @@ class ReportStatusRequest(BaseModel):
         return value
 
 
+class CampaignCall(BaseModel):
+    """One resident's call in a campaign. Never carries the phone number."""
+
+    neighbor_id: str
+    call_id: str | None = Field(description="None when SLNG refused to place the call; the resident is then no_answer")
+
+
+class VoiceCapabilities(BaseModel):
+    phone_calls: bool = Field(description="An outbound trunk is set up, so the campaign can ring phones")
+    web_sessions: bool = Field(description="The dashboard can take a resident's call in the browser")
+
+
+class WebSession(BaseModel):
+    """A browser conversation with the resident agent. Holds no SLNG key."""
+
+    call_id: str
+    livekit_url: str
+    livekit_token: str
+    max_session_seconds: int
+
+
 class Rescue(BaseModel):
     rescue_id: str
     neighbor: Neighbor

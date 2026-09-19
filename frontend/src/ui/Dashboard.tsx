@@ -6,6 +6,9 @@ import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Orders } from '../hooks/useOrders'
 import type { TextTriage } from '../hooks/useTextTriage'
+import type { Campaign } from '../hooks/useCampaign'
+import type { Conversations } from '../hooks/useConversation'
+import type { VoiceCapabilities } from '../domain/voice'
 import type { Triage } from '../hooks/useTriage'
 import { CrewAlerts } from './CrewAlerts'
 import { Icon } from './Icon'
@@ -17,6 +20,7 @@ import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
 import { RoutePanel } from './RoutePanel'
+import { TalkPanel } from './TalkPanel'
 import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
@@ -34,6 +38,9 @@ interface DashboardProps {
   leadTime: LeadTimeView
   orders: Orders
   textTriage: TextTriage
+  voice: VoiceCapabilities
+  campaign: Campaign
+  conversation: Conversations
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -48,6 +55,9 @@ export function Dashboard({
   leadTime,
   orders,
   textTriage,
+  voice,
+  campaign,
+  conversation,
 }: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
@@ -101,6 +111,10 @@ export function Dashboard({
             safePoints={orders.safePoints}
             saving={orders.saving}
             onApprove={orders.approve}
+            phoneCalls={voice.phone_calls}
+            calling={campaign.calling}
+            campaign={campaign.result}
+            onCall={campaign.call}
           />
         </section>
 
@@ -119,6 +133,24 @@ export function Dashboard({
             onClose={() => selection.select(null)}
           />
         </section>
+
+        {selected !== null && (
+          <section>
+            <h2 className="icon-button">
+              <Icon name="live" size={16} />
+              Talk to the agent
+            </h2>
+            <TalkPanel
+              neighbor={selected}
+              available={voice.web_sessions}
+              orderApproved={orders.orders.some((order) => order.zone === selected.zone && order.approved)}
+              activeId={conversation.neighborId}
+              state={conversation.state}
+              onTalk={() => conversation.start(selected.id)}
+              onHangUp={conversation.hangUp}
+            />
+          </section>
+        )}
 
         {selected !== null && (
           <section>

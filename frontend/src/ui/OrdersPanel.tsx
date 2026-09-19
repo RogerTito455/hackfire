@@ -8,6 +8,7 @@ import {
   type OrderDecision,
   type SafePoint,
 } from '../domain/orders'
+import type { CampaignResult } from '../domain/voice'
 import { Icon } from './Icon'
 import { ORDER_STATE_COLOR, ORDER_STATE_LABEL } from './theme'
 
@@ -16,6 +17,25 @@ interface OrdersPanelProps {
   safePoints: SafePoint[]
   saving: string | null
   onApprove: (zone: string, decision: OrderDecision) => void
+  /** Whether a phone line is set up to call residents (#8). */
+  phoneCalls: boolean
+  /** Zone whose calls are being started, and the last campaign's result. */
+  calling: string | null
+  campaign: CampaignResult | null
+  onCall: (zone: string) => void
+}
+
+function residents(count: number): string {
+  return `${count} ${count === 1 ? 'resident' : 'residents'}`
+}
+
+function campaignText({ placed, refused }: CampaignResult): string {
+  if (placed === null || refused === null) return 'Could not start the calls.'
+  if (placed === 0 && refused === 0) return 'Nobody to call: every resident already has a status or a call going.'
+  const parts = []
+  if (placed > 0) parts.push(`Calling ${residents(placed)}; unanswered calls turn into No answer.`)
+  if (refused > 0) parts.push(`SLNG refused the calls to ${residents(refused)}: marked No answer.`)
+  return parts.join(' ')
 }
 
 function impactText(minutes: number | null): string {
@@ -27,7 +47,7 @@ function impactText(minutes: number | null): string {
 
 // One order per zone: the coordinator confirms the proposal or picks another destination, and the
 // agent reads the approved order to everyone in that zone.
-export function OrdersPanel({ orders, safePoints, saving, onApprove }: OrdersPanelProps) {
+export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls, calling, campaign, onCall }: OrdersPanelProps) {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
 
   if (orders.length === 0) return <p className="empty">No zones with residents in the registry.</p>
@@ -87,6 +107,21 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove }: OrdersPan
               </button>
             )}
             {order.approved && !changed && <p className="order-message">“{order.message}”</p>}
+            {order.approved && !changed && phoneCalls && (
+              <button
+                type="button"
+                className="order-approve icon-button"
+                disabled={calling === order.zone}
+                onClick={() => onCall(order.zone)}
+              >
+                <Icon name="live" size={16} />
+                {calling === order.zone ? 'Calling…' : 'Call residents'}
+              </button>
+            )}
+            {order.approved && !changed && !phoneCalls && (
+              <p className="empty">No phone line: take each resident's call from their panel.</p>
+            )}
+            {campaign?.zone === order.zone && <p className="empty">{campaignText(campaign)}</p>}
           </li>
         )
       })}

@@ -53,7 +53,7 @@ Done on 2026-09-19. Railway's import reads the pnpm workspace and configures the
    |---|---|
    | `HACKFIRE_PUBLIC_URL` = the Railway URL | Crew alert links (and their SMS) point at `http://localhost:5173` |
    | `DEEPFIRE_CLIENT_ID`, `DEEPFIRE_CLIENT_SECRET` | Live mode shows "Deepfire is unavailable right now" (`/api/live/fires` answers 503) |
-   | `SLNG_API_KEY` | The typed-answer backup is off (`/api/triage/text` says `available: false`); only the three buttons work |
+   | `SLNG_API_KEY` | The typed-answer backup is off (`/api/triage/text` says `available: false`); only the three buttons work. **Take … call here** says the voice agent is not configured (#8) |
    | `ORS_API_KEY` | Any route not in `data/routes_cache.json` answers 503 (a new registry, or a changed scenario time) |
    | `HACKFIRE_CREW_PHONE`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Crew alerts stay on the dashboard, no SMS |
 

@@ -8,6 +8,9 @@ import { useOrders } from './hooks/useOrders'
 import { useTextTriage } from './hooks/useTextTriage'
 import { useFollowAgent } from './hooks/useFollowAgent'
 import { useTriage } from './hooks/useTriage'
+import { useCampaign } from './hooks/useCampaign'
+import { useConversation } from './hooks/useConversation'
+import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
 
 // Composition root: logic comes from hooks, presentation from ui/.
@@ -19,6 +22,9 @@ function App() {
   const selection = useSelectedRoute()
   const orders = useOrders()
   const textTriage = useTextTriage()
+  const voice = useVoiceCapabilities()
+  const campaign = useCampaign()
+  const conversation = useConversation()
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
@@ -51,6 +57,9 @@ function App() {
       selection={selection}
       orders={orders}
       textTriage={textTriage}
+      voice={voice}
+      campaign={campaign}
+      conversation={conversation}
       forecast={forecast}
       leadTime={leadTime}
     />

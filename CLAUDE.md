@@ -64,7 +64,7 @@ Run `pnpm check` before every commit.
 
 - **Never hand-write manifests or config JSON.** `package.json`, `pyproject.toml`, lockfiles and tsconfig changes go through commands: `pnpm add`, `pnpm pkg set`, `uv add`, `uv remove`. pnpm only — no npm, no yarn.
 - **UI is independent of logic.** Components in `frontend/src/ui/` take props and render; they never fetch, poll or import from `services/`. Logic lives in `domain/` (pure) and `hooks/` (stateful). Colours and labels live in `ui/theme.ts` and CSS variables in `ui/theme.css`. A redesign should touch `ui/` only.
-- **No component kits or icon packages.** No shadcn, no icon or SVG libraries. Plain CSS and hand-written markup. MapLibre GL is the single third-party UI dependency.
+- **No component kits or icon packages.** No shadcn, no icon or SVG libraries. Plain CSS and hand-written markup. MapLibre GL is the single third-party UI dependency. `livekit-client` carries the voice agent's audio in the browser (#8); it lives in `services/voiceSession.ts` only and loads on the first call.
 - **Third parties go through `providers/`.** Nothing outside `backend/app/providers/` makes HTTP calls to an external service, and nothing outside `config.py` reads `os.environ`.
 - **The tool contract is shared.** The five `/tools` endpoints are the interface between the voice track and everything else. Changing a request or response model in `models.py` means updating `frontend/src/domain/triage.ts` and telling the team.
 - **Stubs are explicit.** Placeholder responses set `stub: true` and carry a `TODO(track)` comment, where track is `map`, `voice` or `data`. Remove both when the real implementation lands.

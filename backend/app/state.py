@@ -1,6 +1,7 @@
 """In-memory triage state. Good enough for the demo; swap for SQLite if needed."""
 
 import json
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -50,6 +51,8 @@ def _build_registry(text: str, source: str) -> dict[str, Neighbor]:
 
 class TriageState:
     def __init__(self) -> None:
+        # The agent's tool calls and the call campaign's watcher write from different threads.
+        self._lock = threading.RLock()
         self._neighbors: dict[str, Neighbor] = {}
         self._alerts: list[CrewAlert] = []
         # The coordinator's approved evacuation orders, by zone (orders.py).
@@ -84,6 +87,17 @@ class TriageState:
         return next((n for n in self._neighbors.values() if " ".join(n.address.split()).casefold() == wanted), None)
 
     def report(self, report: ReportStatusRequest) -> Neighbor | None:
+        with self._lock:
+            return self._report(report)
+
+    def no_answer_if_pending(self, neighbor_id: str) -> None:
+        """Mark a resident no_answer unless they already have a status, in one step."""
+        with self._lock:
+            neighbor = self._neighbors.get(neighbor_id)
+            if neighbor is not None and neighbor.status == TriageStatus.PENDING:
+                self._report(ReportStatusRequest(neighbor_id=neighbor_id, status=TriageStatus.NO_ANSWER))
+
+    def _report(self, report: ReportStatusRequest) -> Neighbor | None:
         neighbor = self._neighbors.get(report.neighbor_id)
         if neighbor is None:
             return None

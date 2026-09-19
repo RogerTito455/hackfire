@@ -54,6 +54,13 @@ class Settings:
     deepfire_client_secret: str = field(default_factory=lambda: _env("DEEPFIRE_CLIENT_SECRET"))
 
     slng_api_key: str = field(default_factory=lambda: _env("SLNG_API_KEY"))
+    # The deployed resident agent (voice/README.md), which the call campaign and the dashboard's
+    # "Talk" button start conversations with.
+    slng_resident_agent_id: str = field(
+        default_factory=lambda: _env("SLNG_RESIDENT_AGENT_ID", "0f035ccc-10d8-4de8-8142-abf4dc484fd8")
+    )
+    # Off until an outbound SIP trunk is attached to the agent in SLNG: SLNG supplies no numbers.
+    phone_calls: bool = field(default_factory=lambda: _env("HACKFIRE_PHONE_CALLS") == "1")
     slng_base_url: str = field(default_factory=lambda: _env("SLNG_BASE_URL"))
 
     # The backend's LLM (typed answers, pnpm eval:triage): SLNG's OpenAI-compatible Context Router,

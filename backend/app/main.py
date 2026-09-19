@@ -10,10 +10,13 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import evacuation, impact, live, orders, replay, text_triage
+from . import campaign, evacuation, impact, live, orders, replay, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
+    CampaignCall,
+    VoiceCapabilities,
+    WebSession,
     CrewAlert,
     EvacuationOrder,
     EvacuationRouteRequest,
@@ -29,7 +32,7 @@ from .models import (
     SafePoint,
     TravelMode,
 )
-from .providers import sms
+from .providers import sms, voice
 from .state import state
 
 app = FastAPI(title="HackFire", version="0.1.0")
@@ -167,6 +170,46 @@ def approve_order(zone: str, decision: OrderDecision) -> EvacuationOrder:
     return order
 
 
+@app.get("/api/voice")
+def voice_capabilities() -> VoiceCapabilities:
+    """What the dashboard can start: phone calls (a trunk is set up) and browser conversations."""
+    return VoiceCapabilities(phone_calls=voice.phone_calls_configured(), web_sessions=voice.web_sessions_configured())
+
+
+@app.post("/api/neighbors/{neighbor_id}/web-session")
+def start_web_session(neighbor_id: str) -> WebSession:
+    """Take this resident's call in the browser: the campaign's call, for when no phone can ring.
+
+    Like a campaign call, it needs the zone's order approved. Returns LiveKit's URL and a
+    short-lived token for the browser; the SLNG key stays here.
+    """
+    resident = state.get(neighbor_id)
+    if resident is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    if orders.approved_order(resident.zone) is None:
+        raise HTTPException(status_code=409, detail=f"Approve the order for {resident.zone} before calling its residents")
+    if not voice.web_sessions_configured():
+        raise HTTPException(status_code=503, detail="The voice agent is not configured (SLNG_API_KEY)")
+    try:
+        return voice.web_session(resident)
+    except voice.VoiceUnavailable as error:
+        raise HTTPException(status_code=503, detail="The voice agent is unavailable right now") from error
+
+
+@app.post("/api/campaigns/{zone}")
+def start_campaign(zone: str, background: BackgroundTasks) -> list[CampaignCall]:
+    """The coordinator starts the calls to a zone's residents, once its order is approved."""
+    try:
+        calls = campaign.start(zone)
+    except campaign.NoPhoneLine as error:
+        raise HTTPException(status_code=503, detail="No phone line is set up: talk to each resident from the dashboard") from error
+    except campaign.NotApproved as error:
+        raise HTTPException(status_code=409, detail=f"Approve the order for {zone} before calling its residents") from error
+    # One watcher for all of them: Starlette runs background tasks one after another.
+    background.add_task(campaign.watch, calls)
+    return calls
+
+
 @app.get("/api/safe-points")
 def list_safe_points() -> list[SafePoint]:
     """Candidate destinations, and whether each is safe at the scenario time."""
@@ -208,6 +251,7 @@ def reset() -> dict:
     """Reload the registry and forget the replay moment, orders and alerts. Restarts the demo."""
     state.load()
     state.replay_time = None
+    campaign.forget()
     return {"status": "reset", "neighbors": len(state.neighbors())}
 
 
