@@ -1,0 +1,287 @@
+# The build loop
+
+Write, validate, read the error, fix, repeat. Then run it and listen.
+
+## The commands
+
+| Command | What it does |
+|---|---|
+| `unmute init <name>` | scaffold a new package |
+| `unmute init <name> --from-manifest` | pick a saved contract, then create the package under it |
+| `unmute manifest create [name]` | create a reusable manifest with guided setup |
+| `unmute manifest edit <name>` | edit a saved manifest with guided setup |
+| `unmute manifest use <name>` | select the default manifest for future agents |
+| `unmute validate [dir]` | load, build, and check against every declared target |
+| `unmute compile [dir]` | validate, then write `build/<target>/` for each code target |
+| `unmute dev [dir]` | compile, run locally, and let you talk to the agent |
+| `unmute deploy [dir]` | validate, compile, and push a slng target to SLNG. The push is the `unmute-deploy` skill |
+| `unmute pull [dir]` | fetch each SLNG-hosted tool's definition into the package |
+| `unmute skill install` | write this skill into a project |
+
+`[dir]` is optional on those five. With no directory they use the current one,
+so you can `cd` into a package and run them with no argument. Passing a
+directory still works and still wins, and it is the right form when you are not
+inside the package.
+
+Four commands take an author from nothing to a voice. `deploy` is how a slng
+package leaves the machine, and it is SLNG only: a livekit or pipecat target
+compiles to a project that platform deploys with its own tool. `pull` is the
+only command that needs an SLNG credential, and it is needed only by a package
+that references a tool the platform hosts: `validate` and `compile` work
+offline, which is what lets CI build such a package. `skill` is off every path:
+it writes this bundle into a project and does nothing else.
+
+```sh
+unmute skill install
+unmute skill install --agent claude
+unmute skill install --force
+```
+
+## When the package references a tool SLNG hosts
+
+A `slng:` tool names a tool the user's SLNG organisation already has. The
+definition is not in the package until somebody fetches it, so the loop gains
+one step at the front:
+
+```sh
+unmute pull        # once, and again when the tool changes on the platform
+unmute validate
+unmute compile
+unmute deploy
+```
+
+`pull` writes two files beside the tool file, `tools/<name>.slng.json` and, for
+a code tool, `tools/<name>.slng.py`, and stamps a `hash:` into the `slng:`
+block. Tell the user to commit all of it: the mirror is how the tool also
+reaches livekit and pipecat, and the hash is how a later compile knows the
+mirror is still the right one.
+
+Never write the hash yourself, and never edit a `.slng.` file. An edit there
+reaches nothing, and the next compile refuses because the hash no longer
+matches. Write `slng: {}` and say to run `unmute pull`.
+
+**`local:` and `webhook:` are refused on an slng target.** unmute creates no
+tool on SLNG: the platform owns a tool's code, version and gate pipeline, so a
+brand new tool starts in the SLNG dashboard and the package references it. Both
+blocks still work exactly as before on livekit and pipecat.
+
+`--agent` narrows which assistants to write for and takes `all`, `claude`,
+`codex`, `copilot`, or `cursor`. `--dir` installs somewhere other than the
+current directory. `--force` overwrites files that changed after they were
+installed, which is what the command otherwise refuses to do.
+After updating the CLI, run `unmute skill install` again to refresh the bundle.
+Review local changes before using `--force`.
+
+## Start with init
+
+`unmute init` asks no questions and writes the same starter package every time.
+
+```sh
+unmute init my-agent
+cd my-agent
+```
+
+It writes a working package: `agent.yaml`, `instructions.md`, `targets.yaml`,
+and a `tools/end_call.yaml` so the agent can hang up from its first run. Edit
+what it wrote rather than starting from an empty directory.
+
+The scaffold declares **one** target, `livekit`, named after its provider. One
+target means what you test is what you deploy, and it means you do not pass
+`--target` on a scaffolded package: there is nothing to choose between. Add a
+second target later, by hand, when the package needs one.
+
+`unmute init` refuses to write into a directory that already exists and is not
+empty. That is deliberate, not a bug to route around.
+
+A company contract is added by a person: `unmute init my-agent --from-manifest`
+opens a picker and then guides the choices the contract allows. It needs a
+terminal, so ask the user to run it rather than trying to create a governed
+package yourself. The chosen file is copied into the package as `manifest.yaml`, and
+validation and compilation read that copy: they need nothing saved on the
+computer. When a package holds one, read it before choosing bindings, and read
+[Manifest](manifests.md) for the rules.
+
+## Validate, every time
+
+From inside the package, with no argument:
+
+```sh
+unmute validate
+```
+
+```
+✓ livekit (livekit)
+
+Warnings:
+  livekit: LiveKit runs tool executions to completion; a per-tool interruption preference is not enforced
+```
+
+One line per target: the target instance name, then its provider in brackets. A
+scaffolded package prints one line, and a package that declares two prints two.
+With no `--target`, every declared target is checked. `--target` is repeatable
+and results come back in the order asked for. Naming a target the package does
+not declare is refused:
+
+```
+target instance "pipecat" is not declared
+```
+
+Exit code 1 if any selected target fails.
+
+### Warnings are not failures
+
+Warnings go to standard error and the command still exits 0. They are real
+differences worth reading and worth repeating to the user:
+
+```
+  livekit: environment variables referenced but not declared in secrets: DEEPGRAM_API_KEY (agent.yaml models listen transcriber)
+```
+
+Do not silence a warning and do not skip past one. A warning names what the
+package is standing on.
+
+Some routes also print a setup prerequisite block, which is work the user must
+do outside Unmute before a real call. Pass those on.
+
+## Read the error
+
+An error names the file and the line:
+
+```
+unmute: validate my-agent: build: agent.yaml:70: conversation.greeting.text
+  references {{OPENAI_API_KEY}}, but secrets never flow through templates; a secret
+  reaches a tool through its own *_env field
+```
+
+Three things to notice, and they are true of most Unmute errors:
+
+1. **The location is exact.** File, line, often column. Go there.
+2. **The message says what is wrong**, in a sentence, not a code.
+3. **The message often says what to write instead.** Do that, rather than
+   inventing a third thing.
+
+A refusal is a decision. When validate says a target does not emit a shape, the
+answer is to change the shape or change the target, not to look for a flag that
+turns the check off. There is no such flag.
+
+## Compile, then run
+
+```sh
+unmute compile
+```
+
+Writes one directory per code target: `build/livekit/`, `build/pipecat/`. Each
+holds a Python project, a `Dockerfile`, an `.env.example`, Compose files, a
+deploy manifest, a compile report, and a `README.md` runbook written for that
+build.
+
+**Never edit `build/`.** It is rewritten on every compile. Change the package.
+
+A provider is a target only when a driver emits a runnable project for it.
+Pipecat and LiveKit are the two. Naming anything else is refused at validate.
+
+## Talk to it
+
+```sh
+unmute dev
+```
+
+Opens the browser and runs the selected target locally. Pipecat runs under
+`uv` so browser WebRTC can reach it; LiveKit runs under Docker Compose with a
+local LiveKit server. `unmute dev` is browser-only: it covers the prompt, the
+tools, and the models, and it stops exactly where a phone call would start.
+There is no local telephony run, so never offer one. Flags:
+
+| Flag | What it does |
+|---|---|
+| `--port` | port for the local dev UI (default `8765`; a busy default gives way to a free port) |
+| `--bot-port` | host port for the local agent runtime (default `7860`; a busy default gives way to a free port) |
+| `--target` | target instance name; required without a TTY when the package declares more than one |
+| `--var name=value` | seed a `call_start` variable, repeatable |
+| `--no-open` | do not open the browser automatically |
+| `--verbose` | follow container/agent logs on stderr |
+
+`--var` is the local stand-in for the dispatch payload production sends. Each
+value is parsed against the declared type, and an undeclared name is refused
+rather than accepted and dropped.
+
+A phone call is verified after deploy, against a real carrier, never with
+`unmute dev`. See `telephony.md` and `transfers.md` for what that means for a
+route and for a transfer.
+
+`unmute dev` does not provision carrier resources or change a deployed agent.
+Configured model and tool calls still run, with their existing effects.
+
+**When the question is latency, read the available measurements.** The dev page
+streams caller text, generated reply text, running tools and native timing
+values as they arrive. Caller finality does not wait for the model. Generated
+text can be ahead of audio; retained words after an interruption are not proof
+that every word was spoken.
+
+Numbered SDK model calls show first response and full request duration at a
+glance, alongside reply latency, TTS first audio and tool duration. Every model
+call after the first follows a tool call or a control; a `HANDOFF` row is a call
+into a task or a handoff to another agent, carries no duration, and is the row
+that accounts for the call after it. Debug details
+holds secondary timings such as speech duration and node timings, plus source
+metadata. Definitions live in the latency guide. Explicit task retries count
+as separate SDK calls; hidden provider retries do not. Never add overlapping
+stage timings to derive reply latency, which ends at runtime audio and excludes
+browser delivery. LiveKit's native node timings belong to the response step,
+not an arbitrary request. Pipecat audio-latency summaries without a proven
+response ID stay unassigned. Call first speech is separate, with its source's
+start boundary explained.
+
+Tools keep their own call identity through late results and repeated names.
+An intermediate result stays running; returned does not prove business success.
+Task and handoff controls are excluded from business tool timings. Only captured
+measurements are shown; missing and pending values have no placeholder. Measured
+zero stays visible. Missing coverage or a history gap labels model-call counts
+as observed even if some values recover.
+
+The local log carries identified v2 snapshots with revisions. Inspect only the
+measurement records with:
+
+```sh
+grep '"kind":"measurement"' build/<target>/dev.log
+```
+
+`dev.log` also contains transcript snapshots. Normalized dev records exclude
+audio, reasoning, prompts and tool arguments/results; ordinary SDK output may
+contain other data. This dev path adds no exporter and stays separate from
+configured providers and optional tracing. Existing call-verification guidance
+still applies; a replay check does not describe a real caller's conversation.
+
+Conversation and Logs share one media connection. Feed reconnects retain the
+conversation and expose unrecoverable gaps; they do not reconnect the mic.
+Scrolling back keeps the reading position, and Latest resumes following.
+The logs view is available while the runtime starts so startup failures remain
+readable.
+
+## What to state when you finish
+
+Say what you actually did, in this order:
+
+1. What you wrote, by file.
+2. What you ran, and its real output. Quote the result line.
+3. What you did not run, and why. "I cannot run commands here" is a complete
+   answer, and a better one than silence.
+4. The decisions you made that the user did not ask for.
+
+A package that validates has not been heard. Say "validate is clean on every
+declared target" if that is what happened, and name the targets, because a
+scaffolded package has one. Do not say "it works" until someone has talked to
+it.
+
+## If you cannot run commands
+
+Write the package, then hand the user the exact commands and ask for the output:
+
+```sh
+unmute validate ./my-agent
+unmute dev ./my-agent
+```
+
+Write the path, because you do not know which directory they are sitting in.
+Read what they paste back the same way you would read your own output. The
+error message is the same message.

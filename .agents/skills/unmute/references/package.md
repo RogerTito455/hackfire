@@ -1,0 +1,641 @@
+# The package
+
+What an author writes, file by file. This is the surface you work in.
+
+## The files
+
+| File | Required | What it holds |
+|---|---|---|
+| `agent.yaml` | yes | the agent: models, prompts, tools, conversation, channels |
+| `manifest.yaml` | when linked | the company rules copied into this package; see [manifests](manifests.md) |
+| an instructions file | yes | the prompt, in Markdown, named by each agent |
+| `targets.yaml` | yes | where it runs, and the framework version pinned |
+| `tools/<name>.yaml` | no | one file per tool |
+| `tools/<name>.py` | no | a Python handler, beside its tool file |
+| `connections/<name>.yaml` | phone agents only | one phone route |
+| `build/<target>/` | generated | never edit, never hand-write |
+
+Nothing in `agent.yaml` is specific to a runtime. That lives in `targets.yaml`.
+Keeping them apart is what makes one package compile to two orchestrators.
+
+Two local LiveKit packages run side by side: each `unmute dev` picks a free
+set of three server ports. To pin a set, give all of `LIVEKIT_HOST_PORT`,
+`LIVEKIT_TCP_HOST_PORT`, and `LIVEKIT_UDP_HOST_PORT`. Moving only the
+signaling port is not enough for browser WebRTC.
+
+YAML decoding is strict. An unknown field is an error with the file and the
+line, not a shrug. A field you half remember is worth checking rather than
+writing.
+
+## The smallest agent that works
+
+```yaml agent.yaml
+version: 1
+name: acme-appointments
+entry_agent: appointment_desk
+
+secrets:
+  - OPENAI_API_KEY
+  - SLNG_API_KEY
+
+models:
+  think:
+    reasoning:
+      provider: openai
+      model: gpt-5.6-terra
+      params:
+        reasoning_effort: "none"
+  speak:
+    voice:
+      provider: slng
+      model: "deepgram/aura:2"
+      voice: "aura-2-thalia-en"
+  listen:
+    transcriber:
+      provider: slng
+      model: "deepgram/nova:3"
+  turn:
+    detector:
+      provider: local
+      model: silero
+
+agents:
+  appointment_desk:
+    instructions: instructions.md
+    think: reasoning
+    speak: voice
+
+conversation:
+  greeting:
+    speaks_first: agent
+    text: "Hi, this is Sage and Stone Salon. How can I help with your appointment?"
+  interruption:
+    enabled: true
+
+channels:
+  web:
+    kind: realtime_audio
+
+capacity:
+  peak_sessions: 5
+  max_sessions: 10
+  avg_session_duration: 5m
+```
+
+That is the shape `unmute init <name>` scaffolds, and it runs in a browser.
+
+## Every top-level key
+
+| Key | Required | What it is |
+|---|---|---|
+| `version` | yes | the schema version, `1` |
+| `manifest` | when a root manifest exists | the literal `manifest.yaml`, linking the company contract |
+| `name` | yes | what the deployed agent is called |
+| `entry_agent` | yes | which agent answers |
+| `models` | yes | the model palette, grouped by kind |
+| `listen` | when `models.listen` has two or more entries | which listen entry to use |
+| `turn` | when `models.turn` has two or more entries | which turn entry to use |
+| `variables` | no | per call values |
+| `secrets` | no | environment names the generated project reads |
+| `destinations` | when an escalation is used | symbol to the environment variable holding a number |
+| `agents` | yes | one or more agents, with their nested tasks |
+| `task_groups` | no | ordered sequences of tasks |
+| `handoffs` | no | the conversation becomes another agent |
+| `escalations` | no | the caller goes through to a person |
+| `tools` | no | which tool files to load |
+| `conversation` | no | greeting, interruption, inactivity, limits |
+| `tracing` | no | tracing provider |
+| `channels` | yes | how people reach the agent |
+| `capacity` | for telephony or code targets | your traffic estimate |
+
+## name
+
+Required on every target. Lowercase letters, digits and single hyphens, starting
+with a letter, 3 to 64 characters.
+
+```yaml agent.yaml
+name: acme-support
+```
+
+**The deployed name is `name:` joined to the target it was compiled for**, so
+`acme-support` on a target called `slng` deploys as `acme-support-slng` and on
+one called `livekit_eu` as `acme-support-livekit-eu`. The target half separates
+two targets of the same provider inside one package; without it such a package
+would deploy one name twice and overwrite itself.
+
+Where it lands: the pushed agent's `name` on slng, `agent_name` and the secret
+set on pipecat, the worker's `agent_name` that a SIP dispatch rule matches on
+livekit. `name:` on its own labels the generated project (pyproject name,
+logger, trace name, README title).
+
+**Never name a package after its target or its folder.** Unmute used to deploy
+under the target name, and every package calls its target `slng`, `livekit` or
+`pipecat`, so two packages in one organisation deployed over each other. A
+folder is named by whoever cloned the repository and changes on a rename or a CI
+checkout.
+
+Renaming a package that is already deployed does not move the deployment: it
+leaves the old one running and creates a second. On livekit, the existing SIP
+dispatch rule keeps naming the old worker, so inbound calls stop.
+
+## models
+
+Five sections, and the section an entry sits in decides its kind.
+
+| Section | Job | Common name |
+|---|---|---|
+| `think` | decides what to say and which tool to call | LLM |
+| `speak` | turns text into audio | TTS |
+| `listen` | turns audio into text | STT |
+| `turn` | decides when the caller has finished speaking | turn detection or VAD |
+| `live` | listens, thinks and speaks as one model; LiveKit and Pipecat, a list of entries with `name:` | speech to speech, live model |
+
+Entry names are yours and share one namespace across sections. An agent points
+at an entry by name. Entries you never reference are legal alternates, so
+swapping a voice is a one line change. An agent names either `think` and
+`speak`, or `live`; `models.md` has the live model's block and what it
+refuses.
+
+Each section allows these fields:
+
+| Field | Legal section |
+|---|---|
+| `provider`, `model`, `endpoint_env`, `placement`, `params`, `description` | `think`, `speak`, `listen`, `turn` |
+| `voice`, `speed` | `speak` |
+| `language` | `speak`, `listen` |
+| `temperature`, `top_p`, `top_k` | `think` |
+| `semantic_endpointing` | `turn`: `required`, `preferred`, or `off` |
+| `pace` | `turn`: `snappy`, `balanced`, or `patient`. How quickly the agent decides the caller has finished. Sets the ceiling on a turn, and the floor when `endpointing_delay` is absent. Defaults to `balanced`. No per-target override |
+| `endpointing_delay` | `turn`: a positive duration, the window of silence before the caller counts as finished. The floor on every turn, and only the floor. LiveKit refuses under `250ms` |
+| `fallback` | `think`, `listen` |
+
+The `turn:` section is the only thing that ends a turn. Some transcribers
+(AssemblyAI, Cartesia, Soniox) detect turns themselves, but while `turn:` names
+the local pair they only propose an ending and the `turn:` entry still decides.
+So never drop `turn:` or set `semantic_endpointing: off` on the theory that the
+transcriber covers it. On Pipecat the one way to hand the decision over is
+explicit: `turn: provider: listen` with a Deepgram Flux, Cartesia Turns, Gradium
+or Speechmatics listener, and `eager: true` on the first two to answer a
+prediction early; the models reference has the shape and the refusals.
+
+Unmute keeps no list of valid model ids. `model:` and `voice:` are forwarded to
+the provider exactly as written, so a typo is a provider error at run time, not
+a compile error. `build/<target>/compile-report.json` records the binding, so
+it can be checked without guessing. Which `provider:` values are legal per role
+per target is in `models.md`.
+
+`params:` is normally the same passthrough. The narrow exception is
+`api: responses` on an OpenAI reasoning binding: Unmute checks the directive,
+selects the Responses client on LiveKit, and maps `reasoning_effort` to nested
+reasoning. It and `use_websocket` are the two params the compiler consumes
+rather than forwards, so a target that cannot build that class drops them
+instead of sending them as request fields, and says which at validate. The scaffold's default OpenAI reasoning model needs
+`reasoning_effort: "none"` when it carries function tools. Do not copy that
+provider-specific value onto every think model. `models.md` has the rule.
+
+Do not guess model ids, voice ids, or params. Use values the user supplied or
+values verified in the provider's own documentation.
+
+## agents
+
+```yaml
+agents:
+  appointment_desk:
+    instructions: instructions.md
+    think: reasoning
+    speak: voice
+    tools:
+      - check_slots
+```
+
+| Field | What it is |
+|---|---|
+| `instructions` | path to a Markdown prompt in the package |
+| `think` | a `models.think` entry name |
+| `speak` | a `models.speak` entry name |
+| `live` | a `models.live` entry name, in place of `think` and `speak`; LiveKit and Pipecat, one agent, no tasks |
+| `tools` | tool files this agent may call, by name |
+| `tasks` | tasks this agent can run: each item is a full definition, or a bare name for a task another agent already defines |
+| `task_groups` | entries under `task_groups:` this agent may run |
+| `handoffs` | entries under `handoffs:` this agent may take |
+| `escalations` | entries under `escalations:` this agent may take |
+
+The prompt lives in its own file so it reviews like prose rather than like YAML.
+
+## secrets
+
+```yaml
+secrets:
+  - OPENAI_API_KEY
+  - SLNG_API_KEY
+```
+
+A list of `UPPER_SNAKE` environment variable names. Never values, and never
+usable in a `{{template}}`.
+
+Declare every environment name the generated project reads: provider and
+tracing keys inferred from the package, tool `*_env` names, connection
+`environment:` values, destinations, and names read by local handlers. Names
+the driver or platform supplies, such as `REDIS_URL` or `DAILY_API_KEY`, are not
+yours to declare and are left out.
+
+Every name must be a valid shell identifier: letters, digits, and underscores,
+never starting with a digit. A platform exports secrets through a shell, so a
+name starting with a digit would go missing at run time with no error of its
+own. The compiler refuses it first.
+
+**`unmute validate` checks that the list is complete**, and warns at exit 0
+naming every environment name the package references and this block does not
+declare, with the file and field that named it. It warns whether or not the
+block exists, so deleting it does not buy silence: a package that declares
+nothing and references eight names is the case most worth reporting.
+
+The generated agent's own startup check is derived the same way: from what the
+compiler knows the package requires, not from what you remembered to declare. So
+an undeclared name still stops the container rather than failing on the first
+call.
+
+Write the list as you go anyway: every time you add an `*_env` field, a
+connection `environment:` name, or a `destinations:` entry, add the name here in
+the same edit. `unmute init` scaffolds the block for you with the model provider
+keys already in it.
+
+The package-root `.env.example` is a one-time snapshot from `unmute init`; it
+does not update when you add a secret. The list that stays true is
+`build/<target>/.env.example`, regenerated on every compile, and it names only
+what you fill in.
+
+## channels
+
+```yaml
+channels:
+  web:
+    kind: realtime_audio
+  phone:
+    kind: telephony
+    inbound: true
+    outbound: true
+```
+
+| Field | Values |
+|---|---|
+| `kind` | `realtime_audio` or `telephony` |
+| `inbound`, `outbound` | `true` or `false`; at least one must be `true` |
+| `required_controls` | `cold_transfer`, `warm_transfer`, `dtmf_send`, `dtmf_receive`, `hold`, `hangup`, `voicemail_detection`, or `ivr_navigation` |
+| `on_voicemail` | `hangup` or `leave_message`, requires `outbound: true` |
+
+`web: realtime_audio` is browser audio, which is what `unmute dev` serves.
+It takes only `kind`. A `telephony` channel requires both `inbound` and
+`outbound`, at least one set to `true`, and it needs a connection file too. See
+`telephony.md`.
+
+## capacity and tracing
+
+```yaml
+capacity:
+  peak_sessions: 5
+  max_sessions: 10
+  peak_starts_per_second: 2
+  avg_session_duration: 5m
+
+tracing:
+  provider: langfuse
+```
+
+`capacity` is the user's traffic estimate, not a measurement. The compiler turns
+it into worker and quota numbers in the generated project and marks them
+`[unbenchmarked]`, because they come from a conservative assumption of one
+session per worker. Say that when you write one.
+
+**`peak_starts_per_second` is optional on a browser-only package and required
+the moment any channel is `telephony`.** Leave it out of a phone package and
+validation fails:
+
+```
+pipecat: capacity.peak_starts_per_second must be positive for telephony
+```
+
+Write it whenever you write a `telephony` channel, in the same edit. It has to
+be positive, and `1` is a fine starting number for a package nobody has measured
+yet. `peak_sessions` and `max_sessions` must also be positive,
+`peak_sessions` cannot exceed `max_sessions`, and `avg_session_duration` must
+be a positive Go duration such as `5m`.
+
+`provider` takes one of two values, `langfuse` or `coval`. Tracing works on the
+`pipecat` and `livekit` targets only. The `slng` target refuses it: unmute
+instruments no process there, so it can install no exporter. Read those traces
+in SLNG's own dashboard.
+
+| provider | secrets it needs | use it for |
+|---|---|---|
+| `langfuse` | `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | reading one live conversation |
+| `coval` | `COVAL_API_KEY` | scoring simulated calls in Coval |
+
+Those names go in `secrets:` like any others.
+
+LiveKit uses the room name as the Langfuse session ID. Pipecat uses the runner
+session ID as both its conversation ID and the Langfuse session ID. Either way
+one call is one trace, its root observation holds the whole conversation, and
+each exchange inside it is a `turn` span holding what the caller said and what
+the agent replied, which is the pair an evaluator reads. The session ID and
+trace name are on every observation, because Langfuse v4 filters and adds up
+over observations rather than over traces.
+Pipecat tracing owns the process OpenTelemetry provider and startup fails if another SDK provider is installed first.
+
+With `coval`, each trace is attached to the Coval simulation that placed the
+call. The agent finds that simulation ID on the call itself, so the package
+author writes no correlation code. The route differs per target: LiveKit reads
+the SIP participant attribute `coval.simulation_id` (the emitted
+`sip-inbound-trunk.json` maps the `X-Coval-Simulation-Id` SIP header onto it) or
+its own dispatch metadata; Pipecat reads the WebSocket upgrade header, the
+Pipecat Cloud dial-in SIP headers, or a carrier stream parameter. Both fall back
+to `COVAL_SIMULATION_ID` in the environment. A call that no simulation owns is
+traced too: when it ends the agent submits what was said to Coval as a
+conversation and exports the same spans against the returned conversation ID,
+which is what puts a local `unmute dev` run in Coval's Trace Search.
+`coval.correlation.method` says which of the two routes a trace took. Without
+`COVAL_API_KEY`, or with nothing said on the call, nothing is sent and the call
+still runs.
+
+Coval reads a call as `conversation` > `turn` > `stt` | `vad` | `llm` | `tts`,
+with `stt.provider.<name>` under `stt` and `llm_tool_call` under `llm`. Each
+`llm` span carries the prompt that round ran on: `gen_ai.system_instructions`,
+the message history as `input`, the offered tools as `tools` and `tool_count`,
+the answering agent as `agent.label`, and the reply as `output`. Those are
+Pipecat's own attribute names, used on both targets so one metric or judge
+prompt reads either. All of it is size-bounded. Pipecat
+already emits that tree, so its own spans are what Coval sees. LiveKit's spans
+are shaped differently, so the emitted module builds the tree from LiveKit's
+session events and leaves LiveKit's own OpenTelemetry off; the numbers are still
+LiveKit's own measurements. A missing `COVAL_API_KEY`
+warns and disables Coval tracing instead of failing startup, unlike Langfuse,
+which fails when its keys are missing. Coval trace metrics read these spans
+directly: percentiles over `metrics.ttfb` on `llm` and `tts` (and `vad` on
+LiveKit) find the bottleneck, averages over `gen_ai.usage.*` on `llm` track
+cost, and an LLM-judged metric created with traces included can check the
+agent's answers against its real prompt and tool results.
+
+Traces can contain caller speech, model input and output, and tool arguments and results.
+Use only fake identities and fake customer data for release tests. Use a separate
+project on the tracing provider for those tests, and do not send real customer
+data until its access and retention rules are approved.
+
+## targets.yaml
+
+```yaml targets.yaml
+targets:
+  pipecat:
+    provider: pipecat
+    version: "1.10.0"
+
+  livekit:
+    provider: livekit
+    version: "1.8.1"
+    sdk_language: python
+    models:
+      detector:
+        provider: livekit
+        model: turn-detector-mini
+```
+
+The map key is the **target instance name**. It is what `--target` takes and
+what names the output directory, `build/<name>/`. Two targets may use the same
+provider with different settings, for example `pipecat_twilio` and
+`pipecat_telnyx`.
+
+| Field | What it is |
+|---|---|
+| `provider` | `livekit`, `pipecat`, or `slng` |
+| `version` | required exact `x.y.z` framework version for code targets; refused on `slng` |
+| `pins` | LiveKit-only known package pins, name to semantic version; refused on `slng` |
+| `sdk_language` | `python` when written; refused on `slng` |
+| `connection` | required for LiveKit or Pipecat telephony; illegal with no phone use; refused on `slng` |
+| `deployment_region` | LiveKit: `us-east`, `eu-central`, or `ap-south`, one or a duplicate-free list; Pipecat: one non-empty region; on `slng` exactly one of `us-east`, `us-west`, `br`, `eu-west`, `eu-north`, `gb`, `za`, `il`, `jp`, `sg`, `id`, `in`, `au` |
+| `warm_instances` | instances the platform holds ready; zero or more; **Pipecat only**, refused on `livekit` and `slng` |
+| `models` | per target overrides of named `models` entries |
+
+That is the whole list. A `models` override is keyed by the entry name from
+`agent.yaml` and takes the same fields. Use it when a target cannot run an entry
+as defined, or runs its own better. Override the entry, never the agent.
+
+Transport, carrier, and destinations used to live here and no longer do. Writing
+any of them on a target is refused, and the refusal names the new home.
+
+## warm_instances, and when to write it
+
+`warm_instances` compiles to `[scaling] min_agents` in `pcc-deploy.toml`. With
+none declared the platform scales to zero when idle, so the first call after every
+quiet period waits for a container to start, and on a phone route that wait can
+outrun the session: it expires and nobody is answered at all. A knowledge base
+makes it much likelier, because the corpus is embedded at import before the server
+binds.
+
+**Write `warm_instances: 1` on a Pipecat target with a `telephony` channel**, and
+say out loud that it bills for that instance whether or not anybody calls. Leave
+it off a browser-only package, where a few seconds of cold start costs nothing.
+
+Do not tell an operator to remember `pipecat cloud deploy --min-agents 1` instead.
+That flag applies to one deploy, and `unmute compile` rewrites the manifest, so a
+hand-added `[scaling]` block does not survive either. The field is the durable
+answer.
+
+LiveKit refuses the field: `livekit.toml` carries only the project subdomain and
+the agent id, and a warm production replica on LiveKit Cloud is a property of the
+billing plan. SLNG refuses it too, because it exposes no pool of yours.
+
+## LiveKit deployment regions
+
+<ParamField path="deployment_region" type="string or list of strings">
+  LiveKit accepts `us-east` (Virginia), `eu-central` (Frankfurt), or `ap-south`
+  (Mumbai), as one region or a duplicate-free list. Omit to let the platform
+  choose placement. Unknown names, including `eu`, are refused. These are
+  [LiveKit's agent deployment regions](https://docs.livekit.io/deploy/admin/regions/endpoints/#agent-deployment-regions), not its media region groups.
+</ParamField>
+
+The region is chosen at the first `lk agent create` and cannot change on a
+redeploy. The CLI has no `lk region list` command. `lk agent list` shows the
+regions of existing agents in your project; it is not the full region catalog.
+Use the linked region list for a project with no agents.
+
+## Deployment regions and model regions
+
+See [the three region settings](models.md#three-region-settings) before
+setting a worker region, speech gateway, or router endpoint.
+
+`deployment_region` chooses where the agent worker runs. Each STT, TTS and LLM
+provider keeps its own endpoint and location settings. Set those on the model
+using fields the selected target's plugin supports.
+
+SLNG listen and speak entries choose their API gateway with
+`params.world_part`, which emits `{world_part}.api.slng.ai` on LiveKit
+and Pipecat. `models.md` has the accepted world parts and model YAML. A gateway
+choice does not set the worker region or guarantee where a provider processes
+speech.
+
+A LiveKit target accepts one deployment region or a duplicate-free list.
+Pipecat accepts exactly one. Every deployment from one LiveKit target uses the
+same generated model params, so a multi-region deployment does not move STT or
+TTS with each worker.
+
+For hard regional isolation, use one target instance per geography. Give each
+target one deployment region and complete per-target listen and speak model
+overrides with the provider's supported endpoint settings for that geography.
+A target model override replaces the entry instead of merging it, so repeat
+every field that entry needs.
+
+## Which targets do what
+
+| Provider | Validates | Generates and runs |
+|---|---|---|
+| `pipecat` | yes | yes |
+| `livekit` | yes | yes |
+| `slng` | yes | no |
+
+Those are the only three. A provider earns a place here by having a driver that
+owns its whole output, so validate and compile agree about what exists.
+
+`pipecat` and `livekit` generate a runnable Python project you host and run.
+`slng` generates a deployment body for a platform that runs the agent for you,
+so there is nothing to run locally and `unmute dev` does not apply to it. See
+"The slng target" below.
+
+`vapi` and `deepgram` used to be accepted as validation-only targets and were
+retired on 2026-08-24. Naming either as a target is refused. Note that
+`deepgram` is still a **model vendor**: `deepgram/nova:3` and similar
+are unaffected. A target and a model vendor are different things that can share
+a word.
+
+LiveKit and Pipecat versions are exact three-part versions in this release's
+supported window. Unmute never widens the pin. `pins` accepts only packages the
+LiveKit driver knows; other providers do not consume it. A target's `models`
+map is keyed by an existing model entry name and takes the same model fields.
+
+## The slng target
+
+SLNG hosts the agent. `unmute deploy <dir>` validates the package, compiles it,
+and pushes it. The compiler writes a deployment body and a runbook instead of a
+project:
+
+```text
+build/slng/
+├── agent.json               the agent create body
+├── compile-report.json      what was compiled, and which checks were left to deployment
+└── README.md                the runbook
+```
+
+This target writes no `tools/` directory at all: every tool reference,
+builtin, hosted or MCP, resolves by name against the organisation, so there
+is never a body of the package's own to write beside the agent body.
+`build/slng/samples/` and `.env` are the two things a recompile preserves inside
+`build/`.
+
+The pushed agent is called **`<name>-<target>`**, so a package named
+`acme-support` on the target below deploys as `acme-support-slng`. An SLNG name
+is unique across an organisation and a push replaces the agent it matches, so the
+name in `agent.yaml` is a live-agent decision and not a label.
+
+**The push itself is the `unmute-deploy` skill.** What `unmute deploy` checks
+before it writes anything, every refusal and what it means, credentials, the
+guarded push flags, web sessions, and what a push replaces on a live agent all
+live in `.agents/skills/unmute-deploy/SKILL.md` and its
+`references/slng-push.md`. Nothing about pushing is on this page.
+
+Unmute writes no `llm_router_enabled` on this target: SLNG applies its own
+default. Do not add one. A model your organisation brought its own key for is
+accepted only when the router is on, so forcing it off refuses those models.
+
+A `code` tool on slng runs in SLNG's sandbox, in the region serving the call,
+which is why it is fast. Whether it may reach the network is the platform's
+setting on that tool, recorded in the mirror under `config.egress`, and not
+something a package can ask for. A tool that must call a service is an
+`api_request` tool, created in the dashboard the same way. `examples/hotel-concierge`
+ships a hosted `code` tool, a hosted `api_request` tool, a builtin and an mcp
+server, plus template variables, an injected argument, a tool announcement, a
+model fallback, and deploys today.
+
+```yaml targets.yaml
+targets:
+  slng:
+    provider: slng
+    deployment_region: eu-north
+```
+
+That is the whole target. `deployment_region` takes exactly one of `us-east`, `us-west`, `br`, `eu-west`, `eu-north`, `gb`, `za`, `il`, `jp`, `sg`, `id`, `in`, `au`. `version`, `pins`, `sdk_language` and `connection` are all refused by
+name: each describes a generated project and there is none.
+
+Write models as two fields here, the same as everywhere else. SLNG names a
+model with the vendor and the model joined by a slash, and the driver joins
+them when it writes the body; a model name that already carries a slash is
+passed through whole. SLNG owns its model list, so no vendor or model name is
+checked on this target.
+
+**Do not write a package for slng that uses any of these.** Each is refused at
+validate, by name, with what to do instead:
+
+| Feature | Why |
+|---|---|
+| tasks, task groups, agent transfers | the create body carries one prompt and one greeting |
+| a `turn:` section, `semantic_endpointing`, `endpointing_delay` | SLNG owns its own turn taking |
+| `placement: local` on any model | SLNG runs the pipeline |
+| `conversation.inactivity` | SLNG's idle nudges need three spoken texts a package does not carry |
+| `conversation.max_duration`, `thinking_audio` | no field holds them |
+| `interruption.minimum_words`, `interruption.ignore_phrases` | interruptions are on or off |
+| a missing greeting, or `speaks_first: user` | SLNG requires a greeting and speaks the string it is given |
+| `tracing:` | unmute instruments no process here |
+| more than one `deployment_region` | SLNG takes exactly one |
+| outbound calling, `on_voicemail`, a warm human transfer | a package declares no carrier state on SLNG; `unmute deploy` attaches an existing trunk after a push |
+
+A tool named `end_call`, `detected_answering_machine`, `get_current_datetime`,
+`get_user_phone_number` or `set_runtime_variables` is refused: SLNG keeps those
+five names for its own curated capabilities. Writing `builtin: end_call` as the
+tool `end_call` is the correct way to reach one and is not a collision.
+
+**The slng target creates no tool.** `local:` and `webhook:` are refused
+there: SLNG owns a tool's code, version and gate pipeline, and unmute uploads
+nothing. Every tool an slng package names is one the organisation already
+holds.
+
+So there are three ways to name a tool on this target, and no fourth:
+
+- `slng:` for a tool the organisation hosts. Write `slng: check_order`, one
+  line, the tool's exact name on the platform: no hash, no mirror, no pull,
+  no description or schema to copy. See [tools.md](tools.md).
+- `builtin:` for a capability SLNG curates, such as `end_call`.
+- `mcp:` for a server the organisation registered.
+
+If the user wants a tool that does not exist yet, say that it starts in the
+SLNG dashboard, and that unmute cannot create it. Do not write a `local:` or
+`webhook:` block for an slng package and hope: it is refused at validate,
+before anything is written.
+
+A hosted tool's Python dependencies are the platform's own. They are invisible
+to a slng-only package; a package that also pulls a mirror for `livekit` or
+`pipecat` sees them as an exact `name==version` pin, because SLNG builds a
+locked environment per tool. The sandbox runs Python 3.14 with `pydantic`
+present, so a tool using only the standard library and pydantic mirrors none.
+A hosted tool that does declare dependencies is refused on `livekit` and
+`pipecat`, whose drivers build one dependency list for the whole project and
+read nothing per tool.
+
+An `mcp:` tool must list its tools under `mcp.tools`: SLNG attaches one
+reference per tool, and there is no "whole server" attachment to write.
+
+Set `mcp.server` when the server's name on the platform is not a legal tool file
+name, which is usual: `firecrawl-mcp-2` carries dashes and a tool file name is
+lowercase snake_case. Read the names with `voiceai mcp list`, and the tools each
+one offers with `voiceai mcp tools <server>`.
+
+### Vault names and Vault tokens
+
+SLNG reads secrets from its own store. The emitted runbook lists what compiling
+the package could see, grouped by where it came from, above the push command:
+a declared `auth:`, a `{{$NAME}}` token, and anything a committed mirror
+recorded. That is not the complete picture for a hosted tool or MCP server: its
+own credential is SLNG's, invisible to an offline compile, so `unmute deploy`
+reads the account directly and may ask about an entry the runbook never named.
+Unmute lists names and never values, either way.
+
+A `{{$NAME}}` token in a prompt, a greeting or a tool field is a **SLNG Vault
+variable**, not a package variable: SLNG substitutes the value at run time and
+nothing declares it in the package. It passes on a slng target and is refused on
+a livekit or pipecat one, which cannot resolve it.

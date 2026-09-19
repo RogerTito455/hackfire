@@ -1,7 +1,7 @@
 # SLNG
 
 **Used for:** step 3 (the agent calls residents) and step 4 (crew notification, the coordinator's voice query). Slices 6–9 (#7, #8, #9, #10), latency numbers (#14).
-**Status:** not started. `backend/app/providers/voice.py` is a stub
+**Status:** in progress. The resident agent is an Unmute package in `voice/resident/` that validates but is not deployed; `backend/app/providers/voice.py` is a stub
 **Owner:** Roger
 
 ## Access
@@ -71,26 +71,30 @@ The `model_variant` in the path must be one of the values in the spec (`slng/dee
 
 [Unmute](https://unmute.ai) is SLNG's open-source compiler for voice agents. The agent lives in `agent.yaml` plus a Markdown prompt, and compiles to three targets: **SLNG** (hosted, `unmute deploy`), **Pipecat** or **LiveKit** (a Python project you run). The `/v1/bridges/unmute/...` endpoints above are SLNG's unified speech API, which you can call without the compiler.
 
-What it would mean for us (checked against v0.5.5, released 2026-09-18, so expect changes):
+**The resident agent is an Unmute package: [`voice/resident/`](../../voice/resident/).** How to validate, deploy and test it, the dashboard setup it needs, and every placeholder are in [`voice/README.md`](../../voice/README.md). It validates for the SLNG target with unmute 0.5.5; it has not been deployed yet.
+
+What writing it taught us (v0.5.5, released 2026-09-18, so expect changes):
 
 | | SLNG target | Pipecat target |
 |---|---|---|
-| Our five `/tools` endpoints | **Refused as `webhook:` tools.** Create them as API Request tools in the SLNG dashboard first, then reference them by name as hosted tools | Allowed as `webhook:` tools |
-| Nebius as the LLM | Through SLNG's router (`openai-compat` provider) | `openai-compat` endpoint |
-| Deepfire MCP | Allowed, with an explicit `mcp.tools` list | Allowed |
-| Outbound calls | Not declared in the package; `unmute deploy` attaches an existing trunk | Twilio, deployed to Pipecat Cloud |
-| Local test | None (`unmute dev` does not exist for SLNG) | `unmute dev` opens a browser voice loop (needs `uv`) |
+| Our `/tools` endpoints | **Refused as `webhook:` tools.** Create them as API Request tools in the SLNG dashboard first, then reference them by name as hosted tools (`slng: report_status`). `inject:` pins an argument to a call variable | Allowed as `webhook:` tools. Hosted tools only compile with a mirror fetched by `unmute pull` |
+| Nebius as the LLM | **Not configured in the package.** The Context Router binding (`openai-compat` upstream, key from `NEBIUS_API_KEY`) is refused on this target. Register Nebius in SLNG's BYOK vault as an LLM provider, then name that model in `agent.yaml`. Which string names it is still open | `provider: nebius` with `endpoint_env: NEBIUS_BASE_URL`, reading `NEBIUS_API_KEY`; or the Context Router with an `openai-compat` upstream |
+| Region | `deployment_region` in `targets.yaml`: one of `eu-west`, `eu-north`, … | `params.world_part` on SLNG speech models picks the gateway |
+| Turn detection | SLNG's own; a `turn:` model is refused | A `turn:` model is required |
+| Deepfire MCP | Validates with an explicit `mcp.tools` list, once the server is registered in the SLNG organisation. Left out of the resident agent; see `voice/README.md` | Allowed |
+| Outbound calls | Not declared in the package; a trunk attached to the agent in the dashboard survives pushes. `unmute deploy --call <E.164>` rings a phone | Twilio, deployed to Pipecat Cloud |
+| Local test | None. The dashboard's Test agent panel cannot pass call variables, so the package carries test defaults | `unmute dev --var name=value` opens a browser voice loop (needs `uv`) |
 
-**Our take:** the team counts Unmute as a plus for the SLNG challenge, so the agent should end up as an Unmute package in the repo rather than only as clicks in the Agent Builder. A route that keeps the 45-minute timebox honest:
+**One package cannot serve both targets.** The `turn:` model Pipecat requires is refused on SLNG, and a `targets.yaml` override can only replace an entry that already exists. A Pipecat fallback is a second package; `voice/README.md` lists what it needs, and that recipe validated.
 
-1. Create the five `/tools` endpoints as API Request tools in the SLNG dashboard, pointing at the deployed backend (#2). Both routes below need them.
-2. Write the package: `agent.yaml` with the prompt, Soniox to listen, Fish to speak, Nebius through `openai-compat` to think, our five tools as hosted tools referenced by name, and the Deepfire MCP with an explicit tool list.
+The route that keeps the 45-minute timebox honest:
+
+1. Create `get_fire_status`, `get_evacuation_route` and `report_status` as API Request tools in the SLNG dashboard, pointing at the deployed backend (#2). The coordinator agent (#10) will need the other two.
+2. Register Nebius in the BYOK vault and put its model name in `voice/resident/agent.yaml`.
 3. `unmute deploy` to the SLNG target, and check the agent from the SLNG dashboard's browser test. That is checkpoint 1 (#7).
-4. If the SLNG target fights back when the timebox runs out, compile the same package for **Pipecat** instead. There, webhook tools are allowed and `unmute dev` gives a browser voice loop that doubles as the push-to-talk fallback. It still beats hand-writing an STT → LLM → TTS pipeline.
+4. If the SLNG target fights back when the timebox runs out, build the Pipecat variant. `unmute dev` gives a browser voice loop that doubles as the push-to-talk fallback. It still beats hand-writing an STT → LLM → TTS pipeline.
 
-To check before step 2: the docs suggest hosted tools also compile for Pipecat and LiveKit (they refuse only hosted tools that declare Python dependencies). If so, one package serves both targets unchanged. Where the package lives in the repo is Roger's call; add it to the layout in CLAUDE.md when it lands.
-
-Install: take the Linux archive from https://github.com/slng-ai/unmute/releases, or `go install github.com/slng-ai/unmute@latest` (Go 1.26+). `unmute skill install` then adds its Claude Code skill; only do that if we adopt it.
+Install: take the Linux archive and `checksums.txt` from https://github.com/slng-ai/unmute/releases and check the archive before extracting, or `go install github.com/slng-ai/unmute@latest` (Go 1.26+). Its Claude Code skills (`unmute`, `unmute-deploy`, `unmute-manifest`) are installed in the repo with `unmute skill install`; the text lives in `.agents/skills/` and `.claude/skills/` points to it.
 
 ## CLI and SDKs
 

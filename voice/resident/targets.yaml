@@ -1,0 +1,13 @@
+# Where the agent runs. SLNG hosts it; `unmute deploy` pushes it there.
+#
+# eu-north is the Netherlands, where SLNG hosts both Soniox and Fish S2.1 Pro.
+# eu-west (Germany) hosts both too. There is no Spain region.
+#
+# No pipecat target: in unmute 0.5.5 this package cannot validate for both.
+# Pipecat requires a `turn:` model that the slng target refuses, and it builds
+# hosted tools from mirrors that only `unmute pull` can fetch. ../README.md
+# says what a Pipecat variant needs.
+targets:
+  slng:
+    provider: slng
+    deployment_region: eu-north
