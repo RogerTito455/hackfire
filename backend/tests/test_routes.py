@@ -155,3 +155,11 @@ def test_committed_cache_covers_the_sample_registry(monkeypatch: pytest.MonkeyPa
         for mode in TravelMode:
             assert evacuation.evacuation_route(neighbor, mode).geometry is not None
         assert evacuation.rescue_route(neighbor).geometry is not None
+
+
+def test_dashboard_rescue_route_starts_at_the_crew_base(isolated_routing) -> None:
+    neighbor = first_neighbor()
+    route = client.get(f"/api/rescue-routes/{neighbor['id']}").json()
+    assert isolated_routing[0]["start"] == (evacuation.crew_base().lon, evacuation.crew_base().lat)
+    assert route["mode"] == "car"
+    assert client.get("/api/rescue-routes/nobody").status_code == 404

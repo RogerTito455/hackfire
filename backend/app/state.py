@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from .config import DATA_DIR, settings
-from .models import Neighbor, ReportStatusRequest, Rescue, TriageStatus
+from .models import CrewAlert, Neighbor, ReportStatusRequest, Rescue, TriageStatus
 
 # neighbors.local.json holds the team's real phone numbers and is git-ignored.
 _REGISTRY_CANDIDATES = [
@@ -21,9 +21,11 @@ _STUB_MINUTES_TO_IMPACT = {"la-atalaya": 45, "el-tiemblo": 120}
 class TriageState:
     def __init__(self) -> None:
         self._neighbors: dict[str, Neighbor] = {}
+        self._alerts: list[CrewAlert] = []
         self.load()
 
     def load(self) -> None:
+        self._alerts = []
         for candidate in _REGISTRY_CANDIDATES:
             if candidate and Path(candidate).exists():
                 raw = json.loads(Path(candidate).read_text(encoding="utf-8"))
@@ -55,7 +57,13 @@ class TriageState:
             }
         )
         self._neighbors[updated.id] = updated
+        if updated.status == TriageStatus.NEEDS_RESCUE and neighbor.status != TriageStatus.NEEDS_RESCUE:
+            self._alerts.append(_crew_alert(updated))
         return updated
+
+    def alerts(self) -> list[CrewAlert]:
+        """Crew alerts, newest first. One per resident each time they become needs_rescue."""
+        return list(reversed(self._alerts))
 
     def minutes_to_impact(self, zone: str) -> int | None:
         return _STUB_MINUTES_TO_IMPACT.get(zone)
@@ -78,6 +86,19 @@ class TriageState:
             )
             for index, n in enumerate(pending)
         ]
+
+
+def _crew_alert(neighbor: Neighbor) -> CrewAlert:
+    link = f"{settings.public_url}/?rescue={neighbor.id}"
+    people = f"{neighbor.people} people" if neighbor.people else "Number of people unknown"
+    details = f"{people}, {neighbor.mobility}" if neighbor.mobility else people
+    return CrewAlert(
+        rescue_id=f"rescue-{neighbor.id}",
+        neighbor_id=neighbor.id,
+        message=f"Rescue needed at {neighbor.address}. {details}. Route: {link}",
+        link=link,
+        created_at=datetime.now(UTC),
+    )
 
 
 state = TriageState()

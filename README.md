@@ -30,8 +30,9 @@ Hackathon skeleton. What works today:
 - Replay of the fire: 7,068 Deepfire satellite hotspots from 22–24 July 2026, cached in `data/`, on a time slider with play and pause. Hotspots are coloured by age and sized by fire radiative power.
 - Live mode: a toggle switches the map to Deepfire's active fire clusters right now, refreshed every minute. If Deepfire is down, the page shows a message and the replay keeps working.
 - Evacuation routes: `get_evacuation_route` and `get_rescue_route` are real. Routes avoid the area burned up to the scenario time and send residents to the safe point farthest from the fire. Click a resident on the map to see their route by car or on foot, and the directions the agent reads them. Demo routes are cached in `data/`.
+- Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard; SMS is not wired yet.
 
-Still to build: the predicted spread and zones at risk, lead time, the voice agent and outbound calls, crew notifications. See [PLAN.md](PLAN.md) and the issues.
+Still to build: the predicted spread and zones at risk, lead time, the voice agent and outbound calls, crew alerts by SMS. See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 
