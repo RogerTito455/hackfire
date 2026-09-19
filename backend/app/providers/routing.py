@@ -19,7 +19,8 @@ def route_avoiding(
     """Return the ORS GeoJSON route from start to end, both as (lon, lat).
 
     `avoid` is a GeoJSON Polygon or MultiPolygon. ORS rejects anything over 200 km²
-    or 20 km across, so clip the fire polygon to the demo box before calling.
+    or 20 km in height or width. The demo box is ~38 × 22 km, so clip the fire polygon
+    to a square of at most 14 km around the route before calling.
     """
     body: dict = {"coordinates": [list(start), list(end)]}
     if avoid is not None:

@@ -4,8 +4,13 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
+
+# Local keys live in the repo-root .env. Variables already set (tests, the host platform) win.
+load_dotenv(REPO_ROOT / ".env")
 
 
 def _env(name: str, default: str = "") -> str:
