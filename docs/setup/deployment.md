@@ -39,7 +39,7 @@ Done on 2026-09-19. Railway's import reads the pnpm workspace and configures the
    |---|---|---|
    | Start command | `pnpm --filter frontend dev` | `/bin/sh -c "exec uvicorn app.main:app --host 0.0.0.0 --port $PORT"` (the Dockerfile's `CMD`; clearing the field was not enough) |
    | Build command | `pnpm --filter frontend build` | Empty; the Dockerfile builder ignores it |
-   | Watch patterns | `/frontend/**` | `/Dockerfile`, `/backend/**`, `/frontend/**`, `/data/**`, `/package.json`, `/pnpm-lock.yaml`. With only `/frontend/**`, a backend-only push never deploys |
+   | Watch patterns | `/frontend/**` | Empty, so every push deploys. With only `/frontend/**`, Railway silently skipped every backend-only commit (they show under **Show Skipped** in Deployments), and a backend fix sat undeployed while we debugged the old code |
    | Region | `sfo` (US West) | EU West (Amsterdam), next to the demo and to the voice agent |
    | Healthcheck path | none | `/health` |
    | Replicas | 1 | Keep 1: a second replica would hold a second, different triage state |
@@ -66,7 +66,8 @@ With `$B` open in a browser, the `n02` pin turns red at the next poll: within ab
 
 ## Gotchas
 
-- **Memory.** The service must stay well under the plan's RAM limit. On 2026-09-19 the first `/api/fire-area` call pushed the process to ~1.9 GB, Railway killed it, and the request came back as `502 Application failed to respond`. A 502 with that message, followed by a healthy `/health`, means the process died and was restarted, not a Python error (that would be a 500).
+- **A 502 "Application failed to respond" means the process died**; a Python error would be a 500. To tell, mark a resident with `report_status`, repeat the failing request, and check whether the mark survived: the state is in memory, so a restart wipes it. On 2026-09-19 the first `/api/fire-area` call buffered ~3,000 hotspots in one GEOS pass, peaked at ~1.9 GB and got killed; `replay.burned_area_m` now takes 0.2 s and 54 MB. The image sets `PYTHONFAULTHANDLER=1`, so a crash in native code (GEOS, numpy) prints where it happened to the deploy logs.
+- **Check which commit is Active** before debugging a deploy. The Deployments tab names it; a push that did not match the watch patterns never shows up there.
 - **Every deploy wipes the triage state.** The state is in memory, so a restart reloads the registry. Nobody pushes to `main` during the demo. If state has to survive a redeploy, see [Supabase](../services/supabase.md).
 - **The real registry is not in the image.** `data/neighbors.local.json` is git-ignored, so the deployed backend serves `neighbors.sample.json`. Getting the team's real numbers onto the server without committing them is part of #12.
 - **A frontend-only change also restarts the backend**, because they are one service.

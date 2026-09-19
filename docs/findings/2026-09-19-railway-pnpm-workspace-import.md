@@ -26,7 +26,8 @@ The custom start command overrides the Dockerfile's `CMD`. The final image is th
 For #2:
 
 - Set the start command explicitly to the Dockerfile's `CMD`: `/bin/sh -c "exec uvicorn app.main:app --host 0.0.0.0 --port $PORT"`. Clearing the field was not enough.
-- Empty the build command, widen the watch patterns, and move the region to EU West. [Deployment](../setup/deployment.md) has the full table.
+- Empty the build command, empty the watch patterns, and move the region to EU West. [Deployment](../setup/deployment.md) has the full table.
+- The `/frontend/**` watch pattern cost us the most. Railway skipped every backend-only commit without an error, listing them only under **Show Skipped**, so we debugged a 502 against code that had already been fixed.
 - Generating the domain asked for the port by hand: `8080`.
 
 ## Sources
