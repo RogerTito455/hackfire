@@ -72,7 +72,7 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 
 ## The coordinator agent (`coordinator/`, #10)
 
-Same shape as the resident agent: Nemotron Super 3 to think, Soniox to listen, and the Castilian voice **Sergio** (Fish S2.1 Pro) to speak, so the two agents don't sound alike. `unmute validate` and `unmute compile` pass (0.5.5); **not deployed yet**.
+Same shape as the resident agent: Nemotron Super 3 to think, Soniox to listen, and Deepgram Aura 2 to speak, with the Spanish voice **Alvaro** (`aura-2-alvaro-es`, speed 1.2) so it doesn't sound like the resident agent's Nestor. Not Fish: it failed on every resident session in eu-north. `unmute validate` and `unmute compile` pass (0.5.5); **not deployed yet**.
 
 | Tool | API Request tool in SLNG | Parameters |
 |---|---|---|

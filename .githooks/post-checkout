@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# After switching branches: install the dependencies the new branch needs. Not for file checkouts.
+[ "$3" = "1" ] || exit 0
+exec "$(git rev-parse --show-toplevel)/.githooks/install-if-deps-changed" "$1" "$2"

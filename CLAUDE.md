@@ -46,7 +46,7 @@ Dockerfile                 The one deployed image, backend plus built dashboard 
 ## Commands
 
 ```bash
-pnpm bootstrap       # pnpm install + uv sync (never `pnpm setup`: it is a pnpm built-in)
+pnpm bootstrap       # pnpm install + uv sync + git hooks that rerun it when a pull changes dependencies (never `pnpm setup`: it is a pnpm built-in)
 pnpm dev:api         # http://localhost:8000, docs at /docs
 pnpm dev:web         # http://localhost:5173
 pnpm check           # backend tests, icon format check, then frontend type-check and build

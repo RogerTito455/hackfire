@@ -36,7 +36,7 @@ Extensions (#17 Norma, #18 Vonage, #19 Devin) start only after checkpoint 2 at 1
 - Commit messages in English, imperative mood: "Render hotspots as a MapLibre layer".
 - Reference the issue: `Closes #3` in the pull request, or `Refs #3` for partial work.
 - `pnpm check` passes before every commit.
-- After every `git pull`, run `pnpm bootstrap`: it installs whatever dependencies teammates added (frontend and backend) and is instant when nothing changed.
+- **New dependencies install themselves.** `pnpm bootstrap` points git at `.githooks/`; from then on, whenever a `git pull` (merge or rebase) or a branch switch changes `package.json`, `pnpm-lock.yaml`, `pyproject.toml` or `uv.lock`, the hooks run `pnpm bootstrap` for you. Run `pnpm bootstrap` once after pulling this change to turn it on. Restart `pnpm dev:web` / `pnpm dev:api` afterwards.
 
 ## Rules the code depends on
 
