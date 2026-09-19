@@ -1,6 +1,7 @@
 // Backend client. The only file that knows URLs and HTTP.
 
 import type { HotspotCollection } from '../domain/hotspots'
+import type { EvacuationOrder, OrderDecision, SafePoint } from '../domain/orders'
 import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { SpreadCollection } from '../domain/spread'
@@ -39,4 +40,12 @@ export const setReplayTime = (isoTime: string) =>
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ at: isoTime }),
+  })
+export const fetchOrders = () => request<EvacuationOrder[]>('/api/orders')
+export const fetchSafePoints = () => request<SafePoint[]>('/api/safe-points')
+export const approveOrder = (zone: string, decision: OrderDecision) =>
+  request<EvacuationOrder>(`/api/orders/${encodeURIComponent(zone)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(decision),
   })
