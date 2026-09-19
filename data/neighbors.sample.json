@@ -1,0 +1,47 @@
+[
+  {
+    "id": "n01",
+    "name": "Resident 01",
+    "phone": "+34000000001",
+    "address": "PLACEHOLDER street 1, La Atalaya, El Tiemblo",
+    "zone": "la-atalaya",
+    "lat": 40.4305,
+    "lon": -4.5205
+  },
+  {
+    "id": "n02",
+    "name": "Resident 02",
+    "phone": "+34000000002",
+    "address": "PLACEHOLDER street 2, La Atalaya, El Tiemblo",
+    "zone": "la-atalaya",
+    "lat": 40.4318,
+    "lon": -4.5179
+  },
+  {
+    "id": "n03",
+    "name": "Resident 03",
+    "phone": "+34000000003",
+    "address": "PLACEHOLDER street 3, La Atalaya, El Tiemblo",
+    "zone": "la-atalaya",
+    "lat": 40.4292,
+    "lon": -4.5228
+  },
+  {
+    "id": "n04",
+    "name": "Resident 04",
+    "phone": "+34000000004",
+    "address": "PLACEHOLDER street 4, El Tiemblo",
+    "zone": "el-tiemblo",
+    "lat": 40.4146,
+    "lon": -4.4985
+  },
+  {
+    "id": "n05",
+    "name": "Resident 05",
+    "phone": "+34000000005",
+    "address": "PLACEHOLDER street 5, El Tiemblo",
+    "zone": "el-tiemblo",
+    "lat": 40.4161,
+    "lon": -4.5012
+  }
+]
