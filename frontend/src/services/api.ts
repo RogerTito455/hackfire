@@ -1,5 +1,6 @@
 // Backend client. The only file that knows URLs and HTTP.
 
+import type { HotspotCollection } from '../domain/hotspots'
 import type { Neighbor, Rescue } from '../domain/triage'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -13,3 +14,4 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const fetchNeighbors = () => request<Neighbor[]>('/api/neighbors')
 export const fetchRescues = () => request<Rescue[]>('/api/rescues')
 export const resetDemo = () => request<{ status: string }>('/api/reset', { method: 'POST' })
+export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')

@@ -1,6 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import Response
 
+from . import replay
 from .config import settings
 from .models import (
     EvacuationRouteRequest,
@@ -23,6 +26,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.get("/health")
@@ -41,6 +45,15 @@ def list_neighbors() -> list[Neighbor]:
 @app.get("/api/rescues")
 def list_rescues() -> list[Rescue]:
     return state.rescue_queue()
+
+
+@app.get("/api/hotspots")
+def list_hotspots() -> Response:
+    """Deepfire hotspots for the 22–24 July 2026 replay, sorted by observed_at."""
+    body = replay.hotspots_geojson()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached hotspots: run pnpm data:hotspots")
+    return Response(content=body, media_type="application/geo+json")
 
 
 @app.post("/api/reset")
