@@ -1,7 +1,7 @@
 # Deepfire
 
 **Used for:** step 1 (hotspots, live fires) and step 2 (predicted spread). Slices 2, 3 and 10 (#3, #4, #11).
-**Status:** provider and hotspot pipeline written, not yet run against the API
+**Status:** hotspots working (7,068 cached for the replay, served at `GET /api/hotspots`); spread and live mode not started
 **Owners:** Bryan (hotspots, live mode), Rosa (spread)
 
 ## Access
@@ -24,6 +24,8 @@ Download the replay data once and commit it:
 ```bash
 pnpm data:hotspots     # writes data/hotspots_2026-07-22_24.geojson
 ```
+
+First run on 2026-09-19: about a minute, 7,068 hotspots, one cluster, no 3-hour window near the cap. The pipeline keeps only what the replay needs (`observed_at`, `fire_radiative_power`, `confidence`, `source`, `cluster_id`), rounds coordinates to 5 decimals and sorts by time: 2.2 MB on disk, ~250 KB gzipped over the wire. Sources: MTG (geostationary, every 10 minutes) 62%, VIIRS 29%, MODIS 5%, Sentinel-3 5%.
 
 ### Spread simulation
 

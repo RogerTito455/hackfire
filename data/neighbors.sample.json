@@ -5,8 +5,8 @@
     "phone": "+34000000001",
     "address": "PLACEHOLDER street 1, La Atalaya, El Tiemblo",
     "zone": "la-atalaya",
-    "lat": 40.4305,
-    "lon": -4.5205
+    "lat": 40.3829,
+    "lon": -4.4588
   },
   {
     "id": "n02",
@@ -14,8 +14,8 @@
     "phone": "+34000000002",
     "address": "PLACEHOLDER street 2, La Atalaya, El Tiemblo",
     "zone": "la-atalaya",
-    "lat": 40.4318,
-    "lon": -4.5179
+    "lat": 40.3834,
+    "lon": -4.4546
   },
   {
     "id": "n03",
@@ -23,8 +23,8 @@
     "phone": "+34000000003",
     "address": "PLACEHOLDER street 3, La Atalaya, El Tiemblo",
     "zone": "la-atalaya",
-    "lat": 40.4292,
-    "lon": -4.5228
+    "lat": 40.3817,
+    "lon": -4.4603
   },
   {
     "id": "n04",

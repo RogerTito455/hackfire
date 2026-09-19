@@ -16,6 +16,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Claude Code worktrees for background agents
+.claude/worktrees/
+
 # Editors and OS
 .vscode/
 .idea/

@@ -6,6 +6,7 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
+| 2026-09-19 | [Where La Atalaya is, and how close the hotspots get](2026-09-19-la-atalaya-location.md) | Replay data |
 | 2026-09-19 | [SLNG's catalogue now lists Catalan](2026-09-19-slng-lists-catalan.md) | SLNG |
 | 2026-09-19 | [The Deepfire spread API cannot simulate a past date](2026-09-19-deepfire-no-historical-simulation.md) | Deepfire |
 | 2026-09-19 | [SLNG does not provide phone numbers, and its tools need HTTPS](2026-09-19-slng-bring-your-own-number.md) | SLNG |
