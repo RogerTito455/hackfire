@@ -6,6 +6,7 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
+| 2026-09-19 | [Sending everyone to one safe point walked some residents into the fire](2026-09-19-evacuation-destinations.md) | Routes |
 | 2026-09-19 | [The lead time for La Atalaya: 6 h 8 min, and how it was computed](2026-09-19-lead-time.md) | Pitch figure |
 | 2026-09-19 | [The replay spread is a cone from the front's velocity, and how it behaves on 23 July](2026-09-19-spread-cone-model.md) | Predicted spread |
 | 2026-09-19 | [Railway configures a pnpm workspace as its frontend package](2026-09-19-railway-pnpm-workspace-import.md) | Deployment |

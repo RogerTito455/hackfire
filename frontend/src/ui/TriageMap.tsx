@@ -14,9 +14,10 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
 import type { SpreadPolygon } from '../domain/spread'
-import type { FireArea, Neighbor, Route } from '../domain/triage'
+import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import type { ZoneImpact } from '../domain/zones'
 import type { MapMode } from '../hooks/useMapMode'
+import { placeMarkerSvg, statusMarkerSvg } from './markers'
 import {
   FIRE_AREA_COLOR,
   formatSpanishTime,
@@ -27,6 +28,7 @@ import {
   ROUTE_COLOR,
   SPREAD_HOUR_COLORS,
   STATUS_COLOR,
+  STATUS_ICON,
   STATUS_LABEL,
   ZONE_URGENCY_COLORS,
 } from './theme'
@@ -182,6 +184,8 @@ interface TriageMapProps {
   live: LiveFires | null
   selectedNeighborId: string | null
   route: Route | null
+  /** Out by car or on foot (the flag marks the destination), or the crew's way in (from the fire station). */
+  routeKind: RouteKind
   /** The area the route avoids; drawn only while a route is shown. */
   fireArea: FireArea | null
   onSelectNeighbor: (neighborId: string) => void
@@ -199,6 +203,7 @@ export function TriageMap({
   live,
   selectedNeighborId,
   route,
+  routeKind,
   fireArea,
   onSelectNeighbor,
   spread,
@@ -208,6 +213,7 @@ export function TriageMap({
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<Map<string, Marker>>(new Map())
   const [styleReady, setStyleReady] = useState(false)
+  const endpoint = useRef<Marker | null>(null)
   const onSelect = useRef(onSelectNeighbor)
   useEffect(() => {
     onSelect.current = onSelectNeighbor
@@ -388,8 +394,16 @@ export function TriageMap({
     instance.getSource<GeoJSONSource>(FIRE_AREA)?.setData(
       showRoute && fireArea ? { type: 'Feature', geometry: fireArea.geometry as GeoJSONGeometry, properties: {} } : EMPTY,
     )
+    endpoint.current?.remove()
+    endpoint.current = null
     if (showRoute) {
       const coordinates = route!.geometry!.coordinates
+      const element = document.createElement('div')
+      element.className = 'place-marker'
+      element.innerHTML = placeMarkerSvg(routeKind === 'rescue' ? 'fire-truck' : 'flag')
+      endpoint.current = new Marker({ element })
+        .setLngLat(routeKind === 'rescue' ? coordinates[0] : coordinates[coordinates.length - 1])
+        .addTo(instance)
       const lons = coordinates.map(([lon]) => lon)
       const lats = coordinates.map(([, lat]) => lat)
       instance.fitBounds(
@@ -400,7 +414,7 @@ export function TriageMap({
         { padding: { top: 80, right: 80, bottom: 150, left: 80 }, duration: 800, maxZoom: 14 },
       )
     }
-  }, [styleReady, showRoute, route, fireArea])
+  }, [styleReady, showRoute, route, routeKind, fireArea])
 
   // Markers are rebuilt only when what they show changes, so a click is never lost to a poll.
   const drawn = useRef<Map<string, string>>(new Map())
@@ -412,9 +426,14 @@ export function TriageMap({
       let marker = markers.current.get(neighbor.id)
       if (marker === undefined || drawn.current.get(neighbor.id) !== look) {
         marker?.remove()
-        marker = new Marker({ color: STATUS_COLOR[neighbor.status] })
+        const element = document.createElement('div')
+        element.className = 'status-marker'
+        element.setAttribute('role', 'button')
+        element.setAttribute('aria-label', `${neighbor.name}: ${STATUS_LABEL[neighbor.status]}`)
+        element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
+        marker = new Marker({ element, anchor: 'bottom' })
           .setLngLat([neighbor.lon, neighbor.lat])
-          .setPopup(new Popup({ offset: 24 }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
+          .setPopup(new Popup({ offset: [0, -38] }).setText(`${neighbor.name} · ${STATUS_LABEL[neighbor.status]}`))
           .addTo(map.current)
         marker.getElement().addEventListener('click', () => onSelect.current(neighbor.id))
         markers.current.set(neighbor.id, marker)

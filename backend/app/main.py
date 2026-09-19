@@ -138,9 +138,9 @@ def list_alerts() -> list[CrewAlert]:
 
 
 @app.get("/api/fire-area")
-def fire_area() -> dict:
-    """The area routes avoid: everything burned up to the scenario time."""
-    return evacuation.fire_area()
+def fire_area(crew: bool = False) -> dict:
+    """The area routes avoid at the scenario time: residents' routes, or crews' with `crew=true`."""
+    return evacuation.fire_area(crew=crew)
 
 
 @app.post("/api/reset")
@@ -195,7 +195,7 @@ def _route_or_503(plan) -> Route:
 
 @app.post("/tools/get_evacuation_route")
 def get_evacuation_route(request: EvacuationRouteRequest) -> Route:
-    """Route from a registered resident's home to the safe point farthest from the fire."""
+    """Route from a registered resident's home to the nearest safe point the fire is not heading for."""
     neighbor = state.find_by_address(request.address)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Address not in the registry: {request.address}")

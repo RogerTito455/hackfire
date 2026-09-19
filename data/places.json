@@ -1,9 +1,47 @@
 {
-  "_note": "Demo assumptions from OpenStreetMap, not official meeting points. Safe points are town centres; the route planner sends residents to the one farthest from the burned area at the scenario time. The crew base is where rescue routes start.",
+  "_note": "Demo assumptions from OpenStreetMap, not official meeting points. Safe points are town and village centres; residents go to the nearest one that the predicted spread does not reach and that is at least 3 km from the fire. The crew base is where rescue routes start.",
   "safe_points": [
-    {"id": "el-tiemblo", "name": "El Tiemblo", "lat": 40.41306, "lon": -4.49938, "osm": "relation/348217"},
-    {"id": "cebreros", "name": "Cebreros", "lat": 40.45515, "lon": -4.46516, "osm": "relation/347741"},
-    {"id": "san-martin", "name": "San Martín de Valdeiglesias", "lat": 40.3625, "lon": -4.39865, "osm": "relation/347589"}
+    {
+      "id": "el-tiemblo",
+      "name": "El Tiemblo",
+      "lat": 40.41306,
+      "lon": -4.49938,
+      "osm": "relation/348217"
+    },
+    {
+      "id": "cebreros",
+      "name": "Cebreros",
+      "lat": 40.45515,
+      "lon": -4.46516,
+      "osm": "relation/347741"
+    },
+    {
+      "id": "san-martin",
+      "name": "San Martín de Valdeiglesias",
+      "lat": 40.3625,
+      "lon": -4.39865,
+      "osm": "relation/347589"
+    },
+    {
+      "id": "navahondilla",
+      "name": "Navahondilla",
+      "lat": 40.3255,
+      "lon": -4.49331,
+      "osm": "relation/347372"
+    },
+    {
+      "id": "rozas-de-puerto-real",
+      "name": "Rozas de Puerto Real",
+      "lat": 40.30984,
+      "lon": -4.49121,
+      "osm": "relation/343279"
+    }
   ],
-  "crew_base": {"id": "el-tiemblo-fire-station", "name": "El Tiemblo fire station", "lat": 40.41543, "lon": -4.49762, "osm": "node/5582810191"}
+  "crew_base": {
+    "id": "el-tiemblo-fire-station",
+    "name": "El Tiemblo fire station",
+    "lat": 40.41543,
+    "lon": -4.49762,
+    "osm": "node/5582810191"
+  }
 }
