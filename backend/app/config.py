@@ -17,12 +17,20 @@ def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
+def _origins(name: str, default: str) -> list[str]:
+    """Comma-separated origins, forgiving the spaces and trailing slashes of a pasted URL."""
+    origins = [origin.strip().rstrip("/") for origin in _env(name).split(",")]
+    return [origin for origin in origins if origin] or [default]
+
+
 @dataclass(frozen=True)
 class Settings:
     cors_origins: list[str] = field(
-        default_factory=lambda: _env("HACKFIRE_CORS_ORIGINS", "http://localhost:5173").split(",")
+        default_factory=lambda: _origins("HACKFIRE_CORS_ORIGINS", "http://localhost:5173")
     )
     neighbors_file: str = field(default_factory=lambda: _env("HACKFIRE_NEIGHBORS_FILE"))
+    # The built dashboard (frontend/dist). Set in the Dockerfile; empty locally, where Vite serves it.
+    dashboard_dir: str = field(default_factory=lambda: _env("HACKFIRE_DASHBOARD_DIR"))
     crew_phone: str = field(default_factory=lambda: _env("HACKFIRE_CREW_PHONE"))
 
     deepfire_client_id: str = field(default_factory=lambda: _env("DEEPFIRE_CLIENT_ID"))

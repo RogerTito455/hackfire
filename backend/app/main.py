@@ -1,7 +1,10 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 
 from . import live, replay
 from .config import settings
@@ -130,3 +133,22 @@ def get_rescue_route(request: RescueRouteRequest) -> Route:
         spoken_directions=f"Route to {rescue.neighbor.address} is not available yet.",
         stub=True,
     )
+
+
+# --- Dashboard ---------------------------------------------------------------
+# Deployed, this process also serves the built dashboard, which then calls the API on its own
+# origin. Only the dashboard's own paths: a catch-all mount at "/" would swallow the API's 404s
+# and trailing-slash redirects. See docs/setup/deployment.md.
+
+if settings.dashboard_dir:
+    dashboard_dir = Path(settings.dashboard_dir)
+    app.mount("/assets", StaticFiles(directory=dashboard_dir / "assets"), name="dashboard-assets")
+
+    @app.get("/", include_in_schema=False)
+    def dashboard() -> FileResponse:
+        return FileResponse(dashboard_dir / "index.html")
+
+    # Vite copies frontend/public/ to the root of the build; each file there needs a route here.
+    @app.get("/favicon.svg", include_in_schema=False)
+    def favicon() -> FileResponse:
+        return FileResponse(dashboard_dir / "favicon.svg")

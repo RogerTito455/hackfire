@@ -52,6 +52,20 @@ def test_rescue_queue_orders_by_time_to_impact() -> None:
     assert [r["neighbor"]["id"] for r in queue] == [near["id"], far["id"]]
 
 
+def test_reset_restores_the_initial_registry() -> None:
+    initial = client.get("/api/neighbors").json()
+    report = client.post(
+        "/tools/report_status",
+        json={"neighbor_id": initial[0]["id"], "status": "needs_rescue", "people": 3, "observation": "smoke"},
+    )
+    assert report.json()["status"] == "needs_rescue"
+
+    assert client.post("/api/reset").status_code == 200
+
+    assert client.get("/api/neighbors").json() == initial
+    assert client.get("/api/rescues").json() == []
+
+
 def test_unknown_neighbor_is_404() -> None:
     response = client.post("/tools/report_status", json={"neighbor_id": "nope", "status": "evacuating"})
     assert response.status_code == 404

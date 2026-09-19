@@ -4,7 +4,10 @@ import type { HotspotCollection } from '../domain/hotspots'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { Neighbor, Rescue } from '../domain/triage'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+// Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
+// points a local dashboard at another backend.
+const DEFAULT_API_URL = import.meta.env.DEV ? 'http://localhost:8000' : ''
+const API_URL = (import.meta.env.VITE_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, '')
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, init)

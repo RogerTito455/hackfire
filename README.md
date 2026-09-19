@@ -35,7 +35,7 @@ Still to build: the predicted spread and zones at risk, lead time, routing, the 
 
 ## Architecture
 
-A single repo, run on localhost and deployed straight from `main`. No staging environment.
+A single repo, run on localhost and deployed straight from `main` as one Railway service: the backend serves the API, the agent tools and the built dashboard on one URL ([Deployment](docs/setup/deployment.md)). No staging environment.
 
 ```
 frontend/src/

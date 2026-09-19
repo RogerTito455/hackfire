@@ -35,6 +35,7 @@ frontend/src/App.tsx       Composition root only: hook → UI
 voice/                     Unmute packages for the SLNG voice agents; `unmute validate` inside each
 data/                      Static demo data (registry, cached hotspots and spread)
 docs/                      Setup, one page per service, workflow, findings log. Update it as you go
+Dockerfile                 The one deployed image, backend plus built dashboard (docs/setup/deployment.md)
 ```
 
 ## Commands

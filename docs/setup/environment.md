@@ -8,7 +8,8 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 
 | Variable | Needed for | Where to get it |
 |---|---|---|
-| `HACKFIRE_CORS_ORIGINS` | Deployed frontend talking to the backend | Comma-separated origins. Default `http://localhost:5173` |
+| `HACKFIRE_CORS_ORIGINS` | A dashboard on another origin calling this backend, such as `pnpm dev:web` against the deployed one. The deployed dashboard is same-origin and needs nothing | Comma-separated origins; spaces and trailing slashes are ignored. Default `http://localhost:5173` |
+| `HACKFIRE_DASHBOARD_DIR` | The deployed backend serving the built dashboard | Set in the `Dockerfile` to `/repo/frontend/dist`. Leave empty locally, where `pnpm dev:web` serves it. See [Deployment](deployment.md) |
 | `HACKFIRE_NEIGHBORS_FILE` | Demo with the real registry (#12) | Path to `data/neighbors.local.json`. Empty uses the sample registry |
 | `HACKFIRE_CREW_PHONE` | Crew notification for each new rescue (#9) | A team member's phone, shared privately |
 | `DEEPFIRE_CLIENT_ID` | Hotspots, live fires, spread (#3, #4, #11) | https://app.deepfire.co → Settings → API clients → Create |
@@ -24,9 +25,13 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 
 | Variable | Needed for | Value |
 |---|---|---|
-| `VITE_API_URL` | Pointing the dashboard at a deployed backend | Backend URL. Defaults to `http://localhost:8000` |
+| `VITE_API_URL` | Pointing a local dashboard at another backend, such as the deployed one | Backend URL. Defaults to `http://localhost:8000` under `pnpm dev:web`, and to the page's own origin in a production build, so `vite preview` needs it set |
 
 Vite exposes `VITE_*` variables to the browser bundle, so anything placed there is public. Never put a secret key in a `VITE_*` variable.
+
+## Deployed (Railway)
+
+Railway injects `PORT`, which the `Dockerfile` passes to uvicorn; nothing else reads it. Every other backend variable is set in the Railway service's variables, never in the image. See [Deployment](deployment.md).
 
 ## Not read by the code
 

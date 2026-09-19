@@ -9,6 +9,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | **Setup** | [New machine](setup/new-machine.md) | From a fresh laptop to a running dashboard |
 | | [Environment variables](setup/environment.md) | Every key: what reads it, where to get it |
 | | [Claude Code](setup/claude-code.md) | MCP servers and skills for AI-assisted development |
+| | [Deployment](setup/deployment.md) | The one Railway service that serves the API and the dashboard |
 | **Services** | [Deepfire](services/deepfire.md) | Hotspots, active fires, spread simulation |
 | | [SLNG](services/slng.md) | Voice agent, outbound calls, SMS |
 | | [Nebius Token Factory](services/nebius.md) | The LLM behind the agent and the triage |

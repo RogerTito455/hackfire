@@ -1,0 +1,17 @@
+# Secrets and personal data never go into the image
+**/.env
+**/.env.*
+data/neighbors.local.json
+NOTES.internal.md
+
+# Rebuilt inside the image
+**/node_modules
+**/.venv
+**/__pycache__
+frontend/dist
+
+# Not needed at runtime
+.git
+.claude
+docs
+backend/tests
