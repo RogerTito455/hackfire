@@ -5,6 +5,7 @@ import { useLiveFires } from './hooks/useLiveFires'
 import { useMapMode, type MapMode } from './hooks/useMapMode'
 import { useSelectedRoute } from './hooks/useSelectedRoute'
 import { useOrders } from './hooks/useOrders'
+import { useTextTriage } from './hooks/useTextTriage'
 import { useTriage } from './hooks/useTriage'
 import { Dashboard } from './ui/Dashboard'
 
@@ -16,6 +17,16 @@ function App() {
   const live = useLiveFires(mode === 'live')
   const selection = useSelectedRoute()
   const orders = useOrders()
+  const textTriage = useTextTriage()
+
+  // Reset restores everything between rehearsals: the backend's state and replay moment, the
+  // slider back to the start, no resident selected.
+  const resetDemo = async () => {
+    await triage.reset()
+    selection.select(null)
+    textTriage.clear()
+    if (replay.range) replay.setTime(replay.range.start)
+  }
   const forecast = useFireForecast(replay.time)
   const leadTime = useLeadTime(replay.time)
 
@@ -26,13 +37,14 @@ function App() {
 
   return (
     <Dashboard
-      triage={triage}
+      triage={{ ...triage, reset: resetDemo }}
       replay={replay}
       mode={mode}
       onModeChange={changeMode}
       live={live}
       selection={selection}
       orders={orders}
+      textTriage={textTriage}
       forecast={forecast}
       leadTime={leadTime}
     />

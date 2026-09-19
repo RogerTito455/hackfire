@@ -530,3 +530,65 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.text-triage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.text-triage form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.text-triage textarea {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  resize: vertical;
+}
+
+.text-triage-send {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border: 1px solid #1a73e8;
+  border-radius: 999px;
+  background: #1a73e8;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.text-triage-send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.text-triage-manual {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.text-triage-manual button {
+  display: inline-flex;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.text-triage-result {
+  margin: 0;
+  font-weight: 600;
+}

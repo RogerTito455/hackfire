@@ -5,7 +5,8 @@ import type { EvacuationOrder, OrderDecision, SafePoint } from '../domain/orders
 import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
 import type { SpreadCollection } from '../domain/spread'
-import type { CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode } from '../domain/triage'
+import type { TextClassification } from '../domain/textTriage'
+import type { CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
@@ -48,4 +49,17 @@ export const approveOrder = (zone: string, decision: OrderDecision) =>
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(decision),
+  })
+export const fetchTextTriageAvailable = () => request<{ available: boolean }>('/api/triage/text')
+export const triageFromText = (neighborId: string, text: string) =>
+  request<{ neighbor: Neighbor; classification: TextClassification }>('/api/triage/text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ neighbor_id: neighborId, text }),
+  })
+export const reportStatus = (neighborId: string, status: TriageStatus) =>
+  request<Neighbor>('/tools/report_status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ neighbor_id: neighborId, status }),
   })
