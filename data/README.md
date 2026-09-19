@@ -13,5 +13,6 @@ Static files so the live demo never waits on a third-party API.
 | `zones.geojson` | 68 places the fire can reach, from OpenStreetMap: La Atalaya and El Tiemblo (ids `la-atalaya`, `el-tiemblo`), care homes, schools, health centres and main roads. Written by `pnpm data:zones`, served at `GET /api/zones` | Yes |
 | `demo_timeline.json` | The demo autopilot's script (`backend/app/autopilot.py`, docs/demo/runbook.md): orders approved and call outcomes at replay moments on 23 July, after La Atalaya is first flagged. Residents by position in the registry (1 to 10; the sample skips 6 to 10). A labelled simulation with the demo residents, not what happened | Yes |
 | `lead_time_la-atalaya.json` | La Atalaya's lead time and how it was computed. Written by `pnpm data:lead-time`, served at `GET /api/lead-time` | Yes |
+| `live_spread.json` | Live mode's last good predicted spread: Deepfire's automatic ELMFIRE runs matched to the active fires. Rewritten by the backend every few minutes, served when Deepfire fails (`backend/app/live_spread.py`) | **No** (ignored, runtime cache) |
 
 Demo box (lon/lat): `-4.85,40.30,-4.40,40.50`. Keep every polygon clipped to it.

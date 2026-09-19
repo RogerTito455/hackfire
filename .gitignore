@@ -5,6 +5,9 @@
 # Vonage application private keys
 *.key
 data/neighbors.local.json
+# Live mode's last Deepfire spread answer (backend/app/live_spread.py), rewritten every few minutes
+data/live_spread.json
+data/live_spread.tmp
 NOTES.internal.md
 
 # Python

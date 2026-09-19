@@ -69,7 +69,12 @@
     },
     "refreshFailed": "No se pudo actualizar; se muestran los datos de {time}.",
     "busy": "Deepfire está saturado; se muestran los datos de {time}.",
-    "updated": "Actualizado: {time}. Fuente: Deepfire."
+    "updated": "Actualizado: {time}. Fuente: Deepfire.",
+    "spread": {
+      "one": "Propagación prevista para {count} incendio: simulación {models} de Deepfire (terreno, combustible, meteorología)",
+      "other": "Propagación prevista para {count} incendios: simulaciones {models} de Deepfire (terreno, combustible, meteorología)"
+    },
+    "spreadNone": "Deepfire aún no ha simulado la propagación de estos incendios"
   },
   "route": {
     "close": "Cerrar la ruta",
@@ -201,6 +206,8 @@
   },
   "map": {
     "liveFire": "Detectado durante {hours} h; visto por última vez: {time}",
+    "liveSimulation": "Simulación {model} de Deepfire: {hours} h, ejecutada el {time}",
+    "liveSimulationModel": "Modelo físico: terreno, combustible y meteorología",
     "resident": "{name}: {status}"
   },
   "video": {

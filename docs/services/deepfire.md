@@ -1,7 +1,7 @@
 # Deepfire
 
 **Used for:** step 1 (hotspots, live fires) and step 2 (predicted spread). Slices 2, 3 and 10 (#3, #4, #11).
-**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`); replay spread done with our own cone, not with this API (see below); the Deepfire simulation is not used yet
+**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`), with its predicted spread from Deepfire's own automatic ELMFIRE runs (`GET /api/live/spread`); replay spread done with our own cone, not with this API (see below)
 **Owners:** Bryan (hotspots, live mode), Rosa (spread)
 
 ## Access
@@ -17,7 +17,9 @@ https://app.deepfire.co → Settings → API clients → Create. Set `DEEPFIRE_C
 | Token | `POST /v1/token` with `{"client_id", "client_secret"}` | Returns `access_token`, valid ~180 days, no refresh token. Send as `Authorization: Bearer` |
 | Hotspots | `GET /ogc/features/v1/collections/deepfire:hotspots/items` | `bbox`, `datetime` (closed interval only) or a `cql2-text` `filter`, `f=application/geo+json`. History goes back to January 2025 |
 | Active fires | `GET /ogc/features/v1/collections/deepfire:clusters/items` | `filter=active = true` |
-| Spread | `POST /v1/fire-spread/simulations` | See below |
+| Spread runs | `GET /v1/fire-spread/simulations?since=…&limit=100`, then `cursor=<nextCursor>` | Live mode reads these; newest first, no `result` in list items |
+| One run | `GET /v1/fire-spread/simulations/{id}` (the item's `links.self`) | `result`: the hourly polygons |
+| New run | `POST /v1/fire-spread/simulations` | See below. We never call it |
 
 Download the replay data once and commit it:
 
@@ -39,7 +41,24 @@ The backend caches the answer for 60 s and reuses one token for the life of the 
 
 It answers `202` with a `Location` header. Poll `GET /v1/fire-spread/simulations/{id}` about every 10 s until `COMPLETED`, `NO_SPREAD` or `FAILED`. The result is a GeoJSON FeatureCollection with one cumulative MultiPolygon per hour (`hour`, `elapsed_seconds`, and `burn_probability` for ensembles).
 
-**The replay does not use it.** The 23 July spread in `data/spread_2026-07-23.geojson` is our own cone from the front's velocity (`backend/app/spread.py`, [the finding](../findings/2026-09-19-spread-cone-model.md)). The simulation is still the plan for live mode (#11).
+**The replay does not use it.** The 23 July spread in `data/spread_2026-07-23.geojson` is our own cone from the front's velocity (`backend/app/spread.py`, [the finding](../findings/2026-09-19-spread-cone-model.md)). No Deepfire run of that fire exists (see below).
+
+### Live mode's predicted spread
+
+Deepfire runs ELMFIRE by itself on active fires (`auto: true`): a physics model of terrain, fuel and weather. Live mode shows those runs and never queues one, so it spends none of the two-in-flight allowance.
+
+`backend/app/live_spread.py`, served at `GET /api/live/spread`:
+
+1. List the runs of the last 24 hours (`GET /v1/fire-spread/simulations?since=…`, at most 3 pages of 100).
+2. Give each active fire from `GET /api/live/fires` the latest `COMPLETED` run whose ignition point is within 3 km of it. List items have no cluster id, and their `fireId` names a reported fire, not a cluster (none of 12 matched a cluster id), so the match is by distance. The one run checked in full carried a `clusterId` equal to the nearest cluster.
+3. Fetch each matched run once (`GET /v1/fire-spread/simulations/{id}`, six at a time): a completed run never changes.
+4. Answer with, per fire: the cluster id, name, run time, model, duration, burned area and the hourly polygons, largest first.
+
+The answer is cached in memory for 5 minutes. The last good one is written to `data/live_spread.json` (not tracked, about 750 KB, 160 KB gzipped): when Deepfire fails, the backend serves it with `stale: true` and asks again after a minute; after a restart it also seeds the runs already fetched, so only new ones are downloaded. With nothing cached, the endpoint returns 503 and the dashboard shows the fires without spread. The dashboard polls every 5 minutes in live mode and draws each fire's hours with the replay's ramp (`SPREAD_HOUR_COLORS`), under the fire markers; a fire's popup names the run.
+
+Verified against the live API on 2026-09-19 at about 20:40 CEST: 125 runs in the last 24 hours (114 `COMPLETED`, 11 `NO_SPREAD`), all `auto: true`, ELMFIRE, 12 h, one ensemble member, listed in two pages in 1.1 s. A run's detail is 6–7 KB with 12 hourly MultiPolygons (`hour`, `elapsed_seconds`, no `burn_probability`) and a `summary` (`burnedAreaM2`, `windSpeedAvgMs`, `windDirectionAvg`). 74 of the 141 active clusters matched a completed run; the first answer took 7 s, a refresh 0.5 s and a restart with the file 1.1 s.
+
+**No run of the 23 July fire.** Checked 2026-09-19 around 21:20 CEST, paging with `cursor` through everything since 2026-07-20: runs go back to 2026-07-21 17:44 UTC, 3,111 in total, all `auto: true`, all ELMFIRE, 12 h. None was created between 22 and 26 July inside lat 40.1–40.7, lon −5.1 to −4.1, and none mentions Ávila, El Tiemblo, Burgohondo, La Atalaya or Navaluenga. The replay keeps our cone.
 
 **There is no start-time parameter**: a simulation starts from the latest observations, and `lookbackHours` counts back from now. See [the finding](../findings/2026-09-19-deepfire-no-historical-simulation.md) before planning the 23 July replay around it.
 
@@ -54,11 +73,12 @@ The `deepfire` MCP server is in `.mcp.json` (no token). It searches *reported fi
 - **503 with `ogc-busy` and `Retry-After`** under load: shared capacity. This is why the demo reads from `data/`.
 - **Two simulations in flight** per API client; a third gets 429 `too-many-simulations`.
 - `FAILED` can mean the fire is "outside the modelled regions".
+- A run's `fireId` is not a cluster id: match runs to clusters by position (or by `clusterId`, which only the full run carries, and not always).
 
 ## Sources
 
 - https://docs.deepfire.co/llms.txt · https://docs.deepfire.co/llms-full.txt
 - Authentication: https://docs.deepfire.co/guides/authentication
-- Fire spread: https://docs.deepfire.co/api/fire-spread · https://docs.deepfire.co/reference/fire-spread/simulations/create-simulation
+- Fire spread: https://docs.deepfire.co/api/fire-spread · https://docs.deepfire.co/reference/fire-spread/simulations/create-simulation · https://docs.deepfire.co/reference/fire-spread/simulations/list-simulations · https://docs.deepfire.co/reference/fire-spread/simulations/get-simulation
 - Limits: https://docs.deepfire.co/guides/performance-and-limits
 - MCP: https://docs.deepfire.co/ai/connect-to-ai

@@ -69,7 +69,12 @@
     },
     "refreshFailed": "Could not refresh; showing data from {time}.",
     "busy": "Deepfire is busy; showing data from {time}.",
-    "updated": "Updated {time}. Source: Deepfire."
+    "updated": "Updated {time}. Source: Deepfire.",
+    "spread": {
+      "one": "Predicted spread for {count} fire: Deepfire {models} simulation (terrain, fuel, weather)",
+      "other": "Predicted spread for {count} fires: Deepfire {models} simulations (terrain, fuel, weather)"
+    },
+    "spreadNone": "No Deepfire spread simulation for these fires yet"
   },
   "route": {
     "close": "Close route",
@@ -201,6 +206,8 @@
   },
   "map": {
     "liveFire": "Detected over {hours} h, last seen {time}",
+    "liveSimulation": "Deepfire {model} simulation: {hours} h, run at {time}",
+    "liveSimulationModel": "Physics model: terrain, fuel and weather",
     "resident": "{name}: {status}"
   },
   "video": {

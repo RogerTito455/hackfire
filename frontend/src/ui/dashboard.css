@@ -218,6 +218,32 @@
   color: #b26a00;
 }
 
+/* Live mode's predicted spread: Deepfire's simulations, with the replay's ramp. */
+.live-spread {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.live-spread .replay-ramp {
+  flex: none;
+  width: 32px;
+}
+
+.live-popup p {
+  margin: 0;
+}
+
+.live-popup .meta {
+  margin-top: 4px;
+  color: #4a5578;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .route-panel {
   display: flex;
   flex-direction: column;

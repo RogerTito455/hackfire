@@ -14,6 +14,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
 import { closureArea, type RoadClosure } from '../domain/closures'
+import { liveSpreadPolygons, simulationFor, type LiveSpread } from '../domain/liveSpread'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import { ROAD_CLOSED_WITHIN_MIN, type ZoneImpact } from '../domain/zones'
@@ -32,6 +33,7 @@ import {
   ROAD_CLOSED_COLOR,
   ROUTE_COLOR,
   SPREAD_HOUR_COLORS,
+  spreadModelLabel,
   STATUS_COLOR,
   STATUS_ICON,
   ZONE_URGENCY_COLORS,
@@ -73,6 +75,7 @@ const OSM_STYLE: StyleSpecification = {
 
 const HOTSPOTS = 'hotspots'
 const LIVE_FIRES = 'live-fires'
+const LIVE_SPREAD = 'live-spread'
 const FIRE_AREA = 'fire-area'
 const ROUTE = 'route'
 const CLOSURES = 'closures'
@@ -132,10 +135,42 @@ function liveFireCollection(live: LiveFires | null): GeoJSONData {
         hoursSinceSeen: (live!.fetchedAt - fire.lastObserved) / HOUR,
         hoursBurning: burningHours(fire),
         lastObserved: fire.lastObserved,
+        // MapLibre drops string feature ids, so the popup finds the fire's simulation by this.
+        fireId: fire.id,
       },
     })),
   }
 }
+
+// --- Live mode: Deepfire's own spread simulations of the fires burning now ---------------------
+
+const LIVE_SPREAD_LAYERS = [`${LIVE_SPREAD}-fill`, `${LIVE_SPREAD}-outline`]
+
+function liveSpreadCollection(spread: LiveSpread | null): GeoJSONData {
+  return {
+    type: 'FeatureCollection',
+    features: liveSpreadPolygons(spread).map(({ fireId, hour, geometry }) => ({
+      type: 'Feature',
+      geometry,
+      properties: { fireId, hour },
+    })),
+  } as unknown as GeoJSONData
+}
+
+/** A live fire's popup: when it was seen, then Deepfire's simulation of it, if there is one. */
+function livePopupContent(lines: string[]): HTMLElement {
+  const content = document.createElement('div')
+  content.className = 'live-popup'
+  for (const [index, line] of lines.entries()) {
+    const paragraph = document.createElement('p')
+    if (index > 0) paragraph.className = 'meta'
+    paragraph.textContent = line
+    content.append(paragraph)
+  }
+  return content
+}
+
+// --- end of live spread ------------------------------------------------------------------------
 
 const liveColor = [
   'interpolate',
@@ -222,6 +257,8 @@ interface TriageMapProps {
   /** Replay time in epoch milliseconds: hotspots observed after it are hidden. */
   time: number | null
   live: LiveFires | null
+  /** Deepfire's spread simulations of the live fires, drawn under them in live mode. */
+  liveSpread?: LiveSpread | null
   selectedNeighborId: string | null
   route: Route | null
   /** Out by car or on foot (the flag marks the destination), or the crew's way in (from the fire station). */
@@ -248,6 +285,7 @@ export function TriageMap({
   hotspots,
   time,
   live,
+  liveSpread = null,
   selectedNeighborId,
   route,
   routeKind,
@@ -280,6 +318,11 @@ export function TriageMap({
   useEffect(() => {
     words.current = { t, intl }
   }, [t, intl])
+  // The live popup reads the current simulations through this ref, like the words above.
+  const liveRuns = useRef(liveSpread)
+  useEffect(() => {
+    liveRuns.current = liveSpread
+  }, [liveSpread])
 
   useEffect(() => {
     if (!container.current || map.current) return
@@ -369,6 +412,22 @@ export function TriageMap({
           'circle-stroke-color': '#3a0d06',
         },
       })
+      // Live mode: Deepfire's spread simulations, under the live fire markers.
+      instance.addSource(LIVE_SPREAD, { type: 'geojson', data: EMPTY, attribution: 'Spread: Deepfire ELMFIRE' })
+      instance.addLayer({
+        id: `${LIVE_SPREAD}-fill`,
+        type: 'fill',
+        source: LIVE_SPREAD,
+        layout: { visibility: 'none' },
+        paint: { 'fill-color': spreadColor, 'fill-opacity': 0.14 },
+      })
+      instance.addLayer({
+        id: `${LIVE_SPREAD}-outline`,
+        type: 'line',
+        source: LIVE_SPREAD,
+        layout: { visibility: 'none' },
+        paint: { 'line-color': spreadColor, 'line-width': 1, 'line-opacity': 0.9 },
+      })
       instance.addSource(LIVE_FIRES, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -421,15 +480,32 @@ export function TriageMap({
       instance.on('click', LIVE_FIRES, (event) => {
         const feature = event.features?.[0]
         if (!feature || feature.geometry.type !== 'Point') return
-        const { hoursBurning, lastObserved } = feature.properties as { hoursBurning: number; lastObserved: number }
+        const { hoursBurning, lastObserved, fireId } = feature.properties as {
+          hoursBurning: number
+          lastObserved: number
+          fireId: string
+        }
+        const { intl: locale } = words.current
+        const lines = [
+          words.current.t('map.liveFire', {
+            hours: Math.round(hoursBurning),
+            time: formatSpanishTime(lastObserved, locale),
+          }),
+        ]
+        const run = simulationFor(liveRuns.current, fireId)
+        if (run) {
+          lines.push(
+            words.current.t('map.liveSimulation', {
+              model: spreadModelLabel(run.model),
+              hours: run.durationHours ?? run.hours.length,
+              time: formatSpanishTime(run.runAt, locale),
+            }),
+            words.current.t('map.liveSimulationModel'),
+          )
+        }
         new Popup({ offset: 12, closeButton: false, focusAfterOpen: false })
           .setLngLat(feature.geometry.coordinates as [number, number])
-          .setText(
-            words.current.t('map.liveFire', {
-              hours: Math.round(hoursBurning),
-              time: formatSpanishTime(lastObserved, words.current.intl),
-            }),
-          )
+          .setDOMContent(livePopupContent(lines))
           .addTo(instance)
       })
       setStyleReady(true)
@@ -475,6 +551,19 @@ export function TriageMap({
     if (!styleReady || !map.current) return
     map.current.getSource<GeoJSONSource>(LIVE_FIRES)?.setData(liveFireCollection(live))
   }, [styleReady, live])
+
+  // Live mode: Deepfire's spread simulations, shown only in live mode.
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(LIVE_SPREAD)?.setData(liveSpreadCollection(liveSpread))
+  }, [styleReady, liveSpread])
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    for (const layer of LIVE_SPREAD_LAYERS) {
+      map.current.setLayoutProperty(layer, 'visibility', mode === 'live' ? 'visible' : 'none')
+    }
+  }, [styleReady, mode])
 
   useEffect(() => {
     if (!styleReady || !map.current) return

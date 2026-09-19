@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
+from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_spread, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -169,6 +169,16 @@ def list_live_fires() -> dict:
     """Deepfire's active fire clusters over Iberia, cached for a minute."""
     try:
         return live.active_fires()
+    except live.LiveUnavailable as error:
+        raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
+
+
+@app.get("/api/live/spread")
+def live_spread_runs() -> dict:
+    """Predicted spread for the live fires: the latest completed Deepfire ELMFIRE run per fire, one
+    cumulative polygon per hour. Cached for five minutes; the last good answer survives an outage."""
+    try:
+        return live_spread.predicted_spread()
     except live.LiveUnavailable as error:
         raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
 

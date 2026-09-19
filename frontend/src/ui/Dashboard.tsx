@@ -108,6 +108,7 @@ export function Dashboard({
           hotspots={replay.hotspots}
           time={replay.time}
           live={live.data}
+          liveSpread={live.spread}
           selectedNeighborId={selection.neighborId}
           route={selection.route}
           routeKind={selection.mode}
