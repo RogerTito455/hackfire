@@ -161,6 +161,7 @@ This is the interface between voice and everything else. Fix it in the first hou
 - Crew notification for every new rescue, and a live mode in addition to the replay.
 - Code submission is Sunday at 11:00.
 - Nebius is out of the stack (19 September, afternoon). The agents and the backend use the LLM SLNG serves.
+- **Checkpoint 2 (19 September, 19:31): the four steps work end to end.** Vonage starts (Bryan, #18, cut-off 21:00); Devin stays a pitch mention (#19). The demo video is made with ElevenLabs narration and Remotion, over footage of a Playwright simulation with real agent calls.
 - All project documentation is written in English.
 
 **Adopted on recommendation, not yet confirmed — review them in five minutes**
