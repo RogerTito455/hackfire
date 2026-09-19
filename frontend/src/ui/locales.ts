@@ -9,6 +9,9 @@ export type Vars = Record<string, string | number>
 
 const FILES = import.meta.glob<Messages>('../locales/*.json', { eager: true, import: 'default' })
 
+// Flags are separate files (ui/flags/<code>.svg), fetched only when shown: one of them is 80 KB.
+const FLAGS = import.meta.glob<string>('./flags/*.svg', { eager: true, query: '?url', import: 'default' })
+
 const CATALOGUE: Record<string, Messages> = Object.fromEntries(
   Object.entries(FILES).map(([path, messages]) => [path.slice('../locales/'.length, -'.json'.length), messages]),
 )
@@ -20,12 +23,15 @@ export interface LocaleInfo {
   name: string
   /** BCP 47 tag for dates and numbers, e.g. "es-ES". */
   intl: string
+  /** URL of the flag shown for it (`_meta.flag` names a file in ui/flags/), if any. */
+  flag: string | null
 }
 
 export const LOCALES: LocaleInfo[] = Object.entries(CATALOGUE)
   .map(([code, messages]) => {
     const meta = messages._meta as Messages | undefined
-    return { code, name: String(meta?.name ?? code), intl: String(meta?.intl ?? code) }
+    const flag = meta?.flag ? FLAGS[`./flags/${String(meta.flag)}.svg`] : undefined
+    return { code, name: String(meta?.name ?? code), intl: String(meta?.intl ?? code), flag: flag ?? null }
   })
   .sort((a, b) => a.code.localeCompare(b.code))
 

@@ -1,7 +1,8 @@
 {
   "_meta": {
     "name": "Español",
-    "intl": "es-ES"
+    "intl": "es-ES",
+    "flag": "es"
   },
   "app": {
     "connected": "Conectado",

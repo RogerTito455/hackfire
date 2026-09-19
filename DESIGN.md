@@ -130,9 +130,9 @@ Every word the dashboard shows lives in [`frontend/src/locales/`](frontend/src/l
 - **Placeholders:** `{name}`. Numbers passed as numbers are written the locale's way (1,234 or 1.234).
 - **Plurals:** an object of `Intl.PluralRules` forms, picked by a numeric `count`: `{ "one": "{count} person", "other": "{count} people" }`.
 - **Dates and numbers:** `useI18n().intl` (the `_meta.intl` tag) goes to the formatters in `theme.ts`. Fire and forecast times are shown in Spain's time zone; crew-alert clocks in the phone's own.
-- **Choosing a language:** the `ES`/`EN` pill in the top bar opens the phone's native picker. The first visit follows the browser's language and falls back to English; the choice is saved in `localStorage`.
+- **Choosing a language:** the flag pill in the top bar opens the phone's native picker, which lists every language by its own name. Flags live in `ui/flags/`, not `ui/icons/` (they are full-colour pictures, not the outline icon format), and load as separate files. The first visit follows the browser's language and falls back to English; the choice is saved in `localStorage`.
 - **Adding a language:**
-  1. Copy `en.json` to `<code>.json` and set `_meta` (`name` in that language, `intl` as a BCP 47 tag such as `ca-ES`).
+  1. Copy `en.json` to `<code>.json` and set `_meta`: `name` in that language, `intl` as a BCP 47 tag such as `ca-ES`, and `flag`, the name of a round-cropped square SVG in `frontend/src/ui/flags/` (optimise it first: `pnpm dlx svgo@3 --precision=1 --multipass <file>`).
   2. Translate every value and keep the placeholders.
   3. Do the same for the backend's sentences in `backend/app/locales/` (no `intl` there).
   4. Run `pnpm check`.
