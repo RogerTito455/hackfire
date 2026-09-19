@@ -12,14 +12,15 @@ PLAN.md assumes we can run a Deepfire spread simulation for the 23 July 2026 run
 
 Unknown fields are rejected with 422. So seven days is the furthest back a simulation can be seeded, and 23 July is two months ago.
 
-Not verified against the live API: nobody has run a simulation yet.
+Not verified against the live API by running one: we have never queued a simulation. The list of existing runs was checked (step 2 below).
 
 ## What we do about it
 
 1. **Ask the Deepfire mentors** whether a past run is possible some other way: an internal parameter, or a run from the web app.
 2. **Check for an existing run**: `GET /v1/fire-spread/simulations?since=…` lists the organisation's runs, including ones Deepfire made automatically (`auto: true`) on fires in its jurisdiction.
+   **Checked 2026-09-19 around 21:20 CEST**: `GET /v1/fire-spread/simulations?since=2026-07-20T00:00:00Z`, paged with `cursor` through every run. Deepfire keeps runs back to 2026-07-21 17:44 UTC: 3,111 in total, all `auto: true`, all ELMFIRE, 12 h. None was created between 22 and 26 July inside the box lat 40.1–40.7, lon −5.1 to −4.1, and none mentions Ávila, El Tiemblo, Burgohondo, La Atalaya or Navaluenga. So there is no Deepfire simulation of the 23 July fire to use, and the replay keeps our cone.
 3. **If neither works, go straight to the fallback** already in PLAN.md: a cone from the front's velocity over the last hours of hotspots. The replay hotspots themselves are fine; the hotspot history goes back to January 2025.
-4. A live simulation still works for **live mode** (#11), on a fire burning now.
+4. **Live mode** (#11) uses the simulations of fires burning now, and queues none: Deepfire's own automatic ELMFIRE runs of the last 24 hours, matched to the active fires by position and cached (`GET /api/live/spread`, see [docs/services/deepfire.md](../services/deepfire.md#live-modes-predicted-spread)). Done 2026-09-19.
 
 The team had confirmed that the simulation "has the history needed for 23 July" (PLAN.md section 10). This finding contradicts the docs, not necessarily that confirmation; settle it with the mentors before anyone spends hours on it.
 

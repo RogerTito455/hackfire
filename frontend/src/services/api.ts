@@ -5,6 +5,7 @@ import type { HotspotCollection } from '../domain/hotspots'
 import type { EvacuationOrder, OrderDecision, SafePoint } from '../domain/orders'
 import type { LeadTime } from '../domain/leadTime'
 import type { LiveFireCollection } from '../domain/liveFires'
+import type { LiveSpreadResponse } from '../domain/liveSpread'
 import type { SpreadCollection } from '../domain/spread'
 import type { TextClassification } from '../domain/textTriage'
 import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMode, TriageStatus } from '../domain/triage'
@@ -38,6 +39,7 @@ export const fetchRescues = () => request<Rescue[]>('/api/rescues')
 export const resetDemo = () => request<{ status: string }>('/api/reset', { method: 'POST' })
 export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
+export const fetchLiveSpread = () => request<LiveSpreadResponse>('/api/live/spread')
 export const fetchRoute = (neighborId: string, mode: TravelMode) =>
   request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
 export const fetchFireArea = (crew: boolean) => request<FireArea>(`/api/fire-area${crew ? '?crew=true' : ''}`)

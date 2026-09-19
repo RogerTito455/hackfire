@@ -101,6 +101,13 @@ export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: nu
 
 export const MAP_MODE_ICON = { replay: 'replay', live: 'live' } as const
 
+// Deepfire's spread models by their own names (proper nouns, not translated).
+const SPREAD_MODEL_LABEL: Record<string, string> = { elmfire: 'ELMFIRE', forefire: 'ForeFire' }
+
+export function spreadModelLabel(model: string): string {
+  return SPREAD_MODEL_LABEL[model] ?? model.toUpperCase()
+}
+
 export const ROUTE_KIND_ICON = { car: 'car', walking: 'walk', rescue: 'fire-truck' } as const
 
 // The way out is civil-protection blue (DESIGN.md); the fire keeps the warm colours.

@@ -1,10 +1,11 @@
+import { spreadModels, type LiveSpread } from '../domain/liveSpread'
 import type { LiveMode } from '../hooks/useLiveFires'
 import { Icon } from './Icon'
 import { useI18n } from './i18n'
-import { formatSpanishTime } from './theme'
+import { formatSpanishTime, SPREAD_HOUR_COLORS, spreadModelLabel } from './theme'
 
 // Status bar for live mode. A Deepfire outage shows up here as a message, never as a broken map.
-export function LiveStatus({ status, data }: LiveMode) {
+export function LiveStatus({ status, data, spread }: LiveMode) {
   const { t, intl } = useI18n()
   if (data === null) {
     return (
@@ -27,7 +28,24 @@ export function LiveStatus({ status, data }: LiveMode) {
           </strong>
         </div>
         <div className={status === 'error' || data.stale ? 'live-note warn' : 'live-note'}>{note}</div>
+        {spread !== null && <SpreadLine spread={spread} />}
       </div>
+    </div>
+  )
+}
+
+// What the warm areas around the fires are: Deepfire's own simulations, drawn with the replay's ramp.
+function SpreadLine({ spread }: { spread: LiveSpread }) {
+  const { t } = useI18n()
+  const gradient = SPREAD_HOUR_COLORS.map(([, color]) => color).join(', ')
+  const count = spread.fires.length
+  const models = spreadModels(spread).map(spreadModelLabel).join(', ')
+  return (
+    <div className="live-spread">
+      {count > 0 && (
+        <span className="replay-ramp" aria-hidden="true" style={{ background: `linear-gradient(to right, ${gradient})` }} />
+      )}
+      <span>{count > 0 ? t('live.spread', { count, models }) : t('live.spreadNone')}</span>
     </div>
   )
 }

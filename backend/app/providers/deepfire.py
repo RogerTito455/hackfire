@@ -69,3 +69,36 @@ def hotspots_between(
 
 def active_clusters(client: httpx.Client, token: str, bbox: str) -> list[dict]:
     return _items(client, token, "clusters", bbox, "active = true")
+
+
+# Fire spread simulations. Deepfire runs ELMFIRE on its own on active fires (`auto: true`); these read
+# those runs and never queue one (only two may be in flight per API client). Verified 2026-09-19.
+_SIMULATIONS = API + "/v1/fire-spread/simulations"
+SIMULATIONS_PAGE = 100
+
+
+def simulations_since(client: httpx.Client, token: str, since: datetime, max_pages: int) -> list[dict]:
+    """The organisation's simulations created since `since`, newest first, at most `max_pages` pages.
+
+    List items carry no `result`; fetch each simulation for its hourly polygons.
+    """
+    items: list[dict] = []
+    params: dict[str, str | int] = {"since": since.strftime(_TIMESTAMP), "limit": SIMULATIONS_PAGE}
+    for _ in range(max_pages):
+        response = client.get(_SIMULATIONS, headers={"Authorization": f"Bearer {token}"}, params=params)
+        response.raise_for_status()
+        body = response.json()
+        items.extend(body.get("items", []))
+        cursor = body.get("nextCursor")
+        if not cursor:
+            break
+        params = {**params, "cursor": cursor}
+    return items
+
+
+def simulation(client: httpx.Client, token: str, simulation_id: str) -> dict:
+    """One simulation. Once `COMPLETED`, `result` is a FeatureCollection with one cumulative
+    MultiPolygon per hour (`hour`, `elapsed_seconds`, and `burn_probability` for ensembles)."""
+    response = client.get(f"{_SIMULATIONS}/{simulation_id}", headers={"Authorization": f"Bearer {token}"})
+    response.raise_for_status()
+    return response.json()
