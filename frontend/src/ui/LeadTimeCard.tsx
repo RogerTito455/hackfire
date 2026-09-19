@@ -19,8 +19,9 @@ export function LeadTimeCard({ view }: LeadTimeCardProps) {
   return (
     <div className="lead">
       <p className="lead-figure">
-        <strong>{formatMinutes(leadTime.minutes)}</strong> {t('leadTime.label')}
+        <strong>{t('leadTime.approx', { count: Math.round(leadTime.minutes / 60) })}</strong> {t('leadTime.label')}
       </p>
+      <p className="lead-range">{t('leadTime.range', { exact: formatMinutes(leadTime.minutes) })}</p>
       <p>
         {t('leadTime.explanation', {
           zone: leadTime.zone_name,

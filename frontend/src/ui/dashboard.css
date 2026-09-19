@@ -1462,3 +1462,264 @@ button:active {
   background: var(--mist);
   color: var(--ink);
 }
+
+.lead .lead-range {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+/* --- Laptop and desktop: an operations console, not floating cards ------------------------
+   One sidebar with a real header, flat sections split by hairlines, 8 px controls, a neutral
+   segmented control, and the status strip as a row of indicators. The phone layout above is
+   untouched: everything here is inside this media query. */
+
+@media (min-width: 900px) {
+  .app {
+    --sidebar: 460px;
+    --header: 56px;
+  }
+
+  .app .map-area {
+    left: var(--sidebar);
+  }
+
+  /* The top bar becomes the sidebar's header. */
+  .topbar {
+    top: 0;
+    right: auto;
+    left: 0;
+    width: var(--sidebar);
+    height: var(--header);
+    box-sizing: border-box;
+    gap: 12px;
+    padding: 0 16px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+
+  .topbar .brand,
+  .topbar .conn,
+  .topbar .mode-toggle,
+  .topbar .language {
+    box-shadow: none;
+  }
+
+  .topbar .brand {
+    padding: 0;
+    background: transparent;
+    font-size: 16px;
+  }
+
+  .topbar .conn {
+    padding: 0;
+    background: transparent;
+  }
+
+  .topbar .conn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .topbar .mode-toggle {
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--mist);
+  }
+
+  .topbar .mode-toggle button {
+    min-width: 0;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 6px;
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+
+  .topbar .mode-toggle button.active {
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgb(15 27 61 / 14%);
+  }
+
+  .topbar .language {
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+  }
+
+  .topbar .language-flag {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* The sidebar: paper, flush, under the header. */
+  .sheet,
+  .sheet[data-snap='half'],
+  .sheet[data-snap='full'] {
+    top: var(--header);
+    width: var(--sidebar);
+    height: calc(100vh - var(--header));
+    border-right: 1px solid var(--line);
+    background: var(--paper);
+  }
+
+  .sheet-header {
+    padding: 14px 16px 12px;
+  }
+
+  .sheet-body {
+    padding: 0 0 24px;
+    font-size: 14px;
+  }
+
+  .sheet .replay-play {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Status strip as indicators: white cells, the state's colour as a top rule and the numeral. */
+  .status-strip {
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .status-strip li,
+  .status-strip li.none {
+    min-height: 58px;
+    padding: 9px 10px 8px;
+    border-radius: 0;
+    background: var(--paper);
+    color: var(--tone);
+    box-shadow: inset 0 3px 0 var(--tone);
+  }
+
+  .status-strip li + li {
+    border-left: 1px solid var(--line);
+  }
+
+  .status-strip li.none {
+    color: var(--ink-2);
+    box-shadow: inset 0 3px 0 var(--line);
+  }
+
+  .status-strip strong {
+    font-size: 24px;
+  }
+
+  .status-strip li > span:last-child {
+    color: var(--ink-2);
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  /* Sections: flat, separated by hairlines, with quiet headings. */
+  .group {
+    margin: 0;
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .group h2 {
+    margin-bottom: 10px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .group h2 .icon {
+    color: var(--ink-2);
+  }
+
+  .group-selected {
+    background: var(--selected-bg);
+    box-shadow: inset 3px 0 0 var(--route);
+  }
+
+  .empty,
+  .hint {
+    font-size: 13.5px;
+  }
+
+  /* Controls: 8 px corners and a pointer-sized height, not phone pills. */
+  .group button,
+  .group select,
+  .sheet .reset,
+  .route-modes button,
+  .order-approve,
+  .alert-route,
+  .text-triage-send,
+  .text-triage-manual button,
+  .video-request,
+  .crew-count button {
+    min-height: 36px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .crew-count button {
+    min-height: 30px;
+    width: 30px;
+  }
+
+  .group select,
+  .text-triage textarea {
+    min-height: 36px;
+    font-size: 14px;
+  }
+
+  .route-modes button:not(.active),
+  .alert-route {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .sheet .reset {
+    margin: 16px;
+    width: auto;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+
+  .hint {
+    margin: 16px;
+  }
+
+  button:active {
+    transform: none;
+  }
+
+  /* MapLibre's own controls in the same hairline style. */
+  .maplibregl-ctrl-top-left {
+    top: 10px;
+  }
+
+  .maplibregl-ctrl-group {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    box-shadow: none;
+    overflow: hidden;
+  }
+}
+
+/* MapLibre draws its control icons dark: at night they are inverted to sit on the night paper. */
+@media (min-width: 900px) and (prefers-color-scheme: dark) {
+  .maplibregl-ctrl-group button + button {
+    border-top-color: var(--line);
+  }
+
+  .maplibregl-ctrl-group .maplibregl-ctrl-icon {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}

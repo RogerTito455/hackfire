@@ -188,7 +188,12 @@
     "notFlagged": "{zone} has not been flagged yet.",
     "label": "lead time",
     "explanation": "{zone} was flagged at {flagged}, using only the hotspots seen up to then. In the recorded satellite data the first hotspot within {radius} km of it came at {reached}.",
-    "how": "How it is computed"
+    "how": "How it is computed",
+    "approx": {
+      "one": "About {count} hour",
+      "other": "About {count} hours"
+    },
+    "range": "{exact} at 3 km, between 5 and 8 hours at 2 to 5 km: one satellite pixel decides the arrival, and the model was tuned on this fire. Hence a round figure."
   },
   "zoneKind": {
     "estate": "Housing estate",
