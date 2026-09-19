@@ -21,7 +21,7 @@ With the dashboard on the same origin as the API, the deployed site needs no COR
 The root [`Dockerfile`](../../Dockerfile) has two stages:
 
 1. **Dashboard:** Node 24, `corepack enable` (pnpm at the version pinned in `package.json`), `pnpm install --frozen-lockfile`, `pnpm build`.
-2. **API:** uv on Python 3.12, `uv sync --locked --no-dev`, then `backend/app`, `data/` and the built `frontend/dist`. The Dockerfile sets `HACKFIRE_DASHBOARD_DIR`, which makes the backend serve `/`, `/favicon.svg` and `/assets/*` from the build (`backend/app/main.py`). Every other path is the API, unchanged. Locally the variable is empty and Vite serves the dashboard as before.
+2. **API:** uv on Python 3.12, `uv sync --locked --no-dev`, then `backend/app`, `data/` and the built `frontend/dist`. The Dockerfile sets `HACKFIRE_DASHBOARD_DIR`, which makes the backend serve the dashboard at `/`, the landing page at `/about`, `/favicon.svg`, `/dashboard-phone.webp` and `/assets/*` from the build (`serve_dashboard` in `backend/app/main.py`, tested in `backend/tests/test_dashboard_serving.py`). Every other path is the API, unchanged. Locally the variable is empty and Vite serves the dashboard as before.
 
 It starts `uvicorn` with a single worker on `$PORT`. The Dockerfile lives at the repo root because the build needs `frontend/`, `backend/` and `data/`, and because Railway only auto-detects a Dockerfile at the root.
 

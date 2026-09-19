@@ -1,4 +1,5 @@
 import { useI18n } from './i18n'
+import './language.css'
 import { LOCALES } from './locales'
 
 // The interface language. The pill shows the short code; tapping it opens the phone's own picker

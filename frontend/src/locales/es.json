@@ -207,5 +207,77 @@
     "live": "La coordinación le está viendo y escuchando. Enseñe dónde está y qué ve, y hable con normalidad.",
     "used": "Este enlace ya se ha usado. Si necesita ayuda, llame al 112.",
     "error": "No se ha podido abrir la cámara. Si necesita ayuda, llame al 112."
+  },
+  "landing": {
+    "title": "HackFire: llegar a cada vecino antes que el fuego",
+    "home": "Inicio de HackFire",
+    "nav": {
+      "demo": "Abrir la demo"
+    },
+    "hero": {
+      "title": "Llegar a cada vecino antes que el fuego",
+      "lead": "Un agente de voz llama a los vecinos que están en la trayectoria prevista de un incendio forestal, le dice a cada uno cómo salir y le pregunta si puede irse por su cuenta. El coordinador de emergencias ve en un mapa quién está evacuando, quién no contesta y quién necesita rescate.",
+      "cta": "Abrir la demo en directo",
+      "code": "Ver el código en GitHub",
+      "event": "Hecho en la HackBarna 2026 para el reto «AI for Wildfire» de Norrsken y Deepfire, categoría 4: valores en riesgo."
+    },
+    "leadTime": {
+      "label": "de antelación para {zone}",
+      "start": "Marcada en la trayectoria prevista del fuego",
+      "end": "Primer foco de satélite a menos de {radius} km",
+      "body": "Con solo los focos de satélite vistos hasta las {flagged} del 23 de julio de 2026, HackFire situó {zone} en la trayectoria prevista del fuego. El primer foco a menos de {radius} km de la urbanización llegó a las {reached}.",
+      "caveat": "Calculada solo con datos de satélite. No dice nada sobre cuándo avisaron las autoridades.",
+      "how": "Cómo se calcula la antelación"
+    },
+    "problem": {
+      "title": "El incendio que reproducimos",
+      "body": "El 23 de julio de 2026 el incendio de Burgohondo, en Ávila, avanzó 3 km en 40 minutos y llegó a la urbanización La Atalaya, en El Tiemblo. Se evacuó de allí a entre 1.200 y 1.300 personas y quedaron destruidas 5 viviendas.",
+      "gap": "Los avisos a la población van en un solo sentido. ES-Alert envía el mismo mensaje a toda una zona y no escucha: el coordinador no sabe quién se ha ido, a quién no le ha llegado el mensaje y quién no puede moverse.",
+      "sources": "Fuentes de estas cifras"
+    },
+    "how": {
+      "title": "Cómo funciona",
+      "fireTitle": "El fuego y hacia dónde va",
+      "fireBody": "Los focos de satélite de Deepfire en un mapa con una barra de tiempo, y la propagación prevista hora a hora: un cono proyectado a partir de la velocidad y la dirección del frente.",
+      "zonesTitle": "Quién está en su camino",
+      "zonesBody": "La propagación prevista se cruza con pueblos, urbanizaciones, residencias, colegios y carreteras de OpenStreetMap. Cada lugar recibe un tiempo hasta que llega el fuego.",
+      "callTitle": "Una llamada a cada vecino en riesgo",
+      "callBody": "El agente de voz da a cada vecino una ruta de salida, a pie o en coche, que evita el fuego previsto, y le pregunta: ¿puede irse por su cuenta?, ¿cuántos son?, ¿qué ve desde allí?",
+      "triageTitle": "Triaje para el coordinador",
+      "triageBody": "Cada respuesta se convierte en un estado en el mapa. Los rescates se ordenan según cuánto falta para que llegue el fuego, y cada uno genera un aviso a los bomberos con la ruta hasta la puerta.",
+      "outcomes": "Los tres resultados de una llamada",
+      "quote": "Cada vecino que se va por su cuenta es un rescate que los bomberos no tienen que hacer.",
+      "network": "Las llamadas salen de la predicción, horas antes, mientras las antenas todavía funcionan. Que nadie conteste también es una señal: le indica al coordinador adónde mandar una patrulla."
+    },
+    "demo": {
+      "title": "Prueba la demo",
+      "replay": "Pulsa reproducir para revivir el 23 de julio de 2026, o arrastra la barra de tiempo.",
+      "select": "Toca un vecino en el mapa para ver su ruta de salida, en coche o a pie.",
+      "call": "Aprueba la orden de evacuación de su zona y luego atiende la llamada del vecino en el navegador, contestando como si fueras él.",
+      "ask": "Pregunta al agente coordinador qué rescates van primero.",
+      "line": "Las llamadas de teléfono necesitan una línea que el proyecto todavía no tiene, así que en la demo la llamada del vecino se atiende en el navegador.",
+      "shot": "El panel de HackFire en un móvil durante la reproducción: los focos de satélite, la propagación prevista, los vecinos marcados según su estado y el recuento de cada estado.",
+      "caption": "El panel del coordinador reproduciendo el 23 de julio de 2026, con vecinos de ejemplo."
+    },
+    "stack": {
+      "title": "Con qué está hecho",
+      "deepfire": "Deepfire",
+      "deepfireBody": "Los focos de satélite para la reproducción y los incendios activos ahora mismo para el modo en directo.",
+      "spread": "Propagación prevista",
+      "spreadBody": "Un cono a partir de la velocidad del frente, estimada con las últimas tres horas de focos y usando solo lo observado hasta cada momento.",
+      "routing": "openrouteservice",
+      "routingBody": "Rutas en coche y a pie que evitan el fuego previsto. La ruta de los bomberos evita solo lo que ya ha ardido.",
+      "voice": "SLNG",
+      "voiceBody": "Dos agentes de voz que razonan con NVIDIA Nemotron Super 3: uno habla con los vecinos y el otro responde al coordinador.",
+      "places": "OpenStreetMap",
+      "placesBody": "Pueblos, urbanizaciones, residencias, colegios, centros de salud y carreteras en el camino del fuego."
+    },
+    "note": {
+      "title": "Sobre el incendio real",
+      "body": "La demo reproduce un suceso real de julio de 2026 en el que hubo gente que perdió su casa. Nuestra única cifra destacada, la antelación, se calcula solo con datos de satélite: el tiempo que pasa desde que el sistema marca una zona en riesgo hasta que los focos llegan a ella. No afirmamos nada sobre lo que hicieron los servicios de emergencia ni cuándo."
+    },
+    "footer": {
+      "license": "Licencia MIT"
+    }
   }
 }

@@ -117,6 +117,16 @@ export function formatDuration(seconds: number): string {
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`
 }
 
+/** Hour and minute in Spain's time zone with its abbreviation ("15:30 CEST"), like the replay's times. */
+export function formatSpanishClock(epochMs: number, intl = 'en-GB'): string {
+  return new Intl.DateTimeFormat(intl, {
+    timeZone: REPLAY_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).format(epochMs)
+}
+
 /** Wall-clock time for things happening now, such as crew alerts. */
 export function formatClock(iso: string, intl = 'en-GB'): string {
   return new Intl.DateTimeFormat(intl, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(Date.parse(iso))

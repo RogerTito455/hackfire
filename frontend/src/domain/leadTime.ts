@@ -19,3 +19,15 @@ export interface LeadTime {
 export function isFlagged(leadTime: LeadTime | null, time: number | null): boolean {
   return leadTime !== null && time !== null && time >= Date.parse(leadTime.flagged_at)
 }
+
+/**
+ * The published figure for La Atalaya, for pages that show it without the API (the landing page).
+ * Copied from data/lead_time_la-atalaya.json; how it was computed: docs/findings/2026-09-19-lead-time.md.
+ */
+export const PUBLISHED_LEAD_TIME = {
+  zoneName: 'La Atalaya',
+  radiusKm: 3,
+  flaggedAt: '2026-07-23T13:30:00Z',
+  reachedAt: '2026-07-23T19:38:34Z',
+  minutes: 368,
+} as const
