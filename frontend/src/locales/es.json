@@ -188,7 +188,12 @@
     "notFlagged": "{zone} todavía no está marcada.",
     "label": "de antelación",
     "explanation": "{zone} se marcó el {flagged}, usando solo los focos vistos hasta entonces. En los datos del satélite, el primer foco a menos de {radius} km llegó el {reached}.",
-    "how": "Cómo se calcula"
+    "how": "Cómo se calcula",
+    "approx": {
+      "one": "Una hora",
+      "other": "Unas {count} horas"
+    },
+    "range": "{exact} a 3 km; entre 5 y 8 horas si se toman de 2 a 5 km. Un solo píxel de satélite decide la llegada y el modelo se ajustó con este incendio, por eso se da una cifra redonda."
   },
   "zoneKind": {
     "estate": "Urbanización",

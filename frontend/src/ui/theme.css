@@ -35,6 +35,11 @@
   --float: 0 6px 24px rgb(15 27 61 / 18%), 0 1px 3px rgb(15 27 61 / 12%);
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 
+  /* Thin scrollbars in the ink family; the selected resident's section in a whisper of route blue. */
+  --scroll-thumb: #c3cbe0;
+  --scroll-thumb-hover: #8e99ba;
+  --selected-bg: #f3f6ff;
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
@@ -59,8 +64,38 @@
     --route: #6f8cff;
     --route-ink: #0b1330;
     --route-soft: #1f2d63;
+    --scroll-thumb: #2c3868;
+    --scroll-thumb-hover: #4a5892;
+    --selected-bg: #18224b;
     --float: 0 6px 24px rgb(0 0 0 / 45%), 0 1px 3px rgb(0 0 0 / 35%);
   }
+}
+
+/* Scrollbars: thin, rounded, no track, everywhere (the sheet, the side panel, the landing page).
+   Chrome 121+ reads the standard pair; older Chrome (the demo's Galaxy S9+) the -webkit rules. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--scroll-thumb);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
 }
 
 body {
