@@ -6,6 +6,7 @@ import { useMapMode, type MapMode } from './hooks/useMapMode'
 import { useSelectedRoute } from './hooks/useSelectedRoute'
 import { useOrders } from './hooks/useOrders'
 import { useTextTriage } from './hooks/useTextTriage'
+import { useFollowAgent } from './hooks/useFollowAgent'
 import { useTriage } from './hooks/useTriage'
 import { Dashboard } from './ui/Dashboard'
 
@@ -34,6 +35,11 @@ function App() {
     if (next === 'live' && replay.playing) replay.togglePlay()
     setMode(next)
   }
+
+  useFollowAgent(triage.focus, (neighborId) => {
+    changeMode('replay')
+    selection.showRescue(neighborId)
+  })
 
   return (
     <Dashboard

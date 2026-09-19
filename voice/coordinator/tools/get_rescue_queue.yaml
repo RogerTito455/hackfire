@@ -1,0 +1,12 @@
+# A tool SLNG hosts: an API Request tool named get_rescue_queue, created in the SLNG dashboard or
+# API and pointing at POST <backend>/tools/get_rescue_queue with an empty JSON body.
+slng: get_rescue_queue
+
+description: >-
+  Get the residents who need rescue, most urgent first. Each item has the
+  rescue id, the resident's name and address, how many people are with them,
+  what stops them leaving (mobility), what they reported (observation), and
+  the predicted minutes until the fire reaches them, or null if not predicted.
+  Call it whenever you are asked which rescues there are or in what order.
+
+effect: returns_data

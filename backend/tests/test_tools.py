@@ -116,3 +116,21 @@ def test_report_status_keeps_the_triage_when_people_is_not_a_number() -> None:
 def test_unknown_neighbor_is_404() -> None:
     response = client.post("/tools/report_status", json={"neighbor_id": "nope", "status": "evacuating"})
     assert response.status_code == 404
+
+
+def test_the_dashboard_follows_the_rescue_route_the_agent_asks_for(monkeypatch) -> None:
+    from app import evacuation
+    from app.models import Route, TravelMode
+
+    monkeypatch.setattr(evacuation, "rescue_route", lambda neighbor: Route(mode=TravelMode.CAR, spoken_directions="ok"))
+    assert client.get("/api/focus").json() is None
+
+    neighbor_id = client.get("/api/neighbors").json()[0]["id"]
+    client.post("/tools/report_status", json={"neighbor_id": neighbor_id, "status": "needs_rescue"})
+    rescue_id = client.post("/tools/get_rescue_queue").json()[0]["rescue_id"]
+    client.post("/tools/get_rescue_route", json={"rescue_id": rescue_id})
+
+    focus = client.get("/api/focus").json()
+    assert (focus["neighbor_id"], focus["rescue_id"]) == (neighbor_id, rescue_id)
+    client.post("/api/reset")
+    assert client.get("/api/focus").json() is None

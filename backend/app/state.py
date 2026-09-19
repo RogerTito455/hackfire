@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from . import impact
 from .config import DATA_DIR, settings
-from .models import CrewAlert, Neighbor, OrderDecision, ReportStatusRequest, Rescue, TriageStatus
+from .models import AgentFocus, CrewAlert, Neighbor, OrderDecision, ReportStatusRequest, Rescue, TriageStatus
 
 # neighbors.local.json holds the team's real phone numbers and is git-ignored.
 _REGISTRY_CANDIDATES = [
@@ -54,6 +54,8 @@ class TriageState:
         self._alerts: list[CrewAlert] = []
         # The coordinator's approved evacuation orders, by zone (orders.py).
         self.orders: dict[str, OrderDecision] = {}
+        # The rescue the coordinator agent last asked the route for (#10).
+        self.focus: AgentFocus | None = None
         # The replay moment the dashboard's slider is on; the agent answers for the same moment.
         self.replay_time: datetime | None = None
         self.load()
@@ -61,6 +63,7 @@ class TriageState:
     def load(self) -> None:
         self._alerts = []
         self.orders = {}
+        self.focus = None
         if settings.neighbors_json:
             self._neighbors = _build_registry(settings.neighbors_json, "HACKFIRE_NEIGHBORS_JSON")
             return
