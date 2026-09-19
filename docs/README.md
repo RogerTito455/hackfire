@@ -14,6 +14,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [SLNG](services/slng.md) | Voice agent, outbound calls, SMS |
 | | [Nebius Token Factory](services/nebius.md) | The LLM behind the agent and the triage |
 | | [openrouteservice](services/openrouteservice.md) | Evacuation and rescue routes |
+| | [Overpass (OpenStreetMap)](services/overpass.md) | Towns, care homes, schools, health centres and roads for the zones at risk |
 | | [Supabase](services/supabase.md) | Hosted Postgres; not adopted, see the page |
 | | [Norma (QualityClouds)](services/norma.md) | Extension 1: scan, fix, rescan |
 | | [Devin (Cognition)](services/devin.md) | Extension 3: self-improving spread model |

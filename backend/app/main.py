@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -6,9 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from shapely.geometry import mapping
 
-from . import evacuation, geo, live, replay, spread, zones
+from . import evacuation, impact, live, replay
 from .config import settings
 from .models import (
     CrewAlert,
@@ -16,6 +14,7 @@ from .models import (
     FireStatus,
     FireStatusRequest,
     Neighbor,
+    ReplayTimeRequest,
     ReportStatusRequest,
     Rescue,
     RescueRouteRequest,
@@ -62,6 +61,49 @@ def list_hotspots() -> Response:
     return Response(content=body, media_type="application/geo+json")
 
 
+@app.get("/api/spread")
+def get_spread() -> Response:
+    """Predicted spread for 23 July: one polygon per hour ahead, for each forecast issued."""
+    body = replay.spread_geojson()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached spread: run pnpm data:spread")
+    return Response(content=body, media_type="application/geo+json")
+
+
+@app.get("/api/zones")
+def get_zones() -> Response:
+    """Towns, care homes, schools, health centres and main roads from OpenStreetMap."""
+    body = replay.zones_geojson()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached zones: run pnpm data:zones")
+    return Response(content=body, media_type="application/geo+json")
+
+
+@app.get("/api/impact")
+def get_impact() -> dict:
+    """Forecast in force and minutes to impact per zone at every 5 minutes of the replay."""
+    table = impact.timeline()
+    if table is None:
+        raise HTTPException(status_code=404, detail="No cached spread: run pnpm data:spread")
+    return table
+
+
+@app.get("/api/lead-time")
+def get_lead_time() -> Response:
+    """La Atalaya's lead time and how it was computed. Written by `pnpm data:lead-time`."""
+    body = replay.lead_time_json()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached lead time: run pnpm data:lead-time")
+    return Response(content=body, media_type="application/json")
+
+
+@app.post("/api/replay/time")
+def set_replay_time(request: ReplayTimeRequest) -> dict:
+    """The dashboard's slider moved: the agent's answers now refer to this replay moment."""
+    state.replay_time = request.at
+    return {"at": request.at}
+
+
 @app.get("/api/live/fires")
 def list_live_fires() -> dict:
     """Deepfire's active fire clusters over Iberia, cached for a minute."""
@@ -95,53 +137,10 @@ def list_alerts() -> list[CrewAlert]:
     return state.alerts()
 
 
-def _replay_time(at: datetime | None) -> datetime:
-    return zones.snap(at or settings.scenario_time)
-
-
-@app.get("/api/spread")
-def get_spread(at: datetime | None = None) -> dict:
-    """The predicted spread at `at` (default: the scenario time): one polygon per hour ahead."""
-    at = _replay_time(at)
-    motion = spread.front_motion(at)
-    return {
-        "type": "FeatureCollection",
-        "features": [
-            {"type": "Feature", "geometry": mapping(geo.to_degrees(area)), "properties": {"hour": hour}}
-            for hour, area in reversed(spread.hourly_cone(at))
-        ]
-        if motion
-        else [],
-        "at": at.isoformat(),
-        "motion": {"bearing_deg": round(motion.bearing_deg), "speed_km_h": round(motion.speed_m_per_h / 1000, 2)}
-        if motion
-        else None,
-    }
-
-
-@app.get("/api/zones")
-def list_zone_shapes() -> Response:
-    """Every zone's outline (static; the risk comes from /api/zones/risk)."""
-    return Response(content=zones.geojson(), media_type="application/geo+json")
-
-
-@app.get("/api/zones/risk")
-def list_zone_risk(at: datetime | None = None) -> dict:
-    """Every zone's minutes to impact at `at` (default: the scenario time), soonest first."""
-    at = _replay_time(at)
-    return {
-        "at": at.isoformat(),
-        "zones": [
-            {"id": zone.id, "name": zone.name, "kind": zone.kind, "minutes_to_impact": minutes}
-            for zone, minutes in zones.risk(at)
-        ],
-    }
-
-
 @app.get("/api/fire-area")
-def fire_area(crew: bool = False) -> dict:
-    """The area routes avoid at the scenario time: residents' routes, or crews' with `crew=true`."""
-    return evacuation.fire_area(crew=crew)
+def fire_area() -> dict:
+    """The area routes avoid: everything burned up to the scenario time."""
+    return evacuation.fire_area()
 
 
 @app.post("/api/reset")
@@ -157,43 +156,34 @@ def reset() -> dict:
 
 @app.post("/tools/get_fire_status")
 def get_fire_status(request: FireStatusRequest) -> FireStatus:
-    """The fire's position and heading relative to a zone, at the scenario time."""
-    zone = zones.all_zones().get(request.zone)
-    if zone is None:
-        raise HTTPException(status_code=404, detail=f"Unknown zone {request.zone}")
-    at = settings.scenario_time
-    minutes = zones.minutes_to_impact(zone.id, at)
+    """Answers for the replay moment the dashboard's slider is on, from the same numbers as its panel."""
+    minutes = state.minutes_to_impact(request.zone)
     return FireStatus(
-        zone=zone.id,
+        zone=request.zone,
         at_risk=minutes is not None,
         minutes_to_impact=minutes,
-        summary=fire_summary(zone.name, minutes, zones.distance_km(zone.id, at), spread.front_motion(zones.snap(at))),
+        summary=_fire_summary(request.zone, minutes),
     )
 
 
-_COMPASS = ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west")
+def _spoken_span(minutes: int) -> str:
+    """"25 minutes" or "3 hours", rounded down: a lead time is never overstated to a resident."""
+    if minutes < 90:
+        return f"{max(5, 5 * (minutes // 5))} minutes"
+    hours = minutes // 60
+    return f"{hours} hour" if hours == 1 else f"{hours} hours"
 
 
-def _duration(minutes: int) -> str:
-    if minutes < 60:
-        return f"about {minutes} minutes"
-    hours, rest = divmod(round(minutes / 10) * 10, 60)
-    unit = "hour" if hours == 1 else "hours"
-    return f"about {hours} {unit}" if rest == 0 else f"about {hours} {unit} and {rest} minutes"
-
-
-def fire_summary(name: str, minutes: int | None, distance_km: float | None, motion: spread.FrontMotion | None) -> str:
-    """Two sentences the agent can retell on a call."""
-    if minutes == 0:
-        return f"The fire has already reached {name}."
-    where = f"The burned area is about {round(distance_km)} kilometres from {name}." if distance_km else ""
-    if motion is None:
-        return f"{where} The satellites do not show a clear direction of spread right now.".strip()
-    heading = _COMPASS[round(motion.bearing_deg / 45) % 8]
-    moving = f"The fire is moving {heading} at about {motion.speed_m_per_h / 1000:.0f} kilometres an hour."
+def _fire_summary(zone: str, minutes: int | None) -> str:
+    name = impact.zone_name(zone)
     if minutes is None:
-        return f"{where} {moving} On its current course it is not heading towards {name}.".strip()
-    return f"{where} {moving} At that pace it could reach {name} in {_duration(minutes)}.".strip()
+        horizon = impact.remaining_horizon_minutes(state.clock())
+        if horizon is None:
+            return f"There is no forecast for this moment, so nothing is predicted for {name}."
+        return f"No predicted impact on {name} in the next {_spoken_span(horizon)}."
+    if minutes == 0:
+        return f"The predicted fire area already covers {name}."
+    return f"The fire is predicted to reach {name} in about {_spoken_span(minutes)}."
 
 
 def _route_or_503(plan) -> Route:

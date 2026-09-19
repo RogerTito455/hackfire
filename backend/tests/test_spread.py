@@ -1,86 +1,108 @@
-from datetime import datetime
+import math
+from datetime import UTC, datetime, timedelta
 
-from fastapi.testclient import TestClient
+from app.spread import Hotspot, forecast
 
-from app import spread, zones
-from app.config import settings
-from app.main import app, fire_summary
+ISSUED_AT = datetime(2026, 7, 23, 15, 0, tzinfo=UTC)
+FRONT = (-4.60, 40.38)  # (lon, lat) of the front at ISSUED_AT
 
-client = TestClient(app)
-
-# Early afternoon on 23 July: the front runs east-north-east towards El Tiemblo and La Atalaya.
-AFTERNOON = datetime.fromisoformat("2026-07-23T14:00:00+00:00")
-# Before the first hotspot (22 July 11:08 UTC): nothing to tell a direction from.
-BEFORE = datetime.fromisoformat("2026-07-22T08:00:00+00:00")
+KM_PER_DEG_LAT = 110.57
+KM_PER_DEG_LON = 111.32 * math.cos(math.radians(FRONT[1]))
 
 
-def test_front_heads_east_north_east_in_the_afternoon() -> None:
-    motion = spread.front_motion(AFTERNOON)
-    assert motion is not None
-    assert 45 <= motion.bearing_deg <= 100
-    assert 500 <= motion.speed_m_per_h <= 5_000
+def marching_fire(speed_kmh: float, towards: str, hours: float = 4) -> list[Hotspot]:
+    """Satellite detections every 10 minutes along a 1.2 km wide front advancing at a known speed."""
+    hotspots = []
+    for step in range(int(hours * 6) + 1):
+        minutes_before = step * 10
+        observed_at = ISSUED_AT - timedelta(minutes=minutes_before)
+        along_km = -speed_kmh * minutes_before / 60
+        for across_km in (-0.6, -0.3, 0.0, 0.3, 0.6):
+            east_km, north_km = (along_km, across_km) if towards == "east" else (across_km, along_km)
+            hotspots.append(
+                Hotspot(
+                    lon=FRONT[0] + east_km / KM_PER_DEG_LON,
+                    lat=FRONT[1] + north_km / KM_PER_DEG_LAT,
+                    observed_at=observed_at,
+                )
+            )
+    return hotspots
 
 
-def test_no_direction_without_recent_hotspots() -> None:
-    assert spread.front_motion(BEFORE) is None
+def test_front_marching_east_at_3_kmh_is_predicted_9_km_further_after_3_hours() -> None:
+    result = forecast(marching_fire(3, "east"), ISSUED_AT)
+
+    assert result is not None
+    reach_km = (result.spread[3].bounds[2] - FRONT[0]) * KM_PER_DEG_LON
+    assert 8 <= reach_km <= 10.5
 
 
-def test_la_atalaya_is_flagged_hours_ahead_in_the_afternoon() -> None:
-    minutes = zones.minutes_to_impact("la-atalaya", AFTERNOON)
-    assert minutes is not None and 60 <= minutes <= spread.HORIZON_H * 60
+def test_front_marching_north_is_predicted_north_and_not_east() -> None:
+    result = forecast(marching_fire(2, "north"), ISSUED_AT)
+
+    assert result is not None
+    north_km = (result.spread[3].bounds[3] - FRONT[1]) * KM_PER_DEG_LAT
+    east_km = (result.spread[3].bounds[2] - FRONT[0]) * KM_PER_DEG_LON
+    assert 5 <= north_km <= 7.5  # 2 km/h for 3 h is 6 km
+    assert east_km < 3  # only the flank spread and the pixel padding, well short of the head
+    assert abs(result.heading_deg - 0) < 10 or abs(result.heading_deg - 360) < 10
 
 
-def test_cone_hours_are_nested() -> None:
-    cone = spread.hourly_cone(AFTERNOON)
-    assert [hour for hour, _ in cone] == list(range(1, spread.HORIZON_H + 1))
-    for (_, inner), (_, outer) in zip(cone, cone[1:]):
-        assert outer.area >= inner.area
+def test_each_hour_contains_the_previous_one() -> None:
+    result = forecast(marching_fire(3, "east"), ISSUED_AT, horizon_hours=6)
+
+    assert result is not None
+    assert len(result.spread) == 7  # now, plus one polygon per hour ahead
+    for earlier, later in zip(result.spread, result.spread[1:]):
+        assert later.contains(earlier)
 
 
-def test_fire_status_is_real_for_la_atalaya() -> None:
-    status = client.post("/tools/get_fire_status", json={"zone": "la-atalaya"}).json()
-    assert status["stub"] is False
-    assert status["minutes_to_impact"] == zones.minutes_to_impact("la-atalaya", settings.scenario_time)
-    assert status["at_risk"] == (status["minutes_to_impact"] is not None)
-    assert "La Atalaya" in status["summary"]
+def test_hotspots_after_the_issue_time_are_ignored() -> None:
+    past = marching_fire(3, "east")
+    future = [
+        Hotspot(lon=FRONT[0] + 0.2, lat=FRONT[1], observed_at=ISSUED_AT + timedelta(minutes=minutes))
+        for minutes in range(10, 120, 10)
+        for _ in range(5)
+    ]
+
+    assert forecast(past + future, ISSUED_AT).spread[3].equals(forecast(past, ISSUED_AT).spread[3])
 
 
-def test_unknown_zone_is_a_404() -> None:
-    assert client.post("/tools/get_fire_status", json={"zone": "atlantis"}).status_code == 404
+def test_no_forecast_without_enough_recent_and_earlier_hotspots() -> None:
+    fire = marching_fire(3, "east")
+    only_recent = [h for h in fire if h.observed_at > ISSUED_AT - timedelta(minutes=90)]
+    only_earlier = [h for h in fire if h.observed_at <= ISSUED_AT - timedelta(minutes=90)]
+
+    assert forecast([], ISSUED_AT) is None
+    assert forecast(only_recent, ISSUED_AT) is None
+    assert forecast(only_earlier, ISSUED_AT) is None
 
 
-def test_summaries_read_well() -> None:
-    motion = spread.front_motion(AFTERNOON)
-    assert fire_summary("La Atalaya", 0, 0.0, motion) == "The fire has already reached La Atalaya."
-    text = fire_summary("La Atalaya", 130, 4.2, motion)
-    assert text.startswith("The burned area is about 4 kilometres from La Atalaya. The fire is moving")
-    assert text.endswith("it could reach La Atalaya in about 2 hours and 10 minutes.")
-    assert "not heading towards" in fire_summary("Cebreros", None, 6.0, motion)
-    assert "no clear direction" in fire_summary("Cebreros", None, 6.0, None).replace("do not show a clear", "no clear")
+def test_a_front_that_has_not_moved_still_grows_evenly() -> None:
+    result = forecast(marching_fire(0, "east"), ISSUED_AT)
+
+    assert result is not None
+    assert result.heading_deg is None
+    assert result.spread[2].area > result.spread[0].area
+    assert result.spread[2].contains(result.spread[0])
 
 
-def test_spread_endpoint_returns_hours_outermost_first() -> None:
-    body = client.get("/api/spread", params={"at": AFTERNOON.isoformat()}).json()
-    assert [f["properties"]["hour"] for f in body["features"]] == list(range(spread.HORIZON_H, 0, -1))
-    assert body["motion"]["bearing_deg"] > 0
+def test_a_front_that_ran_fast_and_then_went_quiet_keeps_most_of_its_speed() -> None:
+    """Satellite coverage thins out and the pixels change; a run at 3 km/h is not forgotten at once."""
+    ran = [h for h in marching_fire(3, "east", hours=6) if h.observed_at <= ISSUED_AT - timedelta(minutes=90)]
+    # The front stopped 4.5 km behind where it would be now (3 km/h for 90 minutes); detections continue.
+    stopped_lon = FRONT[0] - 3 * 1.5 / KM_PER_DEG_LON
+    quiet = [
+        Hotspot(
+            lon=stopped_lon,
+            lat=FRONT[1] + across_km / KM_PER_DEG_LAT,
+            observed_at=ISSUED_AT - timedelta(minutes=minutes),
+        )
+        for minutes in range(0, 90, 10)
+        for across_km in (-0.6, -0.3, 0.0, 0.3, 0.6)
+    ]
 
+    result = forecast(ran + quiet, ISSUED_AT)
 
-def test_spread_is_empty_without_a_direction() -> None:
-    body = client.get("/api/spread", params={"at": BEFORE.isoformat()}).json()
-    assert body["features"] == [] and body["motion"] is None
-
-
-def test_zone_risk_lists_every_zone_soonest_first() -> None:
-    body = client.get("/api/zones/risk", params={"at": AFTERNOON.isoformat()}).json()
-    minutes = [z["minutes_to_impact"] for z in body["zones"]]
-    known = [m for m in minutes if m is not None]
-    assert known == sorted(known)
-    assert minutes[len(known):] == [None] * (len(minutes) - len(known))
-    assert {z["id"] for z in body["zones"]} >= {"la-atalaya", "el-tiemblo"}
-    assert client.get("/api/zones").json()["type"] == "FeatureCollection"
-
-
-def test_zone_risk_before_the_first_hotspot_is_empty_not_an_error() -> None:
-    body = client.get("/api/zones/risk", params={"at": BEFORE.isoformat()})
-    assert body.status_code == 200
-    assert all(z["minutes_to_impact"] is None for z in body.json()["zones"])
+    assert result is not None
+    assert 2 <= result.speed_kmh <= 3.2
