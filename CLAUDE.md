@@ -55,7 +55,8 @@ pnpm eval:triage     # resident agent's triage against Nebius; needs NEBIUS_API_
 pnpm data:zones      # download towns, care homes, schools, health centres and roads from OSM into data/
 pnpm data:spread     # rebuild the predicted spread from the cached hotspots (no network)
 pnpm data:lead-time  # recompute La Atalaya's lead time from the cached files (no network)
-pnpm data:routes     # plan and cache every demo route (openrouteservice) into data/
+pnpm data:routes     # plan the demo routes that are not cached yet (openrouteservice); resumable; --refresh replaces all, all or nothing
+pnpm check:routes    # prove every route (incl. every order destination) is cached; give it a URL to check a deployment
 ```
 
 Run `pnpm check` before every commit.

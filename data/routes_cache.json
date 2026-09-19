@@ -7383,7 +7383,7 @@
   "mode": "car",
   "distance_m": 6763.1,
   "duration_s": 594.0,
-  "spoken_directions": "Drive to Calle del Júcar 23, La Atalaya, El Tiemblo along Carretera de Cebreros, AV-512, then Carretera Toledo a Valladolid, N-403, then Avenida del Duero. It is about 7 kilometres, around 10 minutes by car. This route keeps away from the area the fire has already burned.",
+  "spoken_directions": "Drive to Calle del J\u00facar 23, La Atalaya, El Tiemblo along Carretera de Cebreros, AV-512, then Carretera Toledo a Valladolid, N-403, then Avenida del Duero. It is about 7 kilometres, around 10 minutes by car. This route keeps away from the area the fire has already burned.",
   "geometry": {
    "type": "LineString",
    "coordinates": [
@@ -7931,7 +7931,7 @@
   "mode": "car",
   "distance_m": 194.0,
   "duration_s": 23.9,
-  "spoken_directions": "Drive to Calle de las Capellanías 4, El Tiemblo. It is about 200 metres, around 1 minutes by car. This route keeps away from the area the fire has already burned.",
+  "spoken_directions": "Drive to Calle de las Capellan\u00edas 4, El Tiemblo. It is about 200 metres, around 1 minutes by car. This route keeps away from the area the fire has already burned.",
   "geometry": {
    "type": "LineString",
    "coordinates": [
@@ -7979,7 +7979,7 @@
   "mode": "car",
   "distance_m": 621.2,
   "duration_s": 65.3,
-  "spoken_directions": "Drive to Travesía de la Iglesia 9, El Tiemblo. It is about 600 metres, around 1 minutes by car. This route keeps away from the area the fire has already burned.",
+  "spoken_directions": "Drive to Traves\u00eda de la Iglesia 9, El Tiemblo. It is about 600 metres, around 1 minutes by car. This route keeps away from the area the fire has already burned.",
   "geometry": {
    "type": "LineString",
    "coordinates": [
