@@ -16,6 +16,7 @@ import { burningHours, type LiveFires } from '../domain/liveFires'
 import { closureArea, type RoadClosure } from '../domain/closures'
 import { liveSpreadPolygons, simulationFor, type LiveSpread } from '../domain/liveSpread'
 import { operationsBounds, type LiveOperations } from '../domain/liveOperations'
+import type { DgtOverview } from '../domain/liveDgt'
 import type { Bounds } from '../domain/scenario'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
@@ -26,6 +27,7 @@ import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg } from './markers
 import {
   BASEMAP_PAINT,
   CLOSURE_COLOR,
+  DGT_MARKER,
   FIRE_AREA_COLOR,
   formatSpanishTime,
   HOTSPOT_AGE_COLORS,
@@ -73,6 +75,7 @@ const HOTSPOTS = 'hotspots'
 const LIVE_FIRES = 'live-fires'
 const LIVE_SPREAD = 'live-spread'
 const LIVE_OPS = 'live-ops'
+const LIVE_DGT = 'live-dgt'
 const FIRE_AREA = 'fire-area'
 const ROUTE = 'route'
 const CLOSURES = 'closures'
@@ -165,6 +168,49 @@ function livePopupContent(lines: string[]): HTMLElement {
     content.append(paragraph)
   }
   return content
+}
+
+// --- Live mode: the DGT's official forest-fire incidents ----------------------------------------
+
+function dgtCollection(dgt: DgtOverview | null): GeoJSONData {
+  return {
+    type: 'FeatureCollection',
+    features: (dgt?.forestFires ?? []).map((record) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [record.lon, record.lat] },
+      properties: {
+        road: record.road ?? '',
+        place: record.municipality ?? record.province ?? '',
+        since: record.since ?? 0,
+      },
+    })),
+  }
+}
+
+/** A small warning triangle drawn once on a canvas: official, and unlike Deepfire's round markers. */
+function dgtMarkerImage(): ImageData | null {
+  const size = 44
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const context = canvas.getContext('2d')
+  if (!context) return null
+  context.beginPath()
+  context.moveTo(size / 2, 4)
+  context.lineTo(size - 4, size - 6)
+  context.lineTo(4, size - 6)
+  context.closePath()
+  context.lineJoin = 'round'
+  context.lineWidth = 5
+  context.fillStyle = DGT_MARKER.fill
+  context.strokeStyle = DGT_MARKER.ink
+  context.fill()
+  context.stroke()
+  context.beginPath()
+  context.arc(size / 2, size * 0.6, 6, 0, Math.PI * 2)
+  context.fillStyle = DGT_MARKER.fire
+  context.fill()
+  return context.getImageData(0, 0, size, size)
 }
 
 // --- Live mode: the selected fire's places at risk and roads to close ---------------------------
@@ -280,6 +326,8 @@ interface TriageMapProps {
   liveOperations?: LiveOperations | null
   /** A tap on a live fire selects it. */
   onSelectLiveFire?: (fireId: string) => void
+  /** Live mode: the DGT's official forest-fire incidents, drawn as small warning triangles. */
+  dgt?: DgtOverview | null
   selectedNeighborId: string | null
   route: Route | null
   /** Out by car or on foot (the flag marks the destination), or the crew's way in (from the fire station). */
@@ -310,6 +358,7 @@ export function TriageMap({
   liveSpread = null,
   liveOperations = null,
   onSelectLiveFire,
+  dgt = null,
   selectedNeighborId,
   route,
   routeKind,
@@ -510,6 +559,16 @@ export function TriageMap({
           'circle-stroke-color': '#fff',
         },
       })
+      // Live mode: the DGT's official forest-fire incidents, over Deepfire's fires.
+      const dgtImage = dgtMarkerImage()
+      if (dgtImage) instance.addImage(LIVE_DGT, dgtImage, { pixelRatio: 2 })
+      instance.addSource(LIVE_DGT, { type: 'geojson', data: EMPTY, attribution: 'Road incidents: DGT' })
+      instance.addLayer({
+        id: LIVE_DGT,
+        type: 'symbol',
+        source: LIVE_DGT,
+        layout: { visibility: 'none', 'icon-image': LIVE_DGT, 'icon-allow-overlap': true, 'icon-size': 0.9 },
+      })
       // Over everything: the selected resident's route out.
       instance.addSource(ROUTE, { type: 'geojson', data: EMPTY })
       instance.addLayer({
@@ -573,6 +632,19 @@ export function TriageMap({
           .setDOMContent(livePopupContent(lines))
           .addTo(instance)
       })
+      instance.on('click', LIVE_DGT, (event) => {
+        const feature = event.features?.[0]
+        if (!feature || feature.geometry.type !== 'Point') return
+        const { road, place, since } = feature.properties as { road: string; place: string; since: number }
+        const { intl: locale } = words.current
+        const lines = [words.current.t('map.dgtFire', { road })]
+        if (since > 0) lines.push(words.current.t('map.dgtWhere', { place, time: formatSpanishTime(since, locale) }))
+        lines.push(words.current.t('map.dgtSource'))
+        new Popup({ offset: 12, closeButton: false, focusAfterOpen: false })
+          .setLngLat(feature.geometry.coordinates as [number, number])
+          .setDOMContent(livePopupContent(lines))
+          .addTo(instance)
+      })
       setStyleReady(true)
     })
     map.current = instance
@@ -618,6 +690,11 @@ export function TriageMap({
     map.current.getSource<GeoJSONSource>(LIVE_FIRES)?.setData(liveFireCollection(live))
   }, [styleReady, live])
 
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(LIVE_DGT)?.setData(dgtCollection(dgt))
+  }, [styleReady, dgt])
+
   // Live mode: Deepfire's spread simulations, shown only in live mode.
   useEffect(() => {
     if (!styleReady || !map.current) return
@@ -626,7 +703,7 @@ export function TriageMap({
 
   useEffect(() => {
     if (!styleReady || !map.current) return
-    for (const layer of [...LIVE_SPREAD_LAYERS, ...LIVE_OPS_LAYERS]) {
+    for (const layer of [...LIVE_SPREAD_LAYERS, ...LIVE_OPS_LAYERS, LIVE_DGT]) {
       map.current.setLayoutProperty(layer, 'visibility', mode === 'live' ? 'visible' : 'none')
     }
   }, [styleReady, mode])

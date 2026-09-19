@@ -1,9 +1,11 @@
 // Live mode: polls Deepfire's active fires through the backend while live mode is on.
 
 import { useEffect, useState } from 'react'
+import type { DgtOverview } from '../domain/liveDgt'
 import { parseLiveFires, type LiveFires } from '../domain/liveFires'
 import type { LiveSpread } from '../domain/liveSpread'
 import { fetchLiveFires } from '../services/api'
+import { useLiveDgt } from './useLiveDgt'
 import { useLiveSpread } from './useLiveSpread'
 
 /** The backend caches for a minute; polling faster would only return the same answer. */
@@ -16,12 +18,15 @@ export interface LiveMode {
   data: LiveFires | null
   /** Deepfire's own spread simulations of these fires; null until they first load. */
   spread: LiveSpread | null
+  /** The DGT's official forest-fire incidents and closures; null until they first load. */
+  dgt: DgtOverview | null
 }
 
 export function useLiveFires(enabled: boolean): LiveMode {
   const [status, setStatus] = useState<LiveStatus>('idle')
   const [data, setData] = useState<LiveFires | null>(null)
   const spread = useLiveSpread(enabled)
+  const dgt = useLiveDgt(enabled)
 
   useEffect(() => {
     if (!enabled) return
@@ -46,5 +51,5 @@ export function useLiveFires(enabled: boolean): LiveMode {
     }
   }, [enabled])
 
-  return { status: enabled && status === 'idle' ? 'loading' : status, data, spread }
+  return { status: enabled && status === 'idle' ? 'loading' : status, data, spread, dgt }
 }

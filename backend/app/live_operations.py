@@ -29,7 +29,7 @@ from shapely import affinity
 from shapely.geometry import Point, shape
 from shapely.ops import unary_union
 
-from . import i18n, live_spread
+from . import i18n, live_dgt, live_spread
 from .config import DATA_DIR
 from .impact import first_hour_touching
 from .pipelines import fetch_zones
@@ -354,7 +354,8 @@ def _parse_time(value: str) -> datetime:
 
 
 def operations(fire_id: str, now: datetime | None = None) -> dict:
-    """Places at risk, their time to impact, alert drafts and roads to close for one live fire.
+    """Places at risk, their time to impact, alert drafts and roads to close for one live fire, and
+    the DGT's official incidents and closures near it (never fails for the DGT's sake).
 
     Raises live.LiveUnavailable (Deepfire down, nothing cached), NoSimulation or PlacesUnavailable.
     """
@@ -381,6 +382,8 @@ def operations(fire_id: str, now: datetime | None = None) -> dict:
         "alerts": alert_drafts(places),
         "roads_to_close": roads_to_close(places),
         "places_fetched_at": entry["fetched_at"],
+        # Official DGT forest-fire incidents and closures within the footprint plus live_dgt.NEAR_FIRE_M.
+        "dgt": live_dgt.near_area(search_area(hourly, live_dgt.NEAR_FIRE_M)),
         # Places from an earlier run of this fire, because Overpass failed for this one.
         "places_stale": places_stale,
         "spread_stale": spread["stale"],

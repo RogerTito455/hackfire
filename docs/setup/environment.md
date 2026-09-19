@@ -38,6 +38,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `ORS_API_KEY` | Evacuation and rescue routes (#6); only needed to plan routes that are not in `data/routes_cache.json` | https://openrouteservice.org/dev/#/signup |
 | `OVERPASS_URL` | `pnpm data:zones` (#4); optional, no key | Empty uses `https://overpass-api.de/api/interpreter`. See [Overpass](../services/overpass.md) if it refuses connections |
 | `OVERPASS_MIRRORS` | `pnpm data:zones`, live mode's places at risk; optional | Comma-separated, tried in order after `OVERPASS_URL`. Empty uses `overpass.openstreetmap.fr`, then `overpass.private.coffee` |
+| `DGT_FEED_URL` | Live mode's official DGT incidents and closures; optional, no key | Empty uses `https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml`, which redirects to the current version. See [DGT](../services/dgt.md) |
 
 ## Frontend (`frontend/.env.local`)
 

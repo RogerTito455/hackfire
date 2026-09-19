@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 
 from . import audit, autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_operations, live_spread, orders, provider_status, replay, rescue_video, scenario, text_triage
 from .config import settings
+# Live mode's official DGT road data and CAP alert drafts.
+from . import cap, live_dgt
 from .models import (
     AgentFocus,
     AuditEvent,
@@ -232,6 +234,40 @@ def live_fire_operations(fire_id: str) -> dict:
         raise HTTPException(status_code=404, detail="No Deepfire spread simulation for this fire") from error
     except live_operations.PlacesUnavailable as error:
         raise HTTPException(status_code=503, detail="OpenStreetMap places are unavailable right now") from error
+
+
+# --- Live mode: official DGT road data and CAP drafts ---------------------------------------------
+
+
+@app.get("/api/live/dgt")
+def live_dgt_incidents() -> dict:
+    """Official data from the DGT (Spain's traffic authority), DATEX II on its National Access Point:
+    the forest-fire incidents and the road or carriageway closures in force now. Cached for five
+    minutes; the last good answer survives an outage (`stale: true`)."""
+    try:
+        return live_dgt.overview()
+    except live_dgt.DgtUnavailable as error:
+        raise HTTPException(status_code=503, detail="The DGT feed is unavailable right now") from error
+
+
+@app.get("/api/live/operations/{fire_id}/cap")
+def live_fire_cap(fire_id: str) -> Response:
+    """The fire's alert drafts as one CAP 1.2 document (the format ES-Alert and EU-Alert systems take
+    in), status Draft, one <info> per language. For Civil Protection to review; nothing is sent."""
+    operations = live_fire_operations(fire_id)
+    try:
+        body = cap.document(operations)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail="No alert drafts for this fire") from error
+    filename = f"hackfire-cap-draft-{''.join(c if c.isalnum() or c in '-_' else '_' for c in fire_id)}.xml"
+    return Response(
+        content=body,
+        media_type="application/cap+xml",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+# --- end of live DGT and CAP ---------------------------------------------------------------------
 
 
 @app.get("/api/routes/{neighbor_id}")

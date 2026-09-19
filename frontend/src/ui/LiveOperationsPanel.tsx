@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { DgtNear } from '../domain/liveDgt'
 import { placesNearby, placesReached, roadsToClose, type LivePlace } from '../domain/liveOperations'
 import type { SimulatedFire } from '../domain/liveSpread'
 import type { LiveOperationsView } from '../hooks/useLiveOperations'
@@ -9,7 +10,7 @@ import { formatMinutesToImpact, formatSpanishTime, spreadModelLabel } from './th
 interface LiveOperationsPanelProps {
   /** The live fires Deepfire has simulated, which are the ones with places at risk to show. */
   fires: SimulatedFire[]
-  view: Pick<LiveOperationsView, 'fireId' | 'status' | 'data'>
+  view: Pick<LiveOperationsView, 'fireId' | 'status' | 'data' | 'capUrl'>
   onSelect: (fireId: string | null) => void
   onRetry: () => void
 }
@@ -21,7 +22,7 @@ const VISIBLE_PLACES = 8
 // coordinator; nothing here is sent to anyone.
 export function LiveOperationsPanel({ fires, view, onSelect, onRetry }: LiveOperationsPanelProps) {
   const { t, intl } = useI18n()
-  const { fireId, status, data } = view
+  const { fireId, status, data, capUrl } = view
   if (fireId === null) return <FirePicker fires={fires} onSelect={onSelect} />
 
   const run = fires.find((fire) => fire.fireId === fireId)
@@ -84,6 +85,14 @@ export function LiveOperationsPanel({ fires, view, onSelect, onRetry }: LiveOper
               ))}
             </ul>
           )}
+          {capUrl !== null && (
+            <div className="live-cap">
+              <a className="live-cap-button" href={capUrl} download>
+                {t('liveOps.cap')}
+              </a>
+              <p className="live-ops-small">{t('liveOps.capNote')}</p>
+            </div>
+          )}
 
           <h3 className="subhead icon-button">
             <Icon name="road-closed" size={16} />
@@ -91,6 +100,7 @@ export function LiveOperationsPanel({ fires, view, onSelect, onRetry }: LiveOper
           </h3>
           <p className="live-ops-small">{t('liveOps.roadsNote')}</p>
           <PlaceList places={roadsToClose(data)} empty={t('liveOps.roadsNone')} />
+          <OfficialDgt dgt={data.dgt} />
 
           <p className="live-ops-small live-ops-calls">{t('liveOps.calls')}</p>
           <p className="live-ops-small">{t('liveOps.source', { time: formatSpanishTime(data.placesFetchedAt, intl) })}</p>
@@ -175,5 +185,55 @@ function PlaceList({ places, empty }: { places: LivePlace[]; empty: string }) {
         </button>
       )}
     </>
+  )
+}
+
+// Official data from the DGT, kept apart from HackFire's suggestions above: what the traffic authority
+// itself publishes near this fire (forest-fire incidents, roads and carriageways closed).
+function OfficialDgt({ dgt }: { dgt: DgtNear }) {
+  const { t, intl } = useI18n()
+  const [expanded, setExpanded] = useState(false)
+  const shown = expanded ? dgt.records : dgt.records.slice(0, VISIBLE_PLACES)
+  return (
+    <section className="live-dgt" aria-label={t('liveOps.dgt')}>
+      <h3 className="subhead icon-button">
+        <Icon name="road-closed" size={16} />
+        {t('liveOps.dgt')}
+        <span className="official-badge">{t('liveOps.official')}</span>
+      </h3>
+      <p className="live-ops-small">{t('liveOps.dgtNote', { km: Math.round((dgt.nearM ?? 5000) / 1000) })}</p>
+      {!dgt.available && <p className="empty warning">{t('liveOps.dgtUnavailable')}</p>}
+      {dgt.available && dgt.stale && dgt.fetchedAt !== null && (
+        <p className="live-note warn">{t('liveOps.dgtStale', { time: formatSpanishTime(dgt.fetchedAt, intl) })}</p>
+      )}
+      {dgt.available && dgt.records.length === 0 && <p className="empty">{t('liveOps.dgtNone')}</p>}
+      {dgt.records.length > 0 && (
+        <ul className="zones">
+          {shown.map((record) => (
+            <li key={record.id} className={record.kind === 'forestFire' ? 'zone dgt fire' : 'zone dgt'}>
+              <span className="zone-name">
+                {record.road ?? t('liveOps.dgtNoRoad')}
+                {record.km !== null && `, ${t('liveOps.dgtKm', { km: record.km })}`}
+              </span>
+              <span className="zone-kind">
+                {record.kind === 'forestFire'
+                  ? `${t('liveOps.dgtType.forestFire')}, ${t(`liveOps.dgtType.${record.management}`)}`
+                  : `${t(`liveOps.dgtType.${record.kind}`)}, ${t(`liveOps.dgtCause.${record.cause}`)}`}
+                {record.municipality !== null && `, ${record.municipality}`}
+              </span>
+              {record.since !== null && (
+                <span className="zone-kind dgt-since">{t('liveOps.dgtSince', { time: formatSpanishTime(record.since, intl) })}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {dgt.records.length > VISIBLE_PLACES && (
+        <button type="button" className="link" onClick={() => setExpanded(!expanded)}>
+          {expanded ? t('liveOps.showFewer') : t('liveOps.showMore', { count: dgt.records.length - VISIBLE_PLACES })}
+        </button>
+      )}
+      <p className="live-ops-small">{t('liveOps.dgtSource')}</p>
+    </section>
   )
 }

@@ -155,6 +155,9 @@ export const MARKER_OUTLINE_COLOR = '#fff'
 export const PLACE_MARKER_INK = '#3c4043'
 /** A closed road: the neutral ink of signage, so it reads as neither fire nor a way out. */
 export const CLOSURE_COLOR = '#3c4043'
+/** The DGT's official forest-fire incidents in live mode: a warning triangle in navy ink with a fire
+ * dot, so they never read as one of Deepfire's round fire markers. */
+export const DGT_MARKER = { ink: '#0f1b3d', fill: '#ffffff', fire: '#ff7a1a' } as const
 
 export const ORDER_STATE_COLOR = { proposed: '#e0a100', approved: '#2e9e5b' } as const
 

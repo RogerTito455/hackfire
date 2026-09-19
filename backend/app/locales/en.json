@@ -182,5 +182,18 @@
     "vonageOff": "No live video or video-link SMS.",
     "vonageOn": "Configured (not tested: that would send a message).",
     "vonageVideoOnly": "Video configured, SMS not: links are shown, not texted."
+  },
+  "cap": {
+    "language": "en-GB",
+    "event": "Wildfire",
+    "senderName": "HackFire, draft for Civil Protection",
+    "headline": "Wildfire near {place}",
+    "headlineMany": {
+      "one": "Wildfire near {place} and one more place",
+      "other": "Wildfire near {place} and {count} more places"
+    },
+    "description": "Draft based on the {model} fire-spread simulation run by Deepfire at {time}. A prediction, not an official warning. The times count from the simulation.",
+    "instruction": "Follow the instructions of Civil Protection and 112. Be ready to leave if the authorities ask you to.",
+    "note": "Draft written by HackFire from a simulation. Not sent. For review by Civil Protection."
   }
 }

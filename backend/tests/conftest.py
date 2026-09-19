@@ -37,3 +37,21 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="eval_galtea.py: add each scenario's turns and last report_status to this JSON file "
         "(docs/services/galtea.md)",
     )
+
+
+@pytest.fixture(autouse=True)
+def no_dgt_network(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory):
+    """Live operations add the DGT's official incidents: no test reaches the real feed or its cache
+    file. A test that wants DGT data patches live_dgt._fetch itself (tests/test_live_dgt.py)."""
+    import httpx
+
+    from app import live_dgt
+
+    def offline() -> tuple[list[dict], str | None]:
+        raise httpx.ConnectError("no network in tests")
+
+    monkeypatch.setattr(live_dgt, "CACHE_FILE", tmp_path_factory.mktemp("dgt") / "live_dgt.json")
+    monkeypatch.setattr(live_dgt, "_fetch", offline)
+    live_dgt.reset_cache()
+    yield
+    live_dgt.reset_cache()

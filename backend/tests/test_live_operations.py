@@ -3,6 +3,8 @@
 Everything here runs on fakes: no Deepfire, no Overpass.
 """
 
+import re
+import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -11,7 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 from shapely.geometry import box, mapping, shape
 
-from app import i18n, impact, live, live_operations, live_spread
+from app import cap, i18n, impact, live, live_dgt, live_operations, live_spread
 from app.main import app
 from app.providers import overpass
 
@@ -291,3 +293,125 @@ def test_overpass_raises_when_every_server_fails(monkeypatch: pytest.MonkeyPatch
 def test_backend_locales_have_the_live_drafts() -> None:
     for code in ("en", "es"):
         assert "{place}" in i18n.t("liveOps.alertDue", code)
+
+
+# --- Official DGT records near the fire ----------------------------------------------------------
+
+
+def _dgt_record(record_id: str, lon: float, lat: float, **fields: object) -> dict:
+    point = {"lat": lat, "lon": lon, "km": 1.0, "municipality": "M", "province": "P", "community": "C"}
+    return {
+        "id": record_id, "situation_id": "s" + record_id, "record_type": "RoadOrCarriagewayOrLaneManagement",
+        "road": "CV-1", "destination": None, "direction": None, "cause": "roadMaintenance", "cause_detail": "roadworks",
+        "management": "roadClosed", "forest_fire": False, "closure": True, "severity": None, "validity": "active",
+        "since": "2026-09-19T10:00:00.000+02:00", "until": None, "from": point, "to": None, "comments": [],
+        **fields,
+    }  # fmt: skip
+
+
+def test_endpoint_lists_the_official_dgt_records_near_the_footprint(monkeypatch: pytest.MonkeyPatch) -> None:
+    _deepfire(monkeypatch, _run())
+    _overpass_up(monkeypatch, [])
+    records = [
+        _dgt_record("1", 0.025, 40.005),  # on the footprint
+        _dgt_record("2", 0.07, 40.005, forest_fire=True, cause="environmentalObstruction", cause_detail="forestFire"),  # ~4 km away
+        _dgt_record("3", 0.2, 40.2),  # far
+    ]
+    monkeypatch.setattr(live_dgt, "_fetch", lambda: (records, "2026-09-19T12:00:00+02:00"))
+
+    dgt = client.get("/api/live/operations/c1").json()["dgt"]
+
+    assert dgt["available"] is True and dgt["source"] == "DGT" and dgt["near_m"] == live_dgt.NEAR_FIRE_M
+    assert [record["id"] for record in dgt["records"]] == ["2", "1"]  # forest fires first
+
+
+def test_endpoint_still_answers_when_the_dgt_is_down(monkeypatch: pytest.MonkeyPatch) -> None:
+    _deepfire(monkeypatch, _run())
+    _overpass_up(monkeypatch, [])
+    body = client.get("/api/live/operations/c1").json()  # conftest keeps the DGT offline
+    assert body["dgt"]["available"] is False and body["places"]
+
+
+# --- CAP 1.2 drafts ------------------------------------------------------------------------------
+
+CAP = "{urn:oasis:names:tc:emergency:cap:1.2}"
+# The element order of the CAP 1.2 schema (http://docs.oasis-open.org/emergency/cap/v1.2/CAP-v1.2.xsd).
+ALERT_ORDER = ["identifier", "sender", "sent", "status", "msgType", "source", "scope", "restriction", "addresses", "code", "note", "references", "incidents", "info"]
+INFO_ORDER = ["language", "category", "event", "responseType", "urgency", "severity", "certainty", "audience", "eventCode", "effective", "onset", "expires", "senderName", "headline", "description", "instruction", "web", "contact", "parameter", "resource", "area"]
+AREA_ORDER = ["areaDesc", "polygon", "circle", "geocode", "altitude", "ceiling"]
+CAP_TIME = r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[-+]\d\d:\d\d$"
+
+
+def _in_schema_order(element: ET.Element, order: list[str]) -> bool:
+    names = [child.tag.removeprefix(CAP) for child in element]
+    return all(name in order for name in names) and names == sorted(names, key=order.index)
+
+
+def _cap(monkeypatch: pytest.MonkeyPatch) -> tuple[httpx.Response, ET.Element]:
+    _deepfire(monkeypatch, _run())
+    _overpass_up(monkeypatch, [])
+    response = client.get("/api/live/operations/c1/cap")
+    assert response.status_code == 200
+    return response, ET.fromstring(response.content)  # well-formed, or this raises
+
+
+def test_cap_is_a_draft_never_an_actual_alert(monkeypatch: pytest.MonkeyPatch) -> None:
+    response, alert = _cap(monkeypatch)
+
+    assert response.headers["content-type"].startswith("application/cap+xml")
+    assert "attachment" in response.headers["content-disposition"]
+    assert alert.tag == f"{CAP}alert" and _in_schema_order(alert, ALERT_ORDER)
+    assert alert.findtext(f"{CAP}status") == "Draft"
+    assert (alert.findtext(f"{CAP}msgType"), alert.findtext(f"{CAP}scope"), alert.findtext(f"{CAP}sender")) == ("Alert", "Public", "hackfire")
+    assert re.match(CAP_TIME, alert.findtext(f"{CAP}sent"))
+    assert re.match(r"^[A-Za-z0-9._-]+$", alert.findtext(f"{CAP}identifier"))
+    assert "Actual" not in response.text
+
+
+def test_cap_has_one_info_per_language_with_an_area_per_drafted_place(monkeypatch: pytest.MonkeyPatch) -> None:
+    _, alert = _cap(monkeypatch)
+    infos = alert.findall(f"{CAP}info")
+
+    assert [info.findtext(f"{CAP}language") for info in infos] == ["es-ES", "en-GB"]  # the residents' language first
+    for info in infos:
+        assert _in_schema_order(info, INFO_ORDER)
+        assert (info.findtext(f"{CAP}category"), info.findtext(f"{CAP}severity"), info.findtext(f"{CAP}certainty")) == ("Fire", "Severe", "Likely")
+        # The run is hours old, so the first place is due: Immediate.
+        assert info.findtext(f"{CAP}urgency") == "Immediate"
+        assert re.match(CAP_TIME, info.findtext(f"{CAP}expires"))
+        areas = info.findall(f"{CAP}area")
+        assert [area.findtext(f"{CAP}areaDesc") for area in areas] == ["Villa Uno", "Escuela Dos"]  # no road, nothing unreached
+        for area in areas:
+            assert _in_schema_order(area, AREA_ORDER)
+            assert area.findall(f"{CAP}polygon") or area.findall(f"{CAP}circle")
+            for polygon in area.findall(f"{CAP}polygon"):
+                pairs = polygon.text.split()
+                assert len(pairs) >= 4 and pairs[0] == pairs[-1]
+                lat, lon = map(float, pairs[0].split(","))
+                assert 39.9 < lat < 40.1 and -0.1 < lon < 0.1  # lat,lon order
+            for circle in area.findall(f"{CAP}circle"):
+                assert re.match(r"^-?\d+\.\d+,-?\d+\.\d+ \d+(\.\d+)?$", circle.text)
+    spanish, english = infos
+    assert spanish.findtext(f"{CAP}headline") == "Incendio forestal cerca de Villa Uno y de otro lugar"
+    description = english.findtext(f"{CAP}description")
+    assert "Villa Uno" in description and "not an official warning" in description
+
+
+def test_cap_urgency_is_expected_when_no_place_is_reached_within_the_hour() -> None:
+    operations = {
+        "fire_id": "c1", "simulation_id": "sim-1", "run_at": "2026-09-19T12:00:00Z", "model": "elmfire", "duration_hours": 12,
+        "places": [{"id": "town-x", "name": "Aldea", "kind": "town", "minutes": 185, "geometry": {"type": "Point", "coordinates": [0.1, 40.1]}}],
+    }  # fmt: skip
+    alert = ET.fromstring(cap.document(operations, now=NOW))
+    info = alert.find(f"{CAP}info")
+    assert info.findtext(f"{CAP}urgency") == "Expected"
+    assert info.find(f"{CAP}area").findtext(f"{CAP}circle") == "40.10000,0.10000 0.2"
+    assert alert.findtext(f"{CAP}sent") == "2026-09-19T12:30:00-00:00"
+    assert alert.findtext(f"{CAP}status") == "Draft"
+
+
+def test_cap_without_drafts_is_a_404(monkeypatch: pytest.MonkeyPatch) -> None:
+    far = {**_run(), "hours": [{"hour": 1, "geometry": mapping(box(5, 45, 5.001, 45.001))}]}
+    _deepfire(monkeypatch, far)
+    _overpass_up(monkeypatch, [])
+    assert client.get("/api/live/operations/c1/cap").status_code == 404

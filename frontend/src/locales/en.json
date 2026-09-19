@@ -225,7 +225,10 @@
     "liveFire": "Detected over {hours} h, last seen {time}",
     "liveSimulation": "Deepfire {model} simulation: {hours} h, run at {time}",
     "liveSimulationModel": "Physics model: terrain, fuel and weather",
-    "resident": "{name}: {status}"
+    "resident": "{name}: {status}",
+    "dgtFire": "Official DGT incident: forest fire on the {road}",
+    "dgtWhere": "{place}, since {time}",
+    "dgtSource": "Source: DGT (DATEX II). Official data, not Deepfire's."
   },
   "video": {
     "request": "Request live video",
@@ -430,7 +433,37 @@
     "roadsNote": "Main roads the simulation reaches within the hour: closed to residents, crews still use them.",
     "roadsNone": "No main road within the hour.",
     "calls": "No calls here: calling residents needs a registry of who lives in these places, which is future work.",
-    "source": "Places: © OpenStreetMap contributors, looked up {time}."
+    "source": "Places: © OpenStreetMap contributors, looked up {time}.",
+    "cap": "Download drafts as CAP (XML)",
+    "capNote": "Standard alert format, ready to hand to Civil Protection. Status: draft, not sent.",
+    "dgt": "Official DGT closures and incidents",
+    "official": "Official",
+    "dgtNote": "Official data: what the DGT (Spain's traffic authority) publishes within {km} km of the simulated path. Not HackFire's suggestion.",
+    "dgtNone": "The DGT publishes no road closure or forest-fire incident here right now.",
+    "dgtUnavailable": "The DGT feed is not answering; its closures cannot be shown.",
+    "dgtStale": "The DGT feed is not answering: its list from {time}.",
+    "dgtSince": "Since {time}",
+    "dgtKm": "km {km}",
+    "dgtNoRoad": "Unnamed road",
+    "dgtSource": "Source: DGT, National Access Point (DATEX II feed).",
+    "dgtType": {
+      "forestFire": "Forest fire",
+      "roadClosed": "road closed",
+      "carriagewayClosures": "carriageway closed",
+      "laneClosures": "lanes closed",
+      "other": "other restriction"
+    },
+    "dgtCause": {
+      "roadMaintenance": "roadworks",
+      "accident": "accident",
+      "vehicleObstruction": "vehicle in the way",
+      "obstruction": "obstruction",
+      "environmentalObstruction": "natural hazard",
+      "infrastructureDamageObstruction": "damaged road",
+      "poorEnvironment": "poor conditions",
+      "publicEvent": "public event",
+      "other": "other cause"
+    }
   },
   "audit": {
     "empty": "Nothing recorded yet. Approvals, calls, statuses and closures appear here.",
