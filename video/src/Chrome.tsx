@@ -82,18 +82,19 @@ export function SimulationTag({ opacity, top = 132 }: { opacity: number; top?: n
 // Where the data each scene shows comes from, in small type at the bottom left. The press figures are
 // the checked ones (docs/findings/2026-09-19-press-figures.md).
 const SOURCES: Record<string, string> = {
-  open: 'Sources: hotspots from Deepfire (satellites MTG, VIIRS, MODIS, Sentinel-3). Figures: Tribuna de Ávila and Ávilared, 23 July 2026.',
+  open: 'Hotspots: Deepfire (MTG, VIIRS, MODIS, Sentinel-3). Map: OpenStreetMap. 37,818 ha: Junta de CyL via Ávilared, 21 Aug, provisional. 1,500, 5: Tribuna de Ávila. 229: Idealista via Ávilared.',
   problem: 'Source: ES-Alert text as published by Ávilared, 23 July 2026, translated from Spanish.',
   brand: 'Built on Deepfire (hotspots), SLNG (voice agents), openrouteservice and OpenStreetMap (routes), Vonage (video).',
-  forecast: "Sources: hotspots from Deepfire, up to 15:30. Forecast: HackFire's spread model on those hotspots only.",
-  leadtime: 'Source: HackFire, from Deepfire hotspots (docs/findings/2026-09-19-lead-time.md). Range over 2 to 5 km, as published on the site.',
+  forecast: "Hotspots: Deepfire, up to 15:30. Forecast: HackFire's spread model on those hotspots only. Map: OpenStreetMap.",
+  leadtime: 'Lead time: HackFire, from Deepfire hotspots (docs/findings/2026-09-19-lead-time.md); a range over 2 to 5 km, as the site publishes it. Map: OpenStreetMap.',
   order: "Simulation with demo residents, at the demo autopilot's times. The order is HackFire's proposal, approved by hand.",
   call: 'Simulated call, condensed. Voice agent: SLNG. Route: openrouteservice on OpenStreetMap data.',
-  understood: "Classified by the voice agent's language model (SLNG) from what the resident said.",
-  rescue: "Routes: openrouteservice on OpenStreetMap data, planned around the fire. Time to impact: HackFire's forecast.",
+  understood: "Classified by the voice agent's language model (SLNG) from what the resident said. Map: OpenStreetMap.",
+  rescue: "Routes: openrouteservice on OpenStreetMap. Dashed red: roads inside the area routes avoid, burned plus the next hour of HackFire's forecast.",
   command: 'Coordinator agent: SLNG. Live map for the crews: Vonage Video.',
-  compare: "Sources: Junta de Castilla y León via Ávilared, 21 Aug (provisional); Tribuna de Ávila, 23 Jul; Idealista's estimate via Ávilared, 31 Jul.",
+  compare: "Left: the ES-Alert of that day (Ávilared). Right: HackFire as built. 2 s is how often the dashboard refreshes the triage; the lead time is the replay's.",
   roadmap: 'Transfer to a person: SLNG transfer_call, which needs an outbound phone line (SIP).',
+  devin: 'Planned (issue #19): Devin, by Cognition, iterating the spread model against real hotspots. Not running yet.',
 }
 
 export function SceneSources({ f }: { f: number }) {
@@ -101,7 +102,7 @@ export function SceneSources({ f }: { f: number }) {
   const words = s && SOURCES[s.id]
   if (!s || !words) return null
   const opacity = Math.min(fade(f - s.start - 6, 10), fade(s.end - f, 8))
-  return <div style={{ position: 'absolute', left: 48, bottom: 14, maxWidth: 1350, opacity, ...mono(15, 400, C.ink2), zIndex: 60 }}>{words}</div>
+  return <div style={{ position: 'absolute', left: 48, right: 48, bottom: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity, ...mono(15, 400, C.ink2), zIndex: 60 }}>{words}</div>
 }
 
 const SPEAKER = { agent: ['Agent', C.agent], resident: ['Resident', C.ink] } as const

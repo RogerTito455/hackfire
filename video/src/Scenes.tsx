@@ -219,7 +219,7 @@ export function Call({ f }: { f: number }) {
             <Icon name="phone" size={28} color={C.agent} />
           </div>
           <div>
-            <div style={text(32, 700)}>Resident 03, La Atalaya</div>
+            <div style={text(32, 700)}>Calle del Júcar household, La Atalaya</div>
             <div style={mono(19, 500, C.ink2)}>voice agent on SLNG. It speaks Spanish; shown in English</div>
           </div>
           <div style={{ marginLeft: 'auto', ...mono(40, 700, f < answered ? C.ink3 : C.agent) }}>
@@ -390,6 +390,8 @@ export function Command({ f }: { f: number }) {
                   labels={0}
                   crewBase={1}
                   wayIn={1}
+                  closedRoads={1}
+                  closure={1}
                   residents={{ n01: 'evacuating', n02: 'no_answer', n03: 'needs_rescue', n04: 'pending', n05: 'pending' }}
                 />
                 <div style={{ position: 'absolute', left: 16, top: 14, padding: '6px 14px', borderRadius: 999, background: 'rgba(4,8,23,0.85)', ...text(20, 700) }}>{crew}</div>
@@ -454,15 +456,7 @@ export function Close({ f }: { f: number }) {
 }
 
 
-// ── 05 What changes ───────────────────────────────────────────────────────────
-
-// The day's figures, each with its source (docs/findings/2026-09-19-press-figures.md).
-const THE_DAY: [string, string, string][] = [
-  ['37,818 ha', 'burned in Ávila, provisional', 'Junta de Castilla y León'],
-  ['1,500', 'people evacuated', 'Tribuna de Ávila'],
-  ['5', 'homes destroyed', 'Tribuna de Ávila'],
-  ['229', 'homes inside the burned area', "Idealista's estimate"],
-]
+// ── 01 That day, before and after ─────────────────────────────────────────────
 
 // What the coordinator knows, and when. Left: the day, sourced. Right: what HackFire does, measured.
 const SIDE_BY_SIDE: [string, string, string][] = [
@@ -475,55 +469,41 @@ const SIDE_BY_SIDE: [string, string, string][] = [
 
 export function Compare({ f }: { f: number }) {
   const s = scene('compare')
-  const cards = [beat('compare-0', 'thirty'), beat('compare-0', 'thirty') + 8, beat('compare-0', 'thirty') + 16, beat('compare-0', 'two')]
-  const table = line('compare-1').at + 6
-  const k = ease((f - table + 4) / 16)
-  const quick = beat('compare-1', 'two')
+  const table = s.start + 6
+  const quick = beat('compare-0', 'two')
   return (
     <Overlay id="compare" f={f}>
       <Grid f={f} />
-      <div style={{ position: 'absolute', left: 90, right: 90, top: 150 - 20 * k, opacity: 1 - 0.55 * k, transform: `scale(${1 - 0.28 * k})`, transformOrigin: 'top left' }}>
-        <div style={{ ...mono(22, 700, C.ink2), marginBottom: 16, ...pop(f - s.start - 4) }}>23 July 2026, what it cost</div>
-        <div style={{ display: 'flex', gap: 22 }}>
-          {THE_DAY.map(([figure, label], i) => (
-            <div key={label} style={{ flex: 1, ...pop(f - cards[i]) }}>
-              <div style={{ borderRadius: 18, border: `1px solid ${C.line}`, background: 'rgba(20,30,66,0.9)', padding: '18px 24px' }}>
-                <div style={{ ...text(58, 800, i === 3 ? C.fire[0] : C.fire[1]), fontVariantNumeric: 'tabular-nums' }}>{figure}</div>
-                <div style={text(22, 500, C.ink2)}>{label}</div>
-              </div>
-            </div>
-          ))}
+      <div style={{ position: 'absolute', left: 90, top: 150, ...mono(22, 700, C.ink2), ...pop(f - s.start) }}>Before and after</div>
+      <div style={{ position: 'absolute', left: 90, right: 90, top: 214 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr 1fr', columnGap: 22, rowGap: 14, alignItems: 'stretch' }}>
+          <div />
+          <div style={{ ...mono(24, 700, C.ink3), ...pop(f - table) }}>23 July 2026</div>
+          <div style={{ ...mono(24, 700, C.agent), display: 'flex', alignItems: 'center', gap: 8, ...pop(f - table) }}>
+            <Icon name="logo" size={26} color={C.fire[1]} />
+            With HackFire
+          </div>
+          {SIDE_BY_SIDE.map(([what, day, ours], i) => {
+            const t = f - table - 12 - i * 9
+            const lit = i === 2 && f >= quick
+            return [
+              <div key={`w${i}`} style={{ ...text(27, 700, C.ink2), padding: '18px 0', ...pop(t) }}>{what}</div>,
+              <div key={`d${i}`} style={{ ...text(28, 500, C.ink3), padding: '18px 22px', borderRadius: 14, border: `1px solid ${C.line}`, ...pop(t) }}>{day || '—'}</div>,
+              <div key={`o${i}`} style={{ ...text(28, 600, C.ink), padding: '18px 22px', borderRadius: 14, border: `1px solid ${lit ? C.agent : 'rgba(95,227,255,0.35)'}`, background: lit ? 'rgba(95,227,255,0.14)' : 'rgba(95,227,255,0.05)', ...pop(t) }}>{ours}</div>,
+            ]
+          })}
         </div>
       </div>
-      {f >= table && (
-        <div style={{ position: 'absolute', left: 90, right: 90, top: 330 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr 1fr', columnGap: 22, rowGap: 12, alignItems: 'stretch' }}>
-            <div />
-            <div style={{ ...mono(22, 700, C.ink3), ...pop(f - table) }}>23 July 2026</div>
-            <div style={{ ...mono(22, 700, C.agent), display: 'flex', alignItems: 'center', gap: 8, ...pop(f - table) }}>
-              <Icon name="logo" size={24} color={C.fire[1]} />
-              With HackFire
-            </div>
-            {SIDE_BY_SIDE.map(([what, day, ours], i) => {
-              const t = f - table - 10 - i * 7
-              const lit = i === 2 && f >= quick
-              return [
-                <div key={`w${i}`} style={{ ...text(24, 700, C.ink2), padding: '14px 0', ...pop(t) }}>{what}</div>,
-                <div key={`d${i}`} style={{ ...text(25, 500, C.ink3), padding: '14px 20px', borderRadius: 14, border: `1px solid ${C.line}`, ...pop(t) }}>{day || '—'}</div>,
-                <div key={`o${i}`} style={{ ...text(25, 600, C.ink), padding: '14px 20px', borderRadius: 14, border: `1px solid ${lit ? C.agent : 'rgba(95,227,255,0.35)'}`, background: lit ? 'rgba(95,227,255,0.14)' : 'rgba(95,227,255,0.05)', ...pop(t) }}>{ours}</div>,
-              ]
-            })}
-          </div>
-        </div>
-      )}
     </Overlay>
   )
 }
 
+// ── 05 What's next ────────────────────────────────────────────────────────────
+
 const ROADMAP: [string, string, string, [string, string][]][] = [
   ['Now', 'Built this weekend', C.status.evacuating, [
     ['satellite', 'Forecast from satellite hotspots'],
-    ['phone', 'Calls in Spanish, triage, rescue queue'],
+    ['phone', 'Calls, triage, rescue queue'],
     ['fire-truck', 'Crew plan, road closures, live map'],
   ]],
   ['Next', 'Pilot', C.route, [
@@ -534,19 +514,19 @@ const ROADMAP: [string, string, string, [string, string][]][] = [
   ['Then', 'Scale', C.agent, [
     ['route', 'More regions, more languages'],
     ['fire-truck', "Inside 112 and the crews' dispatch"],
-    ['flame', 'Devin retrains the forecast on every fire'],
+    ['code', 'A forecast that learns from every fire, with Devin'],
   ]],
 ]
 
 export function Roadmap({ f }: { f: number }) {
   const s = scene('roadmap')
-  const at = [s.start + 4, line('roadmap-0').at, beat('roadmap-1', 'then')]
+  const at = [s.start + 4, line('roadmap-0').at, beat('roadmap-1', 'after')]
   return (
     <Overlay id="roadmap" f={f}>
       <Grid f={f} />
       <div style={{ position: 'absolute', left: 90, top: 150, ...mono(22, 700, C.ink2), ...pop(f - s.start) }}>Roadmap</div>
       <div style={{ position: 'absolute', left: 90, right: 90, top: 214, height: 4, borderRadius: 2, background: C.line }}>
-        <div style={{ width: `${ease((f - s.start) / (s.end - s.start - 20)) * 100}%`, height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${C.status.evacuating}, ${C.route}, ${C.agent})` }} />
+        <div style={{ width: `${ease((f - s.start) / (s.end - s.start - 10)) * 100}%`, height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${C.status.evacuating}, ${C.route}, ${C.agent})` }} />
       </div>
       <div style={{ position: 'absolute', left: 90, right: 90, top: 250, display: 'flex', gap: 26 }}>
         {ROADMAP.map(([when, tag, color, items], i) => (
@@ -557,16 +537,85 @@ export function Roadmap({ f }: { f: number }) {
                 <span style={mono(20, 500, C.ink2)}>{tag}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 26 }}>
-                {items.map(([icon, label], j) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14, ...pop(f - at[i] - 6 - j * 5) }}>
-                    <Icon name={icon} size={30} color={color} />
-                    <span style={text(27, 600)}>{label}</span>
-                  </div>
-                ))}
+                {items.map(([icon, label], j) => {
+                  const devin = icon === 'code'
+                  return (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: devin ? '10px 12px' : 0, margin: devin ? '0 -12px' : 0, borderRadius: 12, background: devin ? 'rgba(95,227,255,0.12)' : 'none', border: devin ? `1px solid ${C.agent}` : 'none', ...pop(f - at[i] - 6 - j * 5) }}>
+                      <Icon name={icon} size={30} color={color} />
+                      <span style={text(27, devin ? 700 : 600)}>{label}</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
         ))}
+      </div>
+    </Overlay>
+  )
+}
+
+// The loop Devin would run after every fire (#19, planned): forecast, the real hotspots, the error,
+// a proposed change, a test on fires the model has never seen; only a better model goes live.
+const LOOP: [string, string, string, string][] = [
+  ['flame', 'Forecast', "HackFire's spread model", 'forecast'],
+  ['satellite', 'Real hotspots', 'Deepfire, after the fire', 'real'],
+  ['target', 'Error', 'where it missed, and by how much', 'measure'],
+  ['code', 'Devin proposes', 'a change to the model', 'propose'],
+  ['check', 'Tested on unseen fires', 'ships only if it beats today', 'nothing'],
+]
+
+export function Devin({ f }: { f: number }) {
+  const s = scene('devin')
+  const cx = 960
+  const cy = 575
+  const rx = 600
+  const ry = 250
+  const beats = LOOP.map(([, , , word], i) => (i < 4 ? beat('devin-0', word) : line('devin-1').at))
+  const node = (i: number): [number, number] => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / LOOP.length
+    return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]
+  }
+  const closed = f >= beats[4] + 12
+  const orbit = ((f - s.start) / 90) % 1
+  const dot = (() => {
+    const a = -Math.PI / 2 + orbit * 2 * Math.PI
+    return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]
+  })()
+  const tests = beat('devin-1', 'tests')
+  return (
+    <Overlay id="devin" f={f}>
+      <Grid f={f} color="rgba(95,227,255,0.05)" />
+      <div style={{ position: 'absolute', left: 90, top: 150, display: 'flex', alignItems: 'center', gap: 14, ...pop(f - s.start) }}>
+        <Icon name="code" size={34} color={C.agent} />
+        <span style={text(40, 800)}>A forecast that learns</span>
+        <span style={{ ...mono(20, 700, C.agent), padding: '4px 12px', borderRadius: 999, border: `1px solid ${C.agent}` }}>Devin by Cognition, planned</span>
+      </div>
+      <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
+        <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={closed ? C.agent : C.line} strokeWidth={3} strokeDasharray="10 12" strokeDashoffset={-f * 1.5} opacity={fade(f - s.start - 4, 12)} />
+        {closed && <circle cx={dot[0]} cy={dot[1]} r={12} fill={C.agent} opacity={0.9} />}
+        {closed && <circle cx={dot[0]} cy={dot[1]} r={26} fill={C.agent} opacity={0.2} />}
+      </svg>
+      {LOOP.map(([icon, title, sub], i) => {
+        const [x, y] = node(i)
+        const lit = f >= beats[i]
+        return (
+          <div key={title} style={{ position: 'absolute', left: x - 170, top: y - 62, width: 340, ...pop(f - beats[i]) }}>
+            <div style={{ borderRadius: 18, border: `2px solid ${lit ? (i === 3 ? C.agent : C.line) : C.line}`, background: i === 3 ? 'rgba(15,40,70,0.97)' : 'rgba(20,30,66,0.97)', padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center', boxShadow: i === 3 ? '0 0 40px rgba(95,227,255,0.25)' : 'none' }}>
+              <Icon name={icon} size={36} color={i === 0 ? C.fire[1] : i === 1 ? C.fire[0] : i === 4 ? C.status.evacuating : C.agent} />
+              <div>
+                <div style={text(27, 700)}>{title}</div>
+                <div style={text(18, 500, C.ink2)}>{sub}</div>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      <div style={{ position: 'absolute', left: cx - 230, top: cy - 38, width: 460, textAlign: 'center', ...pop(f - tests) }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderRadius: 14, border: `1px solid ${C.line}`, background: 'rgba(4,8,23,0.9)' }}>
+          <Icon name="phone" size={26} color={C.agent} />
+          <span style={text(22, 600)}>Every call's answers, new tests for the agent</span>
+        </div>
       </div>
     </Overlay>
   )

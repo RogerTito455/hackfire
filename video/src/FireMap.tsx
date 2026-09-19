@@ -2,7 +2,7 @@
 // virtual camera in kilometres, so scenes can fly between the whole valley and one street.
 
 import map from './data/map.json'
-import { C, MONO, SANS, clamp01, type Status } from './theme'
+import { C, SANS, clamp01, type Status } from './theme'
 import { Icon, STATUS_ICON } from './Icon'
 
 type LonLat = number[]
@@ -71,6 +71,10 @@ export type MapProps = {
   wayOut?: number
   wayIn?: number
   crewBase?: number
+  /** 0–1: the stretches of road the fire has reached, closed to residents (a dashed red cordon). */
+  closedRoads?: number
+  /** 0–1: the road the coordinator closed by hand, with its no-entry sign. */
+  closure?: number
 }
 
 export function FireMap(p: MapProps) {
@@ -171,6 +175,11 @@ export function FireMap(p: MapProps) {
         )
       })}
 
+      {(p.closedRoads ?? 0) > 0 &&
+        map.closedStretches.map((l, i) => (
+          <path key={i} d={line(l)} fill="none" stroke={C.status.needs_rescue} strokeWidth={cam.z > 110 ? 6 : 4} strokeLinecap="round" strokeDasharray="7 7" opacity={p.closedRoads} />
+        ))}
+
       {p.wayOut !== undefined && <Route d={line(map.routes.wayOut.line)} k={p.wayOut} f={p.f} />}
       {p.wayIn !== undefined && <Route d={line(map.routes.wayIn.line)} k={p.wayIn} f={p.f} crew />}
 
@@ -213,6 +222,26 @@ export function FireMap(p: MapProps) {
         )
       })()}
 
+      {(p.closure ?? 0) > 0 &&
+        (() => {
+          const at = P(map.closure.lon, map.closure.lat)
+          const k = clamp01(p.closure ?? 0)
+          return (
+            <g transform={`translate(${at[0]} ${at[1]})`} opacity={k}>
+              <circle r={Math.max(10, 0.15 * cam.z)} fill={C.ink} fillOpacity={0.12} stroke={C.ink} strokeWidth={2} />
+              <circle r={17} fill="#fff" stroke="#3c4043" strokeWidth={2} />
+              <g transform="translate(-11 -11)">
+                <MapIcon name="road-closed" size={22} color="#3c4043" />
+              </g>
+              {width > 1000 && (
+                <text x={26} y={7} style={{ fontFamily: SANS, fontSize: 21, fontWeight: 600 }} fill={C.ink}>
+                  Closed by the coordinator
+                </text>
+              )}
+            </g>
+          )
+        })()}
+
       {p.residents &&
         Object.entries(p.residents).map(([id, status]) => {
           const n = resident(id)
@@ -235,9 +264,6 @@ export function FireMap(p: MapProps) {
           )
         })}
 
-      <text x={width - 24} y={height - 16} textAnchor="end" style={{ fontFamily: MONO, fontSize: 13 }} fill={C.ink3} opacity={0.8}>
-        Hotspots: Deepfire. Map data: OpenStreetMap contributors.
-      </text>
     </svg>
   )
 }

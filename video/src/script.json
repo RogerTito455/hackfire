@@ -46,7 +46,7 @@
         },
         {
           "speaker": "narrator",
-          "text": "About thirteen hundred people were evacuated, and five homes burned."
+          "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area."
         }
       ]
     },
@@ -60,6 +60,15 @@
         {
           "speaker": "narrator",
           "text": "It couldn't say who had left, who couldn't move, or who never got it."
+        }
+      ]
+    },
+    {
+      "id": "compare",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds."
         }
       ]
     },
@@ -144,6 +153,10 @@
         {
           "speaker": "narrator",
           "text": "Every rescue is queued by how soon the fire reaches it, and shared out between the crews, each with its route."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Every route goes around the fire: the roads it has reached are closed, and the coordinator can close any other with a tap."
         }
       ]
     },
@@ -157,19 +170,6 @@
       ]
     },
     {
-      "id": "compare",
-      "lines": [
-        {
-          "speaker": "narrator",
-          "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area."
-        },
-        {
-          "speaker": "narrator",
-          "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds."
-        }
-      ]
-    },
-    {
       "id": "roadmap",
       "lines": [
         {
@@ -178,7 +178,20 @@
         },
         {
           "speaker": "narrator",
-          "text": "Then more regions, built into the firefighters' workflow, and a forecast that Devin retrains against every new fire."
+          "text": "After that, more regions, built into the firefighters' workflow."
+        }
+      ]
+    },
+    {
+      "id": "devin",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "And the forecast will learn from every fire. Devin will replay each one against the real satellite hotspots, measure the error, and propose a better model."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Nothing ships unless it beats today's model on fires it has never seen, and every call's answers become new tests for the agent."
         }
       ]
     },

@@ -101,7 +101,21 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M6 18v2M18 18v2M7 14.5h1M16 14.5h1" />
     </>
   ),
-  // The video's own, in the same format: a microphone, a check and a broadcast tower.
+  'road-closed': (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M7.5 12h9" />
+    </>
+  ),
+  // The video's own, in the same format: a microphone, a check, a broadcast tower, a target, code.
+  target: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  code: <path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5M13.5 5l-3 14" />,
   mic: (
     <>
       <rect x="9" y="3" width="6" height="11" rx="3" />

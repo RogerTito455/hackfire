@@ -1,7 +1,7 @@
 // One map for the whole story, so the camera flies instead of cutting: the valley on 23 July, the
 // rewind to 15:30, the forecast, the lead time, the order, the call's result and the rescue plan.
 // Times are the replay's (data/map.json); the order and call moments are the demo autopilot's
-// (data/demo_timeline.json): order approved at 15:45, Resident 03 calls in at 16:35.
+// (data/demo_timeline.json): order approved at 15:45, the Calle del Júcar household calls in at 16:35.
 
 import type { ReactNode } from 'react'
 import { AbsoluteFill } from 'remotion'
@@ -16,6 +16,8 @@ const ORDER_AT = 2265 // 23 July 13:45 UTC, 15:45 in Spain
 const CALL_AT = 2315 // 14:35 UTC, 16:35 in Spain
 const ATALAYA: [number, number] = [-4.4603, 40.3831]
 const SIDE = 300 // the map's shift right when a panel sits on the left
+// The demo registry's households (data/neighbors.sample.json), in its order.
+const HOUSEHOLDS = ['Avenida del Ebro, west', 'Avenida del Ebro, east', 'Calle del Júcar', 'Calle de las Capellanías', 'Travesía de la Iglesia']
 
 type Stage = MapProps & { clockLabel: string; simulation: number }
 
@@ -94,13 +96,19 @@ function stage(f: number): Stage {
     }
   }
   const t = f - rescue.start
+  // On "the roads it has reached are closed", pull back to show the closed stretches to the north-west,
+  // the coordinator's closure and both routes at once.
+  const cordon = camAt(-4.495, 40.41, 74)
+  const pullBack = ease((f - beat('rescue-1', 'every') + 4) / 40)
   return {
-    cam: lerpCam(close, wide, ease(t / 36)),
+    cam: lerpCam(lerpCam(close, wide, ease(t / 36)), cordon, pullBack),
     offsetX: SIDE * ease(t / 36),
     time: CALL_AT,
     risk: 1,
     residents,
     crewBase: fade(f - beat('rescue-0', 'crews'), 10),
+    closedRoads: fade(f - beat('rescue-1', 'closed'), 12),
+    closure: fade(f - beat('rescue-1', 'close'), 10),
     wayIn: easeOut((f - beat('rescue-0', 'crews') - 6) / 30),
     wayOut: easeOut((f - beat('rescue-0', 'queued')) / 34),
     labels: 1,
@@ -162,8 +170,8 @@ function Pulse({ at, f, color, size = 60 }: { at: [number, number]; f: number; c
 
 function OpenOverlay({ f, s }: { f: number; s: Stage }) {
   const reach = beat('open-0', 'reached')
-  const people = beat('open-1', 'thirteen')
-  const homes = beat('open-1', 'five')
+  const hectares = beat('open-1', 'thirty')
+  const homes = beat('open-1', 'two')
   const at = onScreen(s, ...ATALAYA)
   return (
     <During id="open" f={f}>
@@ -172,10 +180,12 @@ function OpenOverlay({ f, s }: { f: number; s: Stage }) {
         <div style={{ ...mono(22, 500, C.ink2), marginTop: 8 }}>Ávila, Spain. Satellite hotspots, 22 and 23 July 2026</div>
       </div>
       {f >= reach && f < reach + 60 && <Pulse at={at} f={f - reach} color={C.fire[0]} size={90} />}
-      <div style={{ position: 'absolute', left: 48, bottom: 200, display: 'flex', gap: 20 }}>
+      <div style={{ position: 'absolute', left: 48, bottom: 180, display: 'flex', gap: 18 }}>
         {[
-          [people, '1,300', 'people evacuated from La Atalaya'],
-          [homes, '5', 'homes burned'],
+          [hectares, '37,818 ha', 'burned in Ávila, provisional'],
+          [hectares + 10, '1,500', 'people evacuated'],
+          [hectares + 20, '5', 'homes destroyed'],
+          [homes, '229', 'homes inside the burned area'],
         ].map(([t, figure, label]) => (
           <div key={label as string} style={pop(f - (t as number))}>
             <Card style={{ padding: '16px 26px' }}>
@@ -343,10 +353,10 @@ function OrderOverlay({ f, s }: { f: number; s: Stage }) {
           </div>
         </Card>
         <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {['01', '02', '03', '04', '05'].map((n, i) => (
+          {HOUSEHOLDS.map((n, i) => (
             <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 12, ...pop(f - calls - i * 3) }}>
               <Icon name="phone" size={24} color={C.agent} />
-              <span style={text(22, 600)}>Resident {n}</span>
+              <span style={text(22, 600)}>{n}</span>
               <span style={{ ...mono(18, 500, C.agent), marginLeft: 'auto', opacity: 0.5 + 0.5 * Math.abs(Math.sin((f - i * 7) / 6)) }}>calling</span>
             </div>
           ))}
@@ -395,7 +405,7 @@ function RescueOverlay({ f }: { f: number }) {
               <span style={{ ...mono(28, 700, C.status.needs_rescue) }}>1</span>
               <Icon name="lifebuoy" size={30} color={C.status.needs_rescue} />
               <div>
-                <div style={text(26, 700)}>Resident 03, La Atalaya</div>
+                <div style={text(26, 700)}>Calle del Júcar household, La Atalaya</div>
                 <div style={text(21, 500, C.ink2)}>2 people, mother can't walk</div>
                 <div style={{ ...text(21, 600, C.fire[1]), marginTop: 4 }}>Fire expected in about 3 h</div>
               </div>
@@ -408,7 +418,7 @@ function RescueOverlay({ f }: { f: number }) {
             <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
               <Icon name="fire-truck" size={30} color={C.route} />
               <div style={{ flex: 1 }}>
-                <div style={text(24, 700)}>Crew 1 to Resident 03</div>
+                <div style={text(24, 700)}>Crew 1 to Calle del Júcar</div>
                 <div style={text(21, 500, C.ink2)}>Leaves now, there in {DATA.routes.wayIn.minutes} min</div>
               </div>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, border: `2px solid ${C.status.evacuating}`, ...text(20, 700, C.status.evacuating) }}>

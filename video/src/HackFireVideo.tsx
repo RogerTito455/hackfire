@@ -3,7 +3,7 @@
 import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion'
 import { Backdrop, Header, SceneSources, Subtitles, Vignette } from './Chrome'
 import { MapStage } from './MapStage'
-import { Brand, Call, Close, Command, Compare, Problem, Roadmap } from './Scenes'
+import { Brand, Call, Close, Command, Compare, Devin, Problem, Roadmap } from './Scenes'
 import envelope from './data/music-envelope.json'
 import { ALL_LINES, SCENES, TOTAL, beat, line, lineEnd, scene } from './timeline'
 import { FPS } from './theme'
@@ -23,7 +23,7 @@ function evenOut(frame: number): number {
   return Math.min(1, Math.pow(10, (MUSIC_LUFS - loudness) / 20))
 }
 
-const OPAQUE = ['problem', 'brand', 'call', 'command', 'compare', 'roadmap', 'close']
+const OPAQUE = ['problem', 'compare', 'brand', 'call', 'command', 'roadmap', 'devin', 'close']
 
 export function HackFireVideo() {
   const f = useCurrentFrame()
@@ -40,6 +40,7 @@ export function HackFireVideo() {
       <Command f={f} />
       <Compare f={f} />
       <Roadmap f={f} />
+      <Devin f={f} />
       <Close f={f} />
       <Vignette />
       <Header f={f} sceneId={current.id} />
@@ -71,8 +72,8 @@ function Sound() {
         <Sfx key={s.id} at={s.start - 4} name="whoosh" volume={0.22} />
       ))}
       <Sfx at={beat('open-0', 'reached')} name="hit" volume={0.3} />
-      <Sfx at={beat('open-1', 'thirteen')} name="blip" />
-      <Sfx at={beat('open-1', 'five')} name="blip" />
+      <Sfx at={beat('open-1', 'thirty')} name="blip" />
+      <Sfx at={beat('open-1', 'two')} name="blip" />
       <Sfx at={beat('problem-0', 'every') - 20} name="alert" volume={0.3} />
       <Sfx at={beat('problem-1', 'left')} name="tick" />
       <Sfx at={beat('problem-1', 'move')} name="tick" />
@@ -91,12 +92,17 @@ function Sound() {
       <Sfx at={beat('rescue-0', 'queued')} name="blip" />
       <Sfx at={beat('rescue-0', 'crews')} name="blip" />
       <Sfx at={beat('command-0', 'vonage')} name="scan" volume={0.25} />
-      <Sfx at={beat('compare-0', 'thirty')} name="blip" />
-      <Sfx at={beat('compare-0', 'two')} name="blip" />
-      <Sfx at={line('compare-1').at + 6} name="scan" volume={0.25} />
-      <Sfx at={beat('compare-1', 'two')} name="tick" />
+      <Sfx at={scene('compare').start + 6} name="scan" volume={0.25} />
+      <Sfx at={beat('compare-0', 'two')} name="tick" />
+      <Sfx at={beat('rescue-1', 'closed')} name="tick" />
+      <Sfx at={beat('rescue-1', 'close')} name="stamp" volume={0.35} />
       <Sfx at={line('roadmap-0').at} name="blip" />
-      <Sfx at={beat('roadmap-1', 'then')} name="blip" />
+      <Sfx at={beat('roadmap-1', 'after')} name="blip" />
+      <Sfx at={beat('devin-0', 'real')} name="blip" />
+      <Sfx at={beat('devin-0', 'measure')} name="blip" />
+      <Sfx at={beat('devin-0', 'propose')} name="scan" volume={0.3} />
+      <Sfx at={line('devin-1').at} name="blip" />
+      <Sfx at={line('devin-1').at + 12} name="hit" volume={0.25} />
       <Sfx at={beat('close-0', 'listens')} name="scan" volume={0.3} />
       <Sfx at={lineEnd('close-0') + 4} name="hit" volume={0.35} />
       <Audio

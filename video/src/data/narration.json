@@ -87,62 +87,122 @@
    "id": "open-1",
    "scene": "open",
    "speaker": "narrator",
-   "text": "About thirteen hundred people were evacuated, and five homes burned.",
+   "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area.",
    "file": "audio/lines/open-1.mp3",
-   "durationMs": 3657,
+   "durationMs": 7523,
    "words": [
     {
-     "text": "About",
+     "text": "That",
      "startMs": 0,
-     "endMs": 279
+     "endMs": 255
     },
     {
-     "text": "thirteen",
-     "startMs": 337,
-     "endMs": 708
+     "text": "day,",
+     "startMs": 313,
+     "endMs": 755
     },
     {
-     "text": "hundred",
-     "startMs": 766,
-     "endMs": 1033
+     "text": "the",
+     "startMs": 859,
+     "endMs": 964
     },
     {
-     "text": "people",
-     "startMs": 1068,
+     "text": "fire",
+     "startMs": 1033,
      "endMs": 1335
     },
     {
-     "text": "were",
-     "startMs": 1358,
-     "endMs": 1486
+     "text": "burned",
+     "startMs": 1393,
+     "endMs": 1730
     },
     {
-     "text": "evacuated,",
-     "startMs": 1521,
-     "endMs": 2136
+     "text": "about",
+     "startMs": 1765,
+     "endMs": 1974
+    },
+    {
+     "text": "thirty-eight",
+     "startMs": 2055,
+     "endMs": 2612
+    },
+    {
+     "text": "thousand",
+     "startMs": 2647,
+     "endMs": 2972
+    },
+    {
+     "text": "hectares",
+     "startMs": 3019,
+     "endMs": 3402
+    },
+    {
+     "text": "in",
+     "startMs": 3437,
+     "endMs": 3495
+    },
+    {
+     "text": "Ávila,",
+     "startMs": 3553,
+     "endMs": 3959
     },
     {
      "text": "and",
-     "startMs": 2159,
-     "endMs": 2252
+     "startMs": 4180,
+     "endMs": 4331
     },
     {
-     "text": "five",
-     "startMs": 2322,
-     "endMs": 2577
+     "text": "two",
+     "startMs": 4377,
+     "endMs": 4540
+    },
+    {
+     "text": "hundred",
+     "startMs": 4598,
+     "endMs": 4865
+    },
+    {
+     "text": "and",
+     "startMs": 4888,
+     "endMs": 4969
+    },
+    {
+     "text": "twenty-nine",
+     "startMs": 5004,
+     "endMs": 5538
     },
     {
      "text": "homes",
-     "startMs": 2612,
-     "endMs": 2868
+     "startMs": 5584,
+     "endMs": 5875
     },
     {
-     "text": "burned.",
-     "startMs": 2926,
-     "endMs": 3622
+     "text": "stood",
+     "startMs": 5909,
+     "endMs": 6118
+    },
+    {
+     "text": "inside",
+     "startMs": 6165,
+     "endMs": 6444
+    },
+    {
+     "text": "the",
+     "startMs": 6478,
+     "endMs": 6548
+    },
+    {
+     "text": "burned",
+     "startMs": 6583,
+     "endMs": 6850
+    },
+    {
+     "text": "area.",
+     "startMs": 6896,
+     "endMs": 7477
     }
    ],
-   "hash": "728c363f666c"
+   "hash": "e9994c1cf21a"
   },
   {
    "id": "problem-0",
@@ -290,6 +350,142 @@
     }
    ],
    "hash": "3ba3660a5010"
+  },
+  {
+   "id": "compare-0",
+   "scene": "compare",
+   "speaker": "narrator",
+   "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds.",
+   "file": "audio/lines/compare-0.mp3",
+   "durationMs": 8490,
+   "words": [
+    {
+     "text": "We",
+     "startMs": 0,
+     "endMs": 139
+    },
+    {
+     "text": "can't",
+     "startMs": 186,
+     "endMs": 418
+    },
+    {
+     "text": "rerun",
+     "startMs": 476,
+     "endMs": 813
+    },
+    {
+     "text": "that",
+     "startMs": 859,
+     "endMs": 998
+    },
+    {
+     "text": "day.",
+     "startMs": 1057,
+     "endMs": 1405
+    },
+    {
+     "text": "What",
+     "startMs": 1695,
+     "endMs": 1858
+    },
+    {
+     "text": "HackFire",
+     "startMs": 1904,
+     "endMs": 2241
+    },
+    {
+     "text": "changes",
+     "startMs": 2287,
+     "endMs": 2705
+    },
+    {
+     "text": "is",
+     "startMs": 2763,
+     "endMs": 2844
+    },
+    {
+     "text": "what",
+     "startMs": 2891,
+     "endMs": 3007
+    },
+    {
+     "text": "the",
+     "startMs": 3042,
+     "endMs": 3111
+    },
+    {
+     "text": "coordinator",
+     "startMs": 3146,
+     "endMs": 3646
+    },
+    {
+     "text": "knows:",
+     "startMs": 3692,
+     "endMs": 4098
+    },
+    {
+     "text": "every",
+     "startMs": 4389,
+     "endMs": 4644
+    },
+    {
+     "text": "household",
+     "startMs": 4702,
+     "endMs": 5155
+    },
+    {
+     "text": "answers,",
+     "startMs": 5201,
+     "endMs": 5666
+    },
+    {
+     "text": "and",
+     "startMs": 5828,
+     "endMs": 5956
+    },
+    {
+     "text": "each",
+     "startMs": 6002,
+     "endMs": 6153
+    },
+    {
+     "text": "answer",
+     "startMs": 6211,
+     "endMs": 6467
+    },
+    {
+     "text": "reaches",
+     "startMs": 6525,
+     "endMs": 6803
+    },
+    {
+     "text": "the",
+     "startMs": 6838,
+     "endMs": 6908
+    },
+    {
+     "text": "map",
+     "startMs": 6954,
+     "endMs": 7105
+    },
+    {
+     "text": "within",
+     "startMs": 7152,
+     "endMs": 7372
+    },
+    {
+     "text": "two",
+     "startMs": 7430,
+     "endMs": 7593
+    },
+    {
+     "text": "seconds.",
+     "startMs": 7651,
+     "endMs": 8452
+    }
+   ],
+   "hash": "03964102b476"
   },
   {
    "id": "brand-0",
@@ -1205,6 +1401,132 @@
    "hash": "ca6981e65c58"
   },
   {
+   "id": "rescue-1",
+   "scene": "rescue",
+   "speaker": "narrator",
+   "text": "Every route goes around the fire: the roads it has reached are closed, and the coordinator can close any other with a tap.",
+   "file": "audio/lines/rescue-1.mp3",
+   "durationMs": 5878,
+   "words": [
+    {
+     "text": "Every",
+     "startMs": 0,
+     "endMs": 267
+    },
+    {
+     "text": "route",
+     "startMs": 325,
+     "endMs": 546
+    },
+    {
+     "text": "goes",
+     "startMs": 580,
+     "endMs": 766
+    },
+    {
+     "text": "around",
+     "startMs": 801,
+     "endMs": 1022
+    },
+    {
+     "text": "the",
+     "startMs": 1057,
+     "endMs": 1126
+    },
+    {
+     "text": "fire:",
+     "startMs": 1173,
+     "endMs": 1602
+    },
+    {
+     "text": "the",
+     "startMs": 1892,
+     "endMs": 1985
+    },
+    {
+     "text": "roads",
+     "startMs": 2043,
+     "endMs": 2264
+    },
+    {
+     "text": "it",
+     "startMs": 2310,
+     "endMs": 2380
+    },
+    {
+     "text": "has",
+     "startMs": 2415,
+     "endMs": 2508
+    },
+    {
+     "text": "reached",
+     "startMs": 2566,
+     "endMs": 2821
+    },
+    {
+     "text": "are",
+     "startMs": 2856,
+     "endMs": 2926
+    },
+    {
+     "text": "closed,",
+     "startMs": 2961,
+     "endMs": 3402
+    },
+    {
+     "text": "and",
+     "startMs": 3425,
+     "endMs": 3506
+    },
+    {
+     "text": "the",
+     "startMs": 3541,
+     "endMs": 3611
+    },
+    {
+     "text": "coordinator",
+     "startMs": 3634,
+     "endMs": 4098
+    },
+    {
+     "text": "can",
+     "startMs": 4133,
+     "endMs": 4249
+    },
+    {
+     "text": "close",
+     "startMs": 4307,
+     "endMs": 4551
+    },
+    {
+     "text": "any",
+     "startMs": 4598,
+     "endMs": 4737
+    },
+    {
+     "text": "other",
+     "startMs": 4795,
+     "endMs": 4957
+    },
+    {
+     "text": "with",
+     "startMs": 4992,
+     "endMs": 5108
+    },
+    {
+     "text": "a",
+     "startMs": 5143,
+     "endMs": 5166
+    },
+    {
+     "text": "tap.",
+     "startMs": 5213,
+     "endMs": 5851
+    }
+   ],
+   "hash": "fcca4aea642b"
+  },
+  {
    "id": "command-0",
    "scene": "command",
    "speaker": "narrator",
@@ -1306,263 +1628,6 @@
    "hash": "fb4688ca88c5"
   },
   {
-   "id": "compare-0",
-   "scene": "compare",
-   "speaker": "narrator",
-   "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area.",
-   "file": "audio/lines/compare-0.mp3",
-   "durationMs": 7001,
-   "words": [
-    {
-     "text": "That",
-     "startMs": 0,
-     "endMs": 232
-    },
-    {
-     "text": "day,",
-     "startMs": 290,
-     "endMs": 546
-    },
-    {
-     "text": "the",
-     "startMs": 580,
-     "endMs": 650
-    },
-    {
-     "text": "fire",
-     "startMs": 708,
-     "endMs": 964
-    },
-    {
-     "text": "burned",
-     "startMs": 1010,
-     "endMs": 1289
-    },
-    {
-     "text": "about",
-     "startMs": 1312,
-     "endMs": 1521
-    },
-    {
-     "text": "thirty-eight",
-     "startMs": 1579,
-     "endMs": 2032
-    },
-    {
-     "text": "thousand",
-     "startMs": 2067,
-     "endMs": 2415
-    },
-    {
-     "text": "hectares",
-     "startMs": 2473,
-     "endMs": 2868
-    },
-    {
-     "text": "in",
-     "startMs": 2914,
-     "endMs": 2972
-    },
-    {
-     "text": "Ávila,",
-     "startMs": 3030,
-     "endMs": 3471
-    },
-    {
-     "text": "and",
-     "startMs": 3727,
-     "endMs": 3866
-    },
-    {
-     "text": "two",
-     "startMs": 3901,
-     "endMs": 4052
-    },
-    {
-     "text": "hundred",
-     "startMs": 4110,
-     "endMs": 4354
-    },
-    {
-     "text": "and",
-     "startMs": 4377,
-     "endMs": 4447
-    },
-    {
-     "text": "twenty-nine",
-     "startMs": 4470,
-     "endMs": 4981
-    },
-    {
-     "text": "homes",
-     "startMs": 5027,
-     "endMs": 5364
-    },
-    {
-     "text": "stood",
-     "startMs": 5399,
-     "endMs": 5619
-    },
-    {
-     "text": "inside",
-     "startMs": 5666,
-     "endMs": 5944
-    },
-    {
-     "text": "the",
-     "startMs": 5968,
-     "endMs": 6037
-    },
-    {
-     "text": "burned",
-     "startMs": 6072,
-     "endMs": 6327
-    },
-    {
-     "text": "area.",
-     "startMs": 6374,
-     "endMs": 6966
-    }
-   ],
-   "hash": "e9994c1cf21a"
-  },
-  {
-   "id": "compare-1",
-   "scene": "compare",
-   "speaker": "narrator",
-   "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds.",
-   "file": "audio/lines/compare-1.mp3",
-   "durationMs": 8777,
-   "words": [
-    {
-     "text": "We",
-     "startMs": 0,
-     "endMs": 151
-    },
-    {
-     "text": "can't",
-     "startMs": 197,
-     "endMs": 418
-    },
-    {
-     "text": "rerun",
-     "startMs": 464,
-     "endMs": 801
-    },
-    {
-     "text": "that",
-     "startMs": 848,
-     "endMs": 998
-    },
-    {
-     "text": "day.",
-     "startMs": 1057,
-     "endMs": 1382
-    },
-    {
-     "text": "What",
-     "startMs": 1846,
-     "endMs": 2020
-    },
-    {
-     "text": "HackFire",
-     "startMs": 2067,
-     "endMs": 2485
-    },
-    {
-     "text": "changes",
-     "startMs": 2531,
-     "endMs": 2937
-    },
-    {
-     "text": "is",
-     "startMs": 2995,
-     "endMs": 3077
-    },
-    {
-     "text": "what",
-     "startMs": 3123,
-     "endMs": 3239
-    },
-    {
-     "text": "the",
-     "startMs": 3274,
-     "endMs": 3344
-    },
-    {
-     "text": "coordinator",
-     "startMs": 3379,
-     "endMs": 3866
-    },
-    {
-     "text": "knows:",
-     "startMs": 3901,
-     "endMs": 4342
-    },
-    {
-     "text": "every",
-     "startMs": 4632,
-     "endMs": 4888
-    },
-    {
-     "text": "household",
-     "startMs": 4946,
-     "endMs": 5399
-    },
-    {
-     "text": "answers,",
-     "startMs": 5457,
-     "endMs": 5968
-    },
-    {
-     "text": "and",
-     "startMs": 6107,
-     "endMs": 6246
-    },
-    {
-     "text": "each",
-     "startMs": 6293,
-     "endMs": 6432
-    },
-    {
-     "text": "answer",
-     "startMs": 6478,
-     "endMs": 6722
-    },
-    {
-     "text": "reaches",
-     "startMs": 6780,
-     "endMs": 7070
-    },
-    {
-     "text": "the",
-     "startMs": 7117,
-     "endMs": 7187
-    },
-    {
-     "text": "map",
-     "startMs": 7245,
-     "endMs": 7407
-    },
-    {
-     "text": "within",
-     "startMs": 7465,
-     "endMs": 7686
-    },
-    {
-     "text": "two",
-     "startMs": 7732,
-     "endMs": 7895
-    },
-    {
-     "text": "seconds.",
-     "startMs": 7953,
-     "endMs": 8731
-    }
-   ],
-   "hash": "03964102b476"
-  },
-  {
    "id": "roadmap-0",
    "scene": "roadmap",
    "speaker": "narrator",
@@ -1647,102 +1712,324 @@
    "id": "roadmap-1",
    "scene": "roadmap",
    "speaker": "narrator",
-   "text": "Then more regions, built into the firefighters' workflow, and a forecast that Devin retrains against every new fire.",
+   "text": "After that, more regions, built into the firefighters' workflow.",
    "file": "audio/lines/roadmap-1.mp3",
-   "durationMs": 6217,
+   "durationMs": 3422,
    "words": [
     {
-     "text": "Then",
+     "text": "After",
      "startMs": 0,
-     "endMs": 209
+     "endMs": 267
+    },
+    {
+     "text": "that,",
+     "startMs": 302,
+     "endMs": 557
     },
     {
      "text": "more",
-     "startMs": 255,
-     "endMs": 395
+     "startMs": 813,
+     "endMs": 1010
     },
     {
      "text": "regions,",
-     "startMs": 453,
-     "endMs": 940
+     "startMs": 1057,
+     "endMs": 1521
     },
     {
      "text": "built",
-     "startMs": 975,
-     "endMs": 1196
+     "startMs": 1556,
+     "endMs": 1765
     },
     {
      "text": "into",
-     "startMs": 1242,
-     "endMs": 1382
+     "startMs": 1811,
+     "endMs": 1950
     },
     {
      "text": "the",
-     "startMs": 1428,
-     "endMs": 1498
+     "startMs": 2009,
+     "endMs": 2078
     },
     {
      "text": "firefighters'",
-     "startMs": 1533,
-     "endMs": 2113
+     "startMs": 2113,
+     "endMs": 2635
     },
     {
-     "text": "workflow,",
-     "startMs": 2148,
-     "endMs": 2694
+     "text": "workflow.",
+     "startMs": 2659,
+     "endMs": 3390
+    }
+   ],
+   "hash": "3403ef83c12d"
+  },
+  {
+   "id": "devin-0",
+   "scene": "devin",
+   "speaker": "narrator",
+   "text": "And the forecast will learn from every fire. Devin will replay each one against the real satellite hotspots, measure the error, and propose a better model.",
+   "file": "audio/lines/devin-0.mp3",
+   "durationMs": 8620,
+   "words": [
+    {
+     "text": "And",
+     "startMs": 0,
+     "endMs": 163
     },
     {
-     "text": "and",
-     "startMs": 2879,
-     "endMs": 3019
-    },
-    {
-     "text": "a",
-     "startMs": 3065,
-     "endMs": 3088
+     "text": "the",
+     "startMs": 197,
+     "endMs": 267
     },
     {
      "text": "forecast",
-     "startMs": 3146,
-     "endMs": 3611
+     "startMs": 313,
+     "endMs": 766
     },
     {
-     "text": "that",
-     "startMs": 3646,
-     "endMs": 3762
+     "text": "will",
+     "startMs": 801,
+     "endMs": 929
     },
     {
-     "text": "Devin",
-     "startMs": 3808,
-     "endMs": 4052
+     "text": "learn",
+     "startMs": 964,
+     "endMs": 1149
     },
     {
-     "text": "retrains",
-     "startMs": 4110,
-     "endMs": 4540
-    },
-    {
-     "text": "against",
-     "startMs": 4574,
-     "endMs": 4853
+     "text": "from",
+     "startMs": 1196,
+     "endMs": 1335
     },
     {
      "text": "every",
-     "startMs": 4957,
-     "endMs": 5271
-    },
-    {
-     "text": "new",
-     "startMs": 5317,
-     "endMs": 5457
+     "startMs": 1440,
+     "endMs": 1800
     },
     {
      "text": "fire.",
-     "startMs": 5515,
-     "endMs": 6177
+     "startMs": 1858,
+     "endMs": 2322
+    },
+    {
+     "text": "Devin",
+     "startMs": 2670,
+     "endMs": 2949
+    },
+    {
+     "text": "will",
+     "startMs": 2995,
+     "endMs": 3158
+    },
+    {
+     "text": "replay",
+     "startMs": 3204,
+     "endMs": 3495
+    },
+    {
+     "text": "each",
+     "startMs": 3553,
+     "endMs": 3727
+    },
+    {
+     "text": "one",
+     "startMs": 3785,
+     "endMs": 3947
+    },
+    {
+     "text": "against",
+     "startMs": 3971,
+     "endMs": 4238
+    },
+    {
+     "text": "the",
+     "startMs": 4272,
+     "endMs": 4342
+    },
+    {
+     "text": "real",
+     "startMs": 4400,
+     "endMs": 4598
+    },
+    {
+     "text": "satellite",
+     "startMs": 4656,
+     "endMs": 5097
+    },
+    {
+     "text": "hotspots,",
+     "startMs": 5120,
+     "endMs": 5724
+    },
+    {
+     "text": "measure",
+     "startMs": 5979,
+     "endMs": 6281
+    },
+    {
+     "text": "the",
+     "startMs": 6304,
+     "endMs": 6385
+    },
+    {
+     "text": "error,",
+     "startMs": 6444,
+     "endMs": 6803
+    },
+    {
+     "text": "and",
+     "startMs": 6943,
+     "endMs": 7082
+    },
+    {
+     "text": "propose",
+     "startMs": 7129,
+     "endMs": 7500
+    },
+    {
+     "text": "a",
+     "startMs": 7523,
+     "endMs": 7558
+    },
+    {
+     "text": "better",
+     "startMs": 7663,
+     "endMs": 7953
+    },
+    {
+     "text": "model.",
+     "startMs": 8011,
+     "endMs": 8591
     }
    ],
-   "hash": "2783396c30a0"
+   "hash": "57dd589ef552"
+  },
+  {
+   "id": "devin-1",
+   "scene": "devin",
+   "speaker": "narrator",
+   "text": "Nothing ships unless it beats today's model on fires it has never seen, and every call's answers become new tests for the agent.",
+   "file": "audio/lines/devin-1.mp3",
+   "durationMs": 6348,
+   "words": [
+    {
+     "text": "Nothing",
+     "startMs": 0,
+     "endMs": 337
+    },
+    {
+     "text": "ships",
+     "startMs": 395,
+     "endMs": 708
+    },
+    {
+     "text": "unless",
+     "startMs": 755,
+     "endMs": 987
+    },
+    {
+     "text": "it",
+     "startMs": 1022,
+     "endMs": 1080
+    },
+    {
+     "text": "beats",
+     "startMs": 1126,
+     "endMs": 1347
+    },
+    {
+     "text": "today's",
+     "startMs": 1393,
+     "endMs": 1811
+    },
+    {
+     "text": "model",
+     "startMs": 1869,
+     "endMs": 2090
+    },
+    {
+     "text": "on",
+     "startMs": 2136,
+     "endMs": 2206
+    },
+    {
+     "text": "fires",
+     "startMs": 2264,
+     "endMs": 2543
+    },
+    {
+     "text": "it",
+     "startMs": 2589,
+     "endMs": 2659
+    },
+    {
+     "text": "has",
+     "startMs": 2705,
+     "endMs": 2786
+    },
+    {
+     "text": "never",
+     "startMs": 2844,
+     "endMs": 3053
+    },
+    {
+     "text": "seen,",
+     "startMs": 3111,
+     "endMs": 3471
+    },
+    {
+     "text": "and",
+     "startMs": 3692,
+     "endMs": 3831
+    },
+    {
+     "text": "every",
+     "startMs": 3878,
+     "endMs": 4063
+    },
+    {
+     "text": "call's",
+     "startMs": 4110,
+     "endMs": 4331
+    },
+    {
+     "text": "answers",
+     "startMs": 4365,
+     "endMs": 4690
+    },
+    {
+     "text": "become",
+     "startMs": 4737,
+     "endMs": 4981
+    },
+    {
+     "text": "new",
+     "startMs": 5027,
+     "endMs": 5166
+    },
+    {
+     "text": "tests",
+     "startMs": 5213,
+     "endMs": 5468
+    },
+    {
+     "text": "for",
+     "startMs": 5492,
+     "endMs": 5573
+    },
+    {
+     "text": "the",
+     "startMs": 5608,
+     "endMs": 5677
+    },
+    {
+     "text": "agent.",
+     "startMs": 5724,
+     "endMs": 6316
+    }
+   ],
+   "hash": "35857e4c177e"
   },
   {
    "id": "close-0",

@@ -16,7 +16,7 @@ const frames = (ms: number) => Math.round((ms / 1000) * FPS)
 // Frames before a scene's first line: room for a sound or a picture to arrive first.
 const LEAD: Record<string, number> = { open: 22, brand: 24, forecast: 20, call: 50, leadtime: 8, close: 12 }
 // Frames after a scene's last line, before the next scene: a picture that needs to be seen.
-const HOLD: Record<string, number> = { compare: 40, roadmap: 36, brand: 84, leadtime: 30, understood: 10, command: 16, close: 96 }
+const HOLD: Record<string, number> = { compare: 40, roadmap: 16, devin: 40, brand: 84, leadtime: 30, understood: 10, command: 16, close: 96 }
 const GAP = 6 // between two sentences of the narrator
 const TURN = 8 // between turns in the call
 
@@ -70,10 +70,10 @@ export const lineEnd = (id: string) => {
 
 // Chapters: the number says where you are in the story, the bar how much is left.
 export const CHAPTERS: [string, string, string[]][] = [
-  ['01', 'The fire', ['open', 'problem']],
+  ['01', 'That day', ['open', 'problem', 'compare']],
   ['02', 'The forecast', ['brand', 'forecast', 'leadtime']],
   ['03', 'The call', ['order', 'call', 'understood']],
   ['04', 'The rescue', ['rescue', 'command']],
-  ['05', 'What changes', ['compare', 'roadmap']],
+  ['05', "What's next", ['roadmap', 'devin']],
   ['06', 'Listening back', ['close']],
 ]
