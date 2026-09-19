@@ -154,5 +154,10 @@ def test_the_endpoint_lists_every_provider(monkeypatch: pytest.MonkeyPatch) -> N
     fake = [Provider(p.id, p.name, lambda _c: Check(ProviderState.UP, "ok"), p.ttl_s) for p in provider_status.PROVIDERS]
     monkeypatch.setattr(provider_status, "PROVIDERS", fake)
     body = client.get("/api/status/providers").json()
-    assert [s["id"] for s in body] == ["deepfire", "openrouteservice", "overpass", "slng", "twilio", "vonage"]
+    assert [s["id"] for s in body] == ["deepfire", "openrouteservice", "overpass", "slng", "twilio", "vonage", "dgt"]
     assert all(s["state"] == "up" and s["reason"] == "Answering." for s in body)
+
+
+def test_the_dgt_feed_is_up_or_down_by_its_status_code() -> None:
+    assert provider_status.check_dgt(answering(lambda r: httpx.Response(200) if r.method == "HEAD" else httpx.Response(405))).state == ProviderState.UP
+    assert provider_status.check_dgt(answering(lambda _r: httpx.Response(503))).state == ProviderState.DEGRADED

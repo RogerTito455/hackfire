@@ -25,6 +25,11 @@ FOREST_FIRE = "forestFire"
 CLOSURE_TYPES = frozenset({"roadClosed", "carriagewayClosures"})
 
 
+def ping(client: httpx.Client) -> int:
+    """For the status page (app/provider_status.py): the feed's status code, without its 3 MB."""
+    return client.head(settings.dgt_feed_url, headers=_HEADERS, follow_redirects=True).status_code
+
+
 def fetch(client: httpx.Client) -> bytes:
     """The whole feed, following its redirect to the current version."""
     response = client.get(settings.dgt_feed_url, headers=_HEADERS, follow_redirects=True)
