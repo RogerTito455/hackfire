@@ -18,7 +18,7 @@ Three minutes, following PLAN.md section 8, updated to what the product does now
 
 > These are Deepfire's satellite hotspots from that day. From them we estimate where the front is heading, hour by hour.
 >
-> At 15:30, using only the hotspots seen up to then, the forecast puts La Atalaya in the fire's path. The first hotspot within three kilometres of it came at 21:38. That is a lead time of **six hours and eight minutes**, computed from satellite data alone. It says nothing about when anyone was warned.
+> At 15:30, using only the hotspots seen up to then, the forecast puts La Atalaya in the fire's path. The first hotspot within three kilometres of it came at 21:38. That is **about six hours** of lead time, computed from satellite data alone: between five and eight depending on the distance you measure from, because one satellite pixel decides the arrival. It says nothing about when anyone was warned.
 
 *Point at the lead-time card and the "Where the fire is heading" panel.*
 
@@ -59,7 +59,7 @@ Three minutes, following PLAN.md section 8, updated to what the product does now
 | Answers | None: an alert cannot hear back | Every call ends in a status: leaving, needs rescue, or no answer |
 | Who can't leave | Not known from the alert | On the coordinator's map within 2 seconds of being recorded, queued by when the fire arrives |
 | The way out | The same message whatever the road | A route per home that avoids the fire and every road the coordinator marks as cut |
-| Time to act | | La Atalaya flagged 6 h 8 min before the first hotspot within 3 km, from satellite data alone |
+| Time to act | | La Atalaya flagged about 6 hours before the first hotspot nearby (5 to 8 depending on the distance), from satellite data alone |
 
 *Sources for the left column and the figures: [press figures](../findings/2026-09-19-press-figures.md) (Junta de Castilla y León via Ávilared, 21 Aug; Tribuna de Ávila, 23 Jul; Idealista's estimate via Ávilared, 31 Jul). "2 seconds" is how often the dashboard refreshes the triage (`useTriage`, `POLL_MS`); the lead time is the replay's ([finding](../findings/2026-09-19-lead-time.md)). No "would have" figures: nobody can measure what a different warning would have changed that day.*
 

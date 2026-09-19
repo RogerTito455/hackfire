@@ -448,7 +448,7 @@ export function Close({ f }: { f: number }) {
         <div style={{ ...mono(30, 500, C.agent), marginTop: 6, ...pop(f - card - 10) }}>Calls every resident. Listens to every answer.</div>
         <div style={{ ...text(26, 500, C.ink2), marginTop: 44, ...pop(f - card - 40) }}>Built at HackBarna 2026 with Deepfire, SLNG and Vonage</div>
         <div style={{ ...mono(19, 500, C.ink3), marginTop: 12, ...pop(f - card - 50) }}>
-          Lead time 6 h 8 min on the replay of the 23 July 2026 fire, from satellite data alone.
+          About 6 hours of lead time on the replay of the 23 July 2026 fire, from satellite data alone.
         </div>
       </AbsoluteFill>
     </Overlay>
@@ -472,7 +472,7 @@ const SIDE_BY_SIDE: [string, string, string][] = [
   ['Answers', "None: an alert can't hear back", 'Leaving, needs rescue or no answer, per call'],
   ["Who can't leave", 'Not known from the alert', 'On the map within 2 s, queued by the fire'],
   ['The way out', 'The same message for every road', 'A route per home, around the fire and cut roads'],
-  ['Time to act', '', '6 h 8 min on La Atalaya, from satellites alone'],
+  ['Time to act', '', 'About 6 h on La Atalaya, from satellites alone'],
 ]
 
 export function Compare({ f }: { f: number }) {

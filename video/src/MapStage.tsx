@@ -272,9 +272,10 @@ function LeadTimeOverlay({ f, s }: { f: number; s: Stage }) {
           <AbsoluteFill style={{ background: 'rgba(4,8,23,0.62)', opacity: fade(f - sign, 10) }} />
           <div style={{ position: 'absolute', left: 0, right: 0, top: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: clamp01(k * 1.5), transform: `scale(${0.85 + 0.15 * Math.min(1.02, k)})` }}>
             <div style={{ ...text(210, 800, C.ink), letterSpacing: -6, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
-              6<span style={{ fontSize: 96, color: C.ink2, letterSpacing: 0 }}> h </span>8<span style={{ fontSize: 96, color: C.ink2, letterSpacing: 0 }}> min</span>
+              <span style={{ fontSize: 80, color: C.ink2, letterSpacing: 0 }}>about </span>6<span style={{ fontSize: 96, color: C.ink2, letterSpacing: 0 }}> hours</span>
             </div>
             <div style={{ ...text(34, 600, C.ink2), marginTop: 10 }}>lead time for La Atalaya</div>
+            <div style={{ ...text(26, 500, C.ink3), marginTop: 6 }}>between 5 and 8 hours, depending on the distance used (2–5 km)</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 34, width: 900 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8, ...mono(26, 700, C.ink) }}>
                 <Icon name="flag" size={26} color={C.route} />
@@ -294,7 +295,7 @@ function LeadTimeOverlay({ f, s }: { f: number; s: Stage }) {
             </div>
           </div>
           <Source opacity={fade(f - sign - 20, 10)}>
-            Satellite data only, on the replay of this fire. It says nothing about when anyone was warned.
+            Satellite data only, on the replay of this fire. A range, because one satellite pixel decides the arrival. It says nothing about when anyone was warned.
           </Source>
         </>
       )}

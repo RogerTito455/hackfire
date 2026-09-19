@@ -549,72 +549,62 @@
    "id": "leadtime-1",
    "scene": "leadtime",
    "speaker": "narrator",
-   "text": "Six hours and eight minutes of lead time, from satellite data alone.",
+   "text": "About six hours of lead time, from satellite data alone.",
    "file": "audio/lines/leadtime-1.mp3",
-   "durationMs": 3579,
+   "durationMs": 3187,
    "words": [
     {
-     "text": "Six",
+     "text": "About",
      "startMs": 0,
-     "endMs": 232
+     "endMs": 267
+    },
+    {
+     "text": "six",
+     "startMs": 325,
+     "endMs": 522
     },
     {
      "text": "hours",
-     "startMs": 290,
-     "endMs": 534
-    },
-    {
-     "text": "and",
-     "startMs": 569,
-     "endMs": 639
-    },
-    {
-     "text": "eight",
-     "startMs": 697,
-     "endMs": 871
-    },
-    {
-     "text": "minutes",
-     "startMs": 929,
-     "endMs": 1196
+     "startMs": 580,
+     "endMs": 836
     },
     {
      "text": "of",
-     "startMs": 1231,
-     "endMs": 1289
+     "startMs": 882,
+     "endMs": 940
     },
     {
      "text": "lead",
-     "startMs": 1347,
-     "endMs": 1533
+     "startMs": 1010,
+     "endMs": 1184
     },
     {
      "text": "time,",
-     "startMs": 1579,
-     "endMs": 1892
+     "startMs": 1231,
+     "endMs": 1521
     },
     {
      "text": "from",
-     "startMs": 1916,
-     "endMs": 2067
+     "startMs": 1544,
+     "endMs": 1683
     },
     {
      "text": "satellite",
-     "startMs": 2125,
-     "endMs": 2543
+     "startMs": 1753,
+     "endMs": 2206
     },
     {
      "text": "data",
-     "startMs": 2577,
-     "endMs": 2844
+     "startMs": 2241,
+     "endMs": 2496
     },
     {
      "text": "alone.",
-     "startMs": 2902,
-     "endMs": 3529
+     "startMs": 2554,
+     "endMs": 3158
     }
    ],
-   "hash": "a355b575d70c"
+   "hash": "cd847403a9b8"
   },
   {
    "id": "order-0",

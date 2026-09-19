@@ -1,5 +1,5 @@
 {
-  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed; `subtitle` is what the viewer reads under a Spanish line. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); about 38,000 ha (37,818 provisional, Junta de Castilla y León via Ávilared, 21 Aug) and 229 homes inside the burned area (Idealista's estimate via Ávilared, 31 Jul), see docs/findings/2026-09-19-press-figures.md; 2 seconds is the dashboard's triage refresh; lead time from data/lead_time_la-atalaya.json.",
+  "about": "What the video says, line by line. `pnpm video:voice` turns each line into one audio clip (ElevenLabs) and writes src/data/narration.json with its length and word timings, so subtitles land on the word. The call is a simulation with a demo resident, condensed; `subtitle` is what the viewer reads under a Spanish line. Figures: 1,300 evacuated and 5 homes (Tribuna de Ávila, Ávilared, 23 July 2026); about 38,000 ha (37,818 provisional, Junta de Castilla y León via Ávilared, 21 Aug) and 229 homes inside the burned area (Idealista's estimate via Ávilared, 31 Jul), see docs/findings/2026-09-19-press-figures.md; 2 seconds is the dashboard's triage refresh; lead time as the team publishes it (DESIGN.md, frontend/src/domain/leadTime.ts): about 6 hours, 5 to 8 depending on the distance (2–5 km), 15:30 to 21:38 at 3 km.",
   "voices": {
     "narrator": {
       "id": "G17SuINrv2H9FC6nvetn",
@@ -94,7 +94,7 @@
         },
         {
           "speaker": "narrator",
-          "text": "Six hours and eight minutes of lead time, from satellite data alone."
+          "text": "About six hours of lead time, from satellite data alone."
         }
       ]
     },
