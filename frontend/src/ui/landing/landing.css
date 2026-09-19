@@ -482,9 +482,10 @@
   height: auto;
 }
 
+/* Bottom-left: the top of the map holds the place names. */
 .mini-clock {
   position: absolute;
-  top: 8px;
+  bottom: 8px;
   left: 8px;
   margin: 0;
   padding: 4px 10px;
@@ -769,7 +770,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-  padding: 7px 4px 7px 6px;
+  padding: 7px 3px 7px 5px;
   border: 2px solid;
   border-radius: 10px;
   background: var(--night);
@@ -790,11 +791,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Labels wrap rather than being cut: "Evacuando" must read whole at 320 px. */
 .mini-tile-label {
-  overflow: hidden;
   font-size: 10px;
   font-weight: 700;
   line-height: 1.2;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .mini-tile.filled .mini-tile-count,
