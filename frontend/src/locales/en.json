@@ -202,7 +202,8 @@
       "one": "About {count} hour",
       "other": "About {count} hours"
     },
-    "range": "{exact} at 3 km, between 5 and 8 hours at 2 to 5 km: one satellite pixel decides the arrival, and the model was tuned on this fire. Hence a round figure."
+    "range": "{exact} at 3 km, between 5 and 8 hours at 2 to 5 km: one satellite pixel decides the arrival, and the model was tuned on this fire. Hence a round figure.",
+    "definition": "Lead time is the time between the first forecast that put {zone} in the fire's predicted path, using only satellite hotspots observed up to that moment, and the first satellite hotspot within {radius} km of its outline. It is computed from satellite data only and says nothing about when the authorities warned anyone."
   },
   "zoneKind": {
     "estate": "Housing estate",
@@ -334,6 +335,13 @@
     },
     "footer": {
       "license": "MIT licence"
+    },
+    "truth": {
+      "title": "What is real and what is not",
+      "realTitle": "Real",
+      "real": "The fire: Deepfire's satellite hotspots of 23 July 2026, and in live mode the fires burning now in Spain with Deepfire's ELMFIRE spread simulations. The places and roads, from OpenStreetMap. The routes, from openrouteservice. The voice agents, which are real AI agents on SLNG.",
+      "fictionTitle": "Fictional, for the demo",
+      "fiction": "The residents and their homes, what they answer, the calls in the replay, the evacuations and the crew alerts. Nobody near the real fire was called. Real people, real registries and official evacuation plans would come with the emergency services."
     }
   },
   "crewPlan": {
@@ -375,5 +383,9 @@
     "affected": "Already leaving through here: {names}. Call them again: the agent gives the new route.",
     "error": "The road could not be closed. Try again.",
     "marker": "Closed road"
+  },
+  "dataNote": {
+    "replay": "Real fire (Deepfire satellite data). Residents, calls and evacuations: fictional.",
+    "live": "Real fires burning now (Deepfire). Nobody is called in this mode."
   }
 }

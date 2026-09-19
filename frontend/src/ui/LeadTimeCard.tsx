@@ -32,7 +32,7 @@ export function LeadTimeCard({ view }: LeadTimeCardProps) {
       </p>
       <details>
         <summary>{t('leadTime.how')}</summary>
-        <p>{leadTime.definition}</p>
+        <p>{t('leadTime.definition', { zone: leadTime.zone_name, radius: leadTime.radius_km })}</p>
       </details>
     </div>
   )

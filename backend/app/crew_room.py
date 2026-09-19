@@ -10,6 +10,7 @@ import logging
 import secrets
 
 from .config import settings
+from .i18n import t
 from .models import CrewRoom, VideoAccess
 from .providers import vonage
 
@@ -64,6 +65,6 @@ def _text_the_crew(link: str) -> None:
     if not (settings.crew_phone and vonage.sms_configured()):
         return
     try:
-        vonage.send_sms(settings.crew_phone, f"HackFire: la coordinación comparte el mapa con los equipos. Entre aquí: {link}")
+        vonage.send_sms(settings.crew_phone, t("sms.crewRoom", settings.crew_locale, link=link))
     except vonage.VonageUnavailable:
         logger.exception("the crews' room SMS failed")  # never log the number

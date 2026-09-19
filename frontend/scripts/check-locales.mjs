@@ -1,6 +1,6 @@
 // Fails when the locales drift apart: every src/locales/*.json must have exactly the keys of en.json
 // (plural forms aside) with the same {placeholders}, and every key the code asks for must exist.
-// A `_meta.flag` must name a file in src/ui/flags/.
+// A `_meta.flag` must name a file in src/ui/flags/. Text typed straight into JSX fails too.
 // Keys built at run time (t(`status.${status}`)) are checked by their fixed prefix.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
@@ -81,6 +81,25 @@ for (const file of sources(join(ROOT, 'src'))) {
     if (![...reference.keys()].some((key) => key.startsWith(`${prefix}.`))) {
       problems.push(`${relative(ROOT, file)}: no keys under "${prefix}" in en.json`)
     }
+  }
+}
+
+// Words typed straight into the markup never reach the locales: flag JSX text and the text
+// attributes people read, except names that are the same in every language.
+const NOT_TRANSLATED = new Set(['HackFire', 'HackFire, HackBarna 2026'])
+for (const file of sources(join(ROOT, 'src')).filter((path) => path.endsWith('.tsx'))) {
+  const code = readFileSync(file, 'utf8')
+  // Text right after a JSX tag (an opening tag that is not a TypeScript generic, a closing tag, or
+  // a self-closing one) and before the next tag.
+  const jsxText = /(?:(?<![\w.)\]])<[A-Za-z][\w.]*(?:\s[^<>]*?)?>|<\/[\w.]*>|\/>)\s*([^<>{}\n]*[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}[^<>{}\n]*?)\s*</g
+  for (const [, text] of code.matchAll(jsxText)) {
+    const looksLikeCode = /\breturn\b|&&|\|\||=>|===|[;?]|\($|^:/.test(text.trim())
+    if (!NOT_TRANSLATED.has(text.trim()) && !looksLikeCode) {
+      problems.push(`${relative(ROOT, file)}: text not in the locales: "${text.trim()}"`)
+    }
+  }
+  for (const [, attribute, text] of code.matchAll(/\b(aria-label|title|placeholder|alt)="([^"]*[A-Za-z]{2,}[^"]*)"/g)) {
+    problems.push(`${relative(ROOT, file)}: ${attribute}="${text}" is not in the locales`)
   }
 }
 

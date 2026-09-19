@@ -1165,3 +1165,45 @@ body {
     transform: none;
   }
 }
+
+/* What is real and what is fictional: two columns, a coloured rule each. */
+.truth h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.truth-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.truth-grid > div {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.truth-real {
+  box-shadow: inset 4px 0 0 #0e9f6e;
+}
+
+.truth-fiction {
+  box-shadow: inset 4px 0 0 #e9a100;
+}
+
+.truth h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.truth p {
+  margin: 0;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
+@media (min-width: 760px) {
+  .truth-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

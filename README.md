@@ -21,6 +21,19 @@ Public alerting today is one-way and impersonal. ES-Alert broadcasts the same me
 
 Calls are triggered by the prediction, hours ahead, while cell towers still work. "No answer" is a signal too: it tells the coordinator where to send a patrol.
 
+## What is real and what is fictional
+
+- **Real:**
+  - the fire data: Deepfire's satellite hotspots of 23 July 2026, and in live mode the fires burning now in Spain with Deepfire's ELMFIRE spread simulations;
+  - places and roads from OpenStreetMap;
+  - routes from openrouteservice;
+  - the voice agents, which are real AI agents on SLNG.
+- **Fictional, for the demo:**
+  - the residents and their homes, and what they answer;
+  - the calls in the replay, the evacuations and the crew alerts.
+
+  Nobody near the real fire was called. The dashboard and the landing page say so on screen.
+
 ## Status
 
 Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app** (one Railway service; see [Deployment](docs/setup/deployment.md)). The page that presents the project to judges and visitors is at **https://frontend-production-ae2c.up.railway.app/about**. What works today:

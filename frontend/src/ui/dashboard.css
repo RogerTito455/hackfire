@@ -1859,3 +1859,11 @@ button:active {
     filter: invert(1) hue-rotate(180deg);
   }
 }
+
+/* What is real and what is fictional, under the status strip. */
+.sheet .data-note {
+  margin: 8px 2px 0;
+  color: var(--ink-2);
+  font-size: 11.5px;
+  line-height: 1.35;
+}

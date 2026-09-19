@@ -138,7 +138,13 @@ Every word the dashboard shows lives in [`frontend/src/locales/`](frontend/src/l
   4. Run `pnpm check`.
 
   The new language appears in the picker with no code change.
-- **`pnpm check` fails** (via [`scripts/check-locales.mjs`](frontend/scripts/check-locales.mjs)) when a locale misses a key or changes a placeholder, or when the code uses a key that `en.json` lacks.
+- **`pnpm check` fails** (via [`scripts/check-locales.mjs`](frontend/scripts/check-locales.mjs)) when:
+  - a locale misses a key or changes a placeholder;
+  - the code uses a key that `en.json` lacks;
+  - text is typed straight into JSX or into an `aria-label`, `title`, `placeholder` or `alt`.
+
+  Brand names are the only exception.
+- **What is real is said on screen:** a line under the status strip (`DataNote`) and a block on the landing page say that the fire data is real and that the residents, calls and evacuations are fictional.
 - **Sentences the backend writes** (route directions, evacuation orders, the fire line the agents say, crew alerts) live in `backend/app/locales/<code>.json` and are read with `i18n.t()` (`backend/app/i18n.py`). Every dashboard request sends `Accept-Language` from `<html lang>`, so they arrive in the dashboard's language; routes are cached as data and put into words per request. The voice agents and the crew SMS keep their own language (`HACKFIRE_AGENT_LOCALE`, `HACKFIRE_CREW_LOCALE`, English by default), whatever the dashboard shows. `tests/test_i18n.py` checks that the backend locales match.
 - **Not translated:** data rather than interface: the lead-time definition, resident names, and the mobility notes the LLM extracts from what residents say.
 

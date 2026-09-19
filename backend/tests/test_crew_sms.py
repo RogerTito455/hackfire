@@ -34,7 +34,9 @@ def first_id() -> str:
 
 def test_a_new_rescue_is_texted_to_the_crew(twilio) -> None:
     rescue(first_id())
-    alert = client.get("/api/alerts").json()[0]
+    # The SMS goes in the crew's language (HACKFIRE_CREW_LOCALE, Spanish by default); the dashboard
+    # reads the same alert in its own.
+    alert = client.get("/api/alerts", headers={"Accept-Language": settings.crew_locale}).json()[0]
     assert twilio == [("+34000000099", alert["message"])]
     assert alert["sent_by_sms"] is True
 

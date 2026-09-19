@@ -85,6 +85,22 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
           </div>
         </section>
 
+        <section className="section truth" aria-labelledby="truth-title">
+          <div className="wrap">
+            <h2 id="truth-title">{t('landing.truth.title')}</h2>
+            <div className="truth-grid">
+              <div className="truth-real">
+                <h3>{t('landing.truth.realTitle')}</h3>
+                <p>{t('landing.truth.real')}</p>
+              </div>
+              <div className="truth-fiction">
+                <h3>{t('landing.truth.fictionTitle')}</h3>
+                <p>{t('landing.truth.fiction')}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <LeadTime leadTime={leadTime} range={leadTimeRange} />
 
         <section className="section" aria-labelledby="problem">
