@@ -1,3 +1,4 @@
+import { useFireForecast } from './hooks/useFireForecast'
 import { useFireReplay } from './hooks/useFireReplay'
 import { useTriage } from './hooks/useTriage'
 import { Dashboard } from './ui/Dashboard'
@@ -6,7 +7,8 @@ import { Dashboard } from './ui/Dashboard'
 function App() {
   const triage = useTriage()
   const replay = useFireReplay()
-  return <Dashboard triage={triage} replay={replay} />
+  const forecast = useFireForecast(replay.time)
+  return <Dashboard triage={triage} replay={replay} forecast={forecast} />
 }
 
 export default App

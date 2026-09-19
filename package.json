@@ -7,7 +7,9 @@
     "build": "pnpm --filter frontend build",
     "check": "pnpm test && pnpm build",
     "data:hotspots": "cd backend && uv run python -m app.pipelines.fetch_hotspots",
-    "bootstrap": "pnpm install && uv sync --project backend"
+    "bootstrap": "pnpm install && uv sync --project backend",
+    "data:zones": "cd backend && uv run python -m app.pipelines.fetch_zones",
+    "data:spread": "cd backend && uv run python -m app.pipelines.build_spread"
   },
   "packageManager": "pnpm@10.33.3",
   "private": true

@@ -14,7 +14,8 @@ load_dotenv(REPO_ROOT / ".env")
 
 
 def _env(name: str, default: str = "") -> str:
-    return os.environ.get(name, default).strip()
+    """The variable, or the default when it is unset or empty (`.env.example` ships empty values)."""
+    return os.environ.get(name, "").strip() or default
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,13 @@ class Settings:
     nebius_model: str = field(default_factory=lambda: _env("NEBIUS_MODEL"))
 
     ors_api_key: str = field(default_factory=lambda: _env("ORS_API_KEY"))
+
+    # Public Overpass instances come and go; set OVERPASS_URL to another one if this refuses connections.
+    overpass_url: str = field(
+        default_factory=lambda: _env("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
+    )
+    # The replay moment the agent answers for until the dashboard's slider sets one (UTC, ISO 8601).
+    demo_time: str = field(default_factory=lambda: _env("HACKFIRE_DEMO_TIME", "2026-07-23T15:00:00Z"))
 
 
 settings = Settings()

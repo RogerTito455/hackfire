@@ -4,6 +4,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+from . import impact
 from .config import DATA_DIR, settings
 from .models import Neighbor, ReportStatusRequest, Rescue, TriageStatus
 
@@ -14,13 +15,21 @@ _REGISTRY_CANDIDATES = [
     DATA_DIR / "neighbors.sample.json",
 ]
 
-# TODO(data): replace with time-to-impact computed from the spread prediction.
-_STUB_MINUTES_TO_IMPACT = {"la-atalaya": 45, "el-tiemblo": 120}
+try:
+    _DEMO_TIME = datetime.fromisoformat(settings.demo_time)
+except ValueError as error:
+    raise ValueError(
+        f"HACKFIRE_DEMO_TIME must be an ISO 8601 time such as 2026-07-23T15:00:00Z, got {settings.demo_time!r}"
+    ) from error
+if _DEMO_TIME.tzinfo is None:
+    _DEMO_TIME = _DEMO_TIME.replace(tzinfo=UTC)
 
 
 class TriageState:
     def __init__(self) -> None:
         self._neighbors: dict[str, Neighbor] = {}
+        # The replay moment the dashboard's slider is on; the agent answers for the same moment.
+        self.replay_time: datetime | None = None
         self.load()
 
     def load(self) -> None:
@@ -53,23 +62,27 @@ class TriageState:
         self._neighbors[updated.id] = updated
         return updated
 
+    def clock(self) -> datetime:
+        """The replay moment every answer refers to: the slider's, or the demo's until it moves."""
+        return self.replay_time or _DEMO_TIME
+
     def minutes_to_impact(self, zone: str) -> int | None:
-        return _STUB_MINUTES_TO_IMPACT.get(zone)
+        return impact.minutes_to_impact(zone, self.clock())
 
     def rescue_queue(self) -> list[Rescue]:
-        pending = [n for n in self._neighbors.values() if n.status == TriageStatus.NEEDS_RESCUE]
+        minutes = {
+            n.id: self.minutes_to_impact(n.zone)
+            for n in self._neighbors.values()
+            if n.status == TriageStatus.NEEDS_RESCUE
+        }
+        pending = [self._neighbors[neighbor_id] for neighbor_id in minutes]
         # Most urgent first: least time to impact, then the largest group.
-        pending.sort(
-            key=lambda n: (
-                self.minutes_to_impact(n.zone) if self.minutes_to_impact(n.zone) is not None else 10**6,
-                -(n.people or 1),
-            )
-        )
+        pending.sort(key=lambda n: (minutes[n.id] if minutes[n.id] is not None else 10**6, -(n.people or 1)))
         return [
             Rescue(
                 rescue_id=f"rescue-{n.id}",
                 neighbor=n,
-                minutes_to_impact=self.minutes_to_impact(n.zone),
+                minutes_to_impact=minutes[n.id],
                 priority=index + 1,
             )
             for index, n in enumerate(pending)

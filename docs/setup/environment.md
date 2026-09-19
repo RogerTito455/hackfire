@@ -11,6 +11,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `HACKFIRE_CORS_ORIGINS` | Deployed frontend talking to the backend | Comma-separated origins. Default `http://localhost:5173` |
 | `HACKFIRE_NEIGHBORS_FILE` | Demo with the real registry (#12) | Path to `data/neighbors.local.json`. Empty uses the sample registry |
 | `HACKFIRE_CREW_PHONE` | Crew notification for each new rescue (#9) | A team member's phone, shared privately |
+| `HACKFIRE_DEMO_TIME` | The replay moment `get_fire_status` answers for until the dashboard's slider sets one (#4) | UTC, ISO 8601. Empty uses `2026-07-23T15:00:00Z` |
 | `DEEPFIRE_CLIENT_ID` | Hotspots, live fires, spread (#3, #4, #11) | https://app.deepfire.co → Settings → API clients → Create |
 | `DEEPFIRE_CLIENT_SECRET` | Same | Shown once when the API client is created |
 | `SLNG_API_KEY` | Voice agent, calls, SMS (#7, #8, #9, #10) | https://app.slng.ai → Projects → Generate key |
@@ -19,6 +20,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `NEBIUS_BASE_URL` | Same | `https://api.tokenfactory.nebius.com/v1` |
 | `NEBIUS_MODEL` | Same | A model id from the catalogue; see [Nebius](../services/nebius.md) |
 | `ORS_API_KEY` | Evacuation and rescue routes (#6) | https://openrouteservice.org/dev/#/signup |
+| `OVERPASS_URL` | `pnpm data:zones` (#4); optional, no key | Empty uses `https://overpass-api.de/api/interpreter`. See [Overpass](../services/overpass.md) if it refuses connections |
 
 ## Frontend (`frontend/.env.local`)
 

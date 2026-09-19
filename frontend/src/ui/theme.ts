@@ -1,6 +1,7 @@
 // Visual vocabulary for triage states. Change the look here; logic does not import colours.
 
 import type { TriageStatus } from '../domain/triage'
+import type { ZoneKind } from '../domain/zones'
 
 export const STATUS_LABEL: Record<TriageStatus, string> = {
   pending: 'Not called yet',
@@ -46,4 +47,39 @@ const replayTimeFormat = new Intl.DateTimeFormat('en-GB', {
 
 export function formatReplayTime(epochMs: number): string {
   return replayTimeFormat.format(epochMs)
+}
+
+// Predicted spread by hours after the forecast: red is the fire now, yellow is furthest ahead.
+export const SPREAD_HOUR_COLORS: readonly (readonly [hours: number, color: string])[] = [
+  [0, '#e8261a'],
+  [1, '#f2551a'],
+  [2, '#f7811f'],
+  [4, '#fbb02a'],
+  [6, '#ffe066'],
+]
+
+// Zones at risk by minutes to impact: a darker purple is sooner. Purple keeps them apart from the spread.
+export const ZONE_URGENCY_COLORS: readonly (readonly [minutes: number, color: string])[] = [
+  [0, '#4a0d67'],
+  [60, '#7b1fa2'],
+  [180, '#ab47bc'],
+  [360, '#d1a3dc'],
+]
+
+export const ZONE_KIND_LABEL: Record<ZoneKind, string> = {
+  estate: 'Housing estate',
+  town: 'Town',
+  care_home: 'Care home',
+  health_centre: 'Health centre',
+  school: 'School',
+  road: 'Road',
+}
+
+/** "now", "45 min", "4 h" or "4 h 30 min": how the panel says when the fire arrives. */
+export function formatMinutesToImpact(minutes: number): string {
+  if (minutes <= 0) return 'now'
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`
 }

@@ -12,8 +12,17 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { MINUTE, type Hotspot } from '../domain/hotspots'
+import type { SpreadPolygon } from '../domain/spread'
 import type { Neighbor } from '../domain/triage'
-import { HOTSPOT_AGE_COLORS, HOTSPOT_RADIUS_BY_FRP, STATUS_COLOR, STATUS_LABEL } from './theme'
+import type { ZoneImpact } from '../domain/zones'
+import {
+  HOTSPOT_AGE_COLORS,
+  HOTSPOT_RADIUS_BY_FRP,
+  SPREAD_HOUR_COLORS,
+  STATUS_COLOR,
+  STATUS_LABEL,
+  ZONE_URGENCY_COLORS,
+} from './theme'
 
 // MapLibre v6 inside a bundler cannot find its worker on its own.
 setWorkerUrl(workerUrl)
@@ -38,8 +47,29 @@ const OSM_STYLE: StyleSpecification = {
 }
 
 const HOTSPOTS = 'hotspots'
+const SPREAD = 'spread'
+const ZONES = 'zones'
 
 type GeoJSONData = Parameters<GeoJSONSource['setData']>[0]
+
+// Geometries arrive from the backend as opaque GeoJSON, so the collections below are cast at this boundary.
+function spreadToFeatureCollection(spread: readonly SpreadPolygon[]): GeoJSONData {
+  return {
+    type: 'FeatureCollection',
+    features: spread.map(({ hour, geometry }) => ({ type: 'Feature', geometry, properties: { hour } })),
+  } as unknown as GeoJSONData
+}
+
+function zonesToFeatureCollection(zones: readonly ZoneImpact[]): GeoJSONData {
+  return {
+    type: 'FeatureCollection',
+    features: zones.map(({ zone, minutes }) => ({
+      type: 'Feature',
+      geometry: zone.geometry,
+      properties: { kind: zone.kind, minutes },
+    })),
+  } as unknown as GeoJSONData
+}
 
 // Feature times are minutes since the first hotspot: small numbers keep map expressions exact.
 function toFeatureCollection(hotspots: readonly Hotspot[], origin: number): GeoJSONData {
@@ -66,14 +96,43 @@ const radiusByFrp = [
   ...HOTSPOT_RADIUS_BY_FRP.flat(),
 ] as ExpressionSpecification
 
+const spreadColor = [
+  'interpolate',
+  ['linear'],
+  ['get', 'hour'],
+  ...SPREAD_HOUR_COLORS.flat(),
+] as ExpressionSpecification
+
+const zoneColor = [
+  'interpolate',
+  ['linear'],
+  ['get', 'minutes'],
+  ...ZONE_URGENCY_COLORS.flat(),
+] as ExpressionSpecification
+
+// Facilities are a few pixels wide at this zoom: a thick outline keeps them visible.
+const zoneLineWidth = [
+  'match',
+  ['get', 'kind'],
+  ['estate', 'town'],
+  2,
+  'road',
+  2.5,
+  3.5,
+] as ExpressionSpecification
+
 interface TriageMapProps {
   neighbors: Neighbor[]
   hotspots: Hotspot[]
   /** Replay time in epoch milliseconds: hotspots observed after it are hidden. */
   time: number | null
+  /** Predicted spread of the forecast in force, largest first. */
+  spread: SpreadPolygon[]
+  /** Zones the predicted fire reaches, with their minutes to impact. */
+  zones: ZoneImpact[]
 }
 
-export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
+export function TriageMap({ neighbors, hotspots, time, spread, zones }: TriageMapProps) {
   const container = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<Map<string, Marker>>(new Map())
@@ -89,6 +148,34 @@ export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
     })
     instance.addControl(new NavigationControl(), 'top-left')
     instance.on('load', () => {
+      // Predicted spread and zones at risk go under the hotspots, which stay on top.
+      const empty = { type: 'FeatureCollection', features: [] } as GeoJSONData
+      instance.addSource(SPREAD, { type: 'geojson', data: empty, attribution: 'Spread: HackFire model' })
+      instance.addSource(ZONES, { type: 'geojson', data: empty, attribution: 'Places: © OpenStreetMap' })
+      instance.addLayer({
+        id: 'spread-fill',
+        type: 'fill',
+        source: SPREAD,
+        paint: { 'fill-color': spreadColor, 'fill-opacity': 0.2 },
+      })
+      instance.addLayer({
+        id: 'spread-outline',
+        type: 'line',
+        source: SPREAD,
+        paint: { 'line-color': spreadColor, 'line-width': 1.2, 'line-opacity': 0.9 },
+      })
+      instance.addLayer({
+        id: 'zones-fill',
+        type: 'fill',
+        source: ZONES,
+        paint: { 'fill-color': zoneColor, 'fill-opacity': 0.55 },
+      })
+      instance.addLayer({
+        id: 'zones-outline',
+        type: 'line',
+        source: ZONES,
+        paint: { 'line-color': zoneColor, 'line-width': zoneLineWidth },
+      })
       instance.addSource(HOTSPOTS, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -110,7 +197,6 @@ export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
       setStyleReady(true)
     })
     map.current = instance
-    // TODO(map): predicted spread cone, reading the same replay time.
     return () => {
       instance.remove()
       map.current = null
@@ -132,6 +218,16 @@ export function TriageMap({ neighbors, hotspots, time }: TriageMapProps) {
     map.current.setFilter(HOTSPOTS, ['<=', ['get', 't'], now])
     map.current.setPaintProperty(HOTSPOTS, 'circle-color', ageColor(now))
   }, [styleReady, time, origin])
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(SPREAD)?.setData(spreadToFeatureCollection(spread))
+  }, [styleReady, spread])
+
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    map.current.getSource<GeoJSONSource>(ZONES)?.setData(zonesToFeatureCollection(zones))
+  }, [styleReady, zones])
 
   useEffect(() => {
     if (!map.current) return

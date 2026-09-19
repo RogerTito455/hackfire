@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import Response
 
-from . import replay
+from . import impact, replay
 from .config import settings
 from .models import (
     EvacuationRouteRequest,
     FireStatus,
     FireStatusRequest,
     Neighbor,
+    ReplayTimeRequest,
     ReportStatusRequest,
     Rescue,
     RescueRouteRequest,
@@ -56,6 +57,40 @@ def list_hotspots() -> Response:
     return Response(content=body, media_type="application/geo+json")
 
 
+@app.get("/api/spread")
+def get_spread() -> Response:
+    """Predicted spread for 23 July: one polygon per hour ahead, for each forecast issued."""
+    body = replay.spread_geojson()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached spread: run pnpm data:spread")
+    return Response(content=body, media_type="application/geo+json")
+
+
+@app.get("/api/zones")
+def get_zones() -> Response:
+    """Towns, care homes, schools, health centres and main roads from OpenStreetMap."""
+    body = replay.zones_geojson()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached zones: run pnpm data:zones")
+    return Response(content=body, media_type="application/geo+json")
+
+
+@app.get("/api/impact")
+def get_impact() -> dict:
+    """Forecast in force and minutes to impact per zone at every 5 minutes of the replay."""
+    table = impact.timeline()
+    if table is None:
+        raise HTTPException(status_code=404, detail="No cached spread: run pnpm data:spread")
+    return table
+
+
+@app.post("/api/replay/time")
+def set_replay_time(request: ReplayTimeRequest) -> dict:
+    """The dashboard's slider moved: the agent's answers now refer to this replay moment."""
+    state.replay_time = request.at
+    return {"at": request.at}
+
+
 @app.post("/api/reset")
 def reset() -> dict:
     """Reload the registry. Used to restart the demo."""
@@ -69,19 +104,34 @@ def reset() -> dict:
 
 @app.post("/tools/get_fire_status")
 def get_fire_status(request: FireStatusRequest) -> FireStatus:
-    # TODO(data): answer from the cached Deepfire spread for the replay timestamp.
+    """Answers for the replay moment the dashboard's slider is on, from the same numbers as its panel."""
     minutes = state.minutes_to_impact(request.zone)
     return FireStatus(
         zone=request.zone,
         at_risk=minutes is not None,
         minutes_to_impact=minutes,
-        summary=(
-            f"The fire is predicted to reach {request.zone} in about {minutes} minutes."
-            if minutes is not None
-            else f"No predicted impact on {request.zone}."
-        ),
-        stub=True,
+        summary=_fire_summary(request.zone, minutes),
     )
+
+
+def _spoken_span(minutes: int) -> str:
+    """"25 minutes" or "3 hours", rounded down: a lead time is never overstated to a resident."""
+    if minutes < 90:
+        return f"{max(5, 5 * (minutes // 5))} minutes"
+    hours = minutes // 60
+    return f"{hours} hour" if hours == 1 else f"{hours} hours"
+
+
+def _fire_summary(zone: str, minutes: int | None) -> str:
+    name = impact.zone_name(zone)
+    if minutes is None:
+        horizon = impact.remaining_horizon_minutes(state.clock())
+        if horizon is None:
+            return f"There is no forecast for this moment, so nothing is predicted for {name}."
+        return f"No predicted impact on {name} in the next {_spoken_span(horizon)}."
+    if minutes == 0:
+        return f"The predicted fire area already covers {name}."
+    return f"The fire is predicted to reach {name} in about {_spoken_span(minutes)}."
 
 
 @app.post("/tools/get_evacuation_route")
