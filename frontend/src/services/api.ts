@@ -2,7 +2,7 @@
 
 import type { HotspotCollection } from '../domain/hotspots'
 import type { LiveFireCollection } from '../domain/liveFires'
-import type { Neighbor, Rescue } from '../domain/triage'
+import type { FireArea, Neighbor, Rescue, Route, TravelMode } from '../domain/triage'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -20,3 +20,6 @@ export const fetchRescues = () => request<Rescue[]>('/api/rescues')
 export const resetDemo = () => request<{ status: string }>('/api/reset', { method: 'POST' })
 export const fetchHotspots = () => request<HotspotCollection>('/api/hotspots')
 export const fetchLiveFires = () => request<LiveFireCollection>('/api/live/fires')
+export const fetchRoute = (neighborId: string, mode: TravelMode) =>
+  request<Route>(`/api/routes/${encodeURIComponent(neighborId)}?mode=${mode}`)
+export const fetchFireArea = () => request<FireArea>('/api/fire-area')

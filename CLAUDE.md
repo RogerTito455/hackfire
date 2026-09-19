@@ -46,6 +46,7 @@ pnpm dev:api         # http://localhost:8000, docs at /docs
 pnpm dev:web         # http://localhost:5173
 pnpm check           # backend tests, then frontend type-check and build
 pnpm data:hotspots   # download Deepfire hotspots into data/
+pnpm data:routes     # plan and cache every demo route (openrouteservice) into data/
 ```
 
 Run `pnpm check` before every commit.

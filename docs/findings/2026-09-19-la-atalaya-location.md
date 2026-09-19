@@ -10,10 +10,13 @@
 
 Spain is UTC+2 in July, so 19:00 UTC is 21:00 local time.
 
+4. **Three hours without detections right before the run.** After 15:10 UTC on 23 July there are no hotspots until 18:08 UTC, most likely smoke or cloud cover (not verified). At 18:08 a burst of 40 detections spans the box from -4.77 to -4.40, including one ~0.4 km from San Martín de Valdeiglesias at the east edge. So the burned area at 18:00 UTC is the same as at 15:10, and it jumps within minutes after that.
+
 ## Why it matters
 
 - **The lead time (#5) depends on the definition of "the fire reached La Atalaya".** With a point and a 1 km radius it never happens; with 3 km it happens on 23 July at about 19:00 UTC. Satellite pixels are 375 m (VIIRS) to about 1–2 km (MODIS, MTG), so a radius of a few kilometres, or the estate's polygon buffered by the pixel size, is defensible. Choose it once, write it in the pitch notes, and apply it both to "flagged" and to "reached".
 - OSM has no polygon for the estate, only the hamlet node and the bus stops. For `zones.geojson` (#4), draw the polygon from the streets around those points, or use a buffer around the node.
+- **For the lead time (#5):** a flag computed only from hotspots "available up to that moment" sees nothing new between 15:10 and 18:08 UTC. Say so if the number lands in that window.
 - The scattered hotspots away from the front are few: 17 of 7,068 have at most one neighbour within 1.5 km, mostly Sentinel-3B. They are left in; the replay shows the data as Deepfire serves it.
 
 ## What we did

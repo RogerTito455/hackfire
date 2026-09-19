@@ -37,6 +37,10 @@ class TriageState:
     def get(self, neighbor_id: str) -> Neighbor | None:
         return self._neighbors.get(neighbor_id)
 
+    def find_by_address(self, address: str) -> Neighbor | None:
+        wanted = " ".join(address.split()).casefold()
+        return next((n for n in self._neighbors.values() if " ".join(n.address.split()).casefold() == wanted), None)
+
     def report(self, report: ReportStatusRequest) -> Neighbor | None:
         neighbor = self._neighbors.get(report.neighbor_id)
         if neighbor is None:

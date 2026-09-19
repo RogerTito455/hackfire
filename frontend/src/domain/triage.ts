@@ -37,3 +37,23 @@ export function countByStatus(neighbors: readonly Neighbor[]): StatusCounts {
   for (const neighbor of neighbors) counts[neighbor.status] += 1
   return counts
 }
+
+// Mirrors Route and TravelMode in backend/app/models.py (the tool contract).
+export type TravelMode = 'car' | 'walking'
+
+export interface Route {
+  mode: TravelMode
+  distance_m: number | null
+  duration_s: number | null
+  spoken_directions: string
+  /** GeoJSON LineString; null when no route avoids the fire. */
+  geometry: { type: 'LineString'; coordinates: [number, number][] } | null
+  stub: boolean
+}
+
+/** GET /api/fire-area: what routes avoid, everything burned up to the scenario time. */
+export interface FireArea {
+  type: 'Feature'
+  geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown }
+  properties: { until: string }
+}

@@ -6,7 +6,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import live, replay
+from . import evacuation, live, replay
 from .config import settings
 from .models import (
     EvacuationRouteRequest,
@@ -68,6 +68,21 @@ def list_live_fires() -> dict:
         raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
 
 
+@app.get("/api/routes/{neighbor_id}")
+def neighbor_route(neighbor_id: str, mode: TravelMode = TravelMode.CAR) -> Route:
+    """The resident's evacuation route, for the dashboard to draw."""
+    neighbor = state.get(neighbor_id)
+    if neighbor is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    return _route_or_503(lambda: evacuation.evacuation_route(neighbor, mode))
+
+
+@app.get("/api/fire-area")
+def fire_area() -> dict:
+    """The area routes avoid: everything burned up to the scenario time."""
+    return evacuation.fire_area()
+
+
 @app.post("/api/reset")
 def reset() -> dict:
     """Reload the registry. Used to restart the demo."""
@@ -96,16 +111,20 @@ def get_fire_status(request: FireStatusRequest) -> FireStatus:
     )
 
 
+def _route_or_503(plan) -> Route:
+    try:
+        return plan()
+    except evacuation.RoutingUnavailable as error:
+        raise HTTPException(status_code=503, detail="Routing is unavailable right now") from error
+
+
 @app.post("/tools/get_evacuation_route")
 def get_evacuation_route(request: EvacuationRouteRequest) -> Route:
-    # TODO(map): call openrouteservice with avoid_polygons set to the predicted
-    # fire polygon, clipped to the 15 km demo box (ORS limit: 20 km extent).
-    profile = "by car" if request.mode == TravelMode.CAR else "on foot"
-    return Route(
-        mode=request.mode,
-        spoken_directions=f"Route {profile} from {request.address} is not available yet.",
-        stub=True,
-    )
+    """Route from a registered resident's home to the safe point farthest from the fire."""
+    neighbor = state.find_by_address(request.address)
+    if neighbor is None:
+        raise HTTPException(status_code=404, detail=f"Address not in the registry: {request.address}")
+    return _route_or_503(lambda: evacuation.evacuation_route(neighbor, request.mode))
 
 
 @app.post("/tools/report_status")
@@ -127,12 +146,7 @@ def get_rescue_route(request: RescueRouteRequest) -> Route:
     rescue = next((r for r in state.rescue_queue() if r.rescue_id == request.rescue_id), None)
     if rescue is None:
         raise HTTPException(status_code=404, detail=f"Unknown rescue {request.rescue_id}")
-    # TODO(map): same routing call as get_evacuation_route, from the crew base.
-    return Route(
-        mode=TravelMode.CAR,
-        spoken_directions=f"Route to {rescue.neighbor.address} is not available yet.",
-        stub=True,
-    )
+    return _route_or_503(lambda: evacuation.rescue_route(rescue.neighbor))
 
 
 # --- Dashboard ---------------------------------------------------------------

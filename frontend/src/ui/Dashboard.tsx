@@ -1,11 +1,13 @@
 import type { FireReplay } from '../hooks/useFireReplay'
 import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
+import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Triage } from '../hooks/useTriage'
 import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
+import { RoutePanel } from './RoutePanel'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
 import './dashboard.css'
@@ -16,11 +18,13 @@ interface DashboardProps {
   mode: MapMode
   onModeChange: (mode: MapMode) => void
   live: LiveMode
+  selection: SelectedRoute
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
-export function Dashboard({ triage, replay, mode, onModeChange, live }: DashboardProps) {
+export function Dashboard({ triage, replay, mode, onModeChange, live, selection }: DashboardProps) {
   const { neighbors, rescues, counts, online, reset } = triage
+  const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   return (
     <div className="layout">
       <aside className="panel">
@@ -34,6 +38,19 @@ export function Dashboard({ triage, replay, mode, onModeChange, live }: Dashboar
         <section>
           <h2>Triage</h2>
           <StatusCounts counts={counts} />
+        </section>
+
+        <section>
+          <h2>Evacuation route</h2>
+          <RoutePanel
+            neighbor={selected}
+            mode={selection.mode}
+            route={selection.route}
+            status={selection.status}
+            avoidsUntil={selection.fireArea?.properties.until ?? null}
+            onModeChange={selection.setMode}
+            onClose={() => selection.select(null)}
+          />
         </section>
 
         <section>
@@ -52,6 +69,10 @@ export function Dashboard({ triage, replay, mode, onModeChange, live }: Dashboar
           hotspots={replay.hotspots}
           time={replay.time}
           live={live.data}
+          selectedNeighborId={selection.neighborId}
+          route={selection.route}
+          fireArea={selection.fireArea}
+          onSelectNeighbor={selection.select}
         />
         <ModeToggle mode={mode} onChange={onModeChange} />
         {mode === 'replay' ? (
