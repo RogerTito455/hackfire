@@ -84,3 +84,16 @@ const clockFormat = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: 
 export function formatClock(iso: string): string {
   return clockFormat.format(Date.parse(iso))
 }
+
+// Icon for each triage status, next to its label and inside its map marker (see ui/icons/README.md).
+export const STATUS_ICON: Record<TriageStatus, import('./Icon').IconName> = {
+  pending: 'hourglass',
+  evacuating: 'exit',
+  no_answer: 'phone-missed',
+  needs_rescue: 'lifebuoy',
+}
+
+// Map markers (ui/markers.ts): the white outline that keeps them readable on any basemap,
+// and the dark grey ink of the white place markers (safe point, crew base).
+export const MARKER_OUTLINE_COLOR = '#fff'
+export const PLACE_MARKER_INK = '#3c4043'

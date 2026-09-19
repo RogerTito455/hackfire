@@ -1,0 +1,19 @@
+/* Layout for <Icon>. Size comes from the component, colour from the parent's `color`. */
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  line-height: 0;
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* A button or label that pairs an icon with text. */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
