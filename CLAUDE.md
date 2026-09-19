@@ -33,12 +33,13 @@ frontend/src/hooks/        State and polling; returns plain data
 frontend/src/ui/           Presentational components, theme.ts, CSS
 frontend/src/App.tsx       Composition root only: hook → UI
 data/                      Static demo data (registry, cached hotspots and spread)
+docs/                      Setup, one page per service, workflow, findings log. Update it as you go
 ```
 
 ## Commands
 
 ```bash
-pnpm setup           # pnpm install + uv sync
+pnpm bootstrap       # pnpm install + uv sync (never `pnpm setup`: it is a pnpm built-in)
 pnpm dev:api         # http://localhost:8000, docs at /docs
 pnpm dev:web         # http://localhost:5173
 pnpm check           # backend tests, then frontend type-check and build
@@ -56,7 +57,7 @@ Run `pnpm check` before every commit.
 - **The tool contract is shared.** The five `/tools` endpoints are the interface between the voice track and everything else. Changing a request or response model in `models.py` means updating `frontend/src/domain/triage.ts` and telling the team.
 - **Stubs are explicit.** Placeholder responses set `stub: true` and carry a `TODO(track)` comment, where track is `map`, `voice` or `data`. Remove both when the real implementation lands.
 - **Demo mode comes first.** Everything slow or external (Deepfire, the spread simulation, Overpass) is fetched once and cached as static files under `data/`. The live demo must not depend on a third-party API answering in time. Deepfire runs on shared capacity and returns 503 under load.
-- **Routing limits.** openrouteservice rejects `avoid_polygons` larger than 200 km² or 20 km across. Always clip the fire polygon to the demo box `-4.85,40.30,-4.40,40.50` or tighter.
+- **Routing limits.** openrouteservice rejects `avoid_polygons` larger than 200 km² or 20 km in height or width. The demo box `-4.85,40.30,-4.40,40.50` is ~38 × 22 km, so clipping to it is not enough: clip the fire to a square of at most 14 km around the route (see `docs/findings/2026-09-19-ors-avoid-polygon-limit.md`).
 - **MapLibre GL v6 has no default export.** Use named imports (`import { Map as MapLibreMap, Marker } from 'maplibre-gl'`).
 
 ## Secrets and personal data

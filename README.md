@@ -76,15 +76,31 @@ Interactive docs are served at `http://localhost:8000/docs`.
 
 ## Running it locally
 
-Requirements: Python 3.12+, [uv](https://docs.astral.sh/uv/), Node 20+ and [pnpm](https://pnpm.io/).
+The full guide, with troubleshooting, is in [docs/setup/new-machine.md](docs/setup/new-machine.md). In short:
+
+**1. Tools.** Git, Node 20+, pnpm 10, and [uv](https://docs.astral.sh/uv/) (it fetches Python 3.12 by itself). On Windows, use WSL2.
 
 ```bash
-pnpm setup      # installs frontend and backend dependencies
+corepack enable                                    # pnpm, at the version pinned in package.json
+curl -LsSf https://astral.sh/uv/install.sh | sh    # uv; open a new shell afterwards
+```
+
+**2. Clone and install.**
+
+```bash
+git clone https://github.com/RogerTito455/hackfire.git
+cd hackfire
+pnpm bootstrap  # frontend and backend dependencies (not `pnpm setup`, which is a pnpm built-in)
+```
+
+**3. Keys.** `cp .env.example .env` and fill in the keys you have; [docs/setup/environment.md](docs/setup/environment.md) says what each one unlocks. The skeleton runs without any of them.
+
+**4. Run**, in two terminals:
+
+```bash
 pnpm dev:api    # backend  — http://localhost:8000
 pnpm dev:web    # frontend — http://localhost:5173
 ```
-
-Copy `.env.example` to `.env` and fill in the keys you have. The skeleton runs without any of them.
 
 To try the triage flow without the voice agent:
 
@@ -105,6 +121,10 @@ pnpm check      # backend tests, then frontend type-check and build
 ### Resident registry
 
 `data/neighbors.sample.json` holds placeholder residents and is safe to commit. For the demo, copy it to `data/neighbors.local.json` (git-ignored) and put in real addresses and the team's own phone numbers. Phone numbers are never returned by the API.
+
+## Documentation
+
+[docs/](docs/README.md) holds everything beyond this page: setup, one page per external service (Deepfire, SLNG, Nebius, openrouteservice and the sponsor extensions), Claude Code with the project's MCP servers and skills, the development workflow, and a dated log of findings. [PLAN.md](PLAN.md) remains the source of truth for scope and decisions.
 
 ## A note on the real fire
 

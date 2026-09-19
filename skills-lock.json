@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-prompt": {
+      "source": "slng-ai/skills",
+      "sourceType": "github",
+      "skillPath": "agent-prompt/SKILL.md",
+      "computedHash": "6bdf67f577594392487c1addb5a13793d91cdfb7b1fc6a8c420d10bf9f644b39"
+    },
+    "agents": {
+      "source": "slng-ai/skills",
+      "sourceType": "github",
+      "skillPath": "agents/SKILL.md",
+      "computedHash": "4bf48dba3f9ef33fa69d7e710e0271fbc84e11440766761b8cafd4c55eda9c72"
+    },
+    "diagnosing-bugs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
+      "computedHash": "37b5e9c624513551da790b52864dc8c84bff996a6d03a380cc6facdcc0a88354"
+    },
+    "maplibre-source-wiring": {
+      "source": "maplibre/maplibre-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/maplibre-source-wiring/SKILL.md",
+      "computedHash": "1d6287fe0f6fd41a64d95eb488a44290bf41b588fe6f8faae85dc3f053f1d374"
+    },
+    "maplibre-v6-migration": {
+      "source": "maplibre/maplibre-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/maplibre-v6-migration/SKILL.md",
+      "computedHash": "46a399a4223910259c64053585c4f700127af9d8fe5f878218cf29fcdffd91f7"
+    },
+    "tdd": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "computedHash": "e753a5da75292bbe59d302d89566bc2c53d0e73944da2f0e944a7578883c07d0"
+    }
+  }
+}
