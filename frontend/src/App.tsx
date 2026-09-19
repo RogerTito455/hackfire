@@ -5,6 +5,7 @@ import { useFireReplay } from './hooks/useFireReplay'
 import { useLeadTime } from './hooks/useLeadTime'
 import { useScenario } from './hooks/useScenario'
 import { useLiveFires } from './hooks/useLiveFires'
+import { useLiveOperations } from './hooks/useLiveOperations'
 import { useMapMode, type MapMode } from './hooks/useMapMode'
 import { useSelectedRoute } from './hooks/useSelectedRoute'
 import { useOrders } from './hooks/useOrders'
@@ -28,6 +29,7 @@ function App() {
   const replay = useFireReplay()
   const [mode, setMode] = useMapMode()
   const live = useLiveFires(mode === 'live')
+  const liveOperations = useLiveOperations(mode === 'live', live.spread)
   const { locale } = useI18n()
   const closures = useClosures()
   const selection = useSelectedRoute(locale, closures.key)
@@ -73,6 +75,7 @@ function App() {
       mode={mode}
       onModeChange={changeMode}
       live={live}
+      liveOperations={liveOperations}
       selection={selection}
       orders={orders}
       textTriage={textTriage}

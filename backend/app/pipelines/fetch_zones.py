@@ -37,12 +37,22 @@ def overpass_bbox(bbox: tuple[float, float, float, float]) -> str:
     return ",".join(str(value) for value in (south, west, north, east))
 
 
+def facility_statements(bbox: str) -> str:
+    """Care homes, schools and health centres; live mode's places at risk use the same selection."""
+    return f"""
+  nwr["amenity"~"^(nursing_home|school|kindergarten|clinic|hospital|doctors)$"]({bbox});
+  nwr["social_facility"]({bbox});"""
+
+
+def road_statement(bbox: str) -> str:
+    """Main roads with a number; live mode's places at risk use the same selection."""
+    return f'way["highway"~"^(trunk|primary|secondary)$"]["ref"]({bbox});'
+
+
 def facilities_query(bbox: str) -> str:
     return f"""
 [out:json][timeout:90];
-(
-  nwr["amenity"~"^(nursing_home|school|kindergarten|clinic|hospital|doctors)$"]({bbox});
-  nwr["social_facility"]({bbox});
+({facility_statements(bbox)}
 );
 out geom center tags;
 """
@@ -51,7 +61,7 @@ out geom center tags;
 def roads_query(bbox: str) -> str:
     return f"""
 [out:json][timeout:90];
-way["highway"~"^(trunk|primary|secondary)$"]["ref"]({bbox});
+{road_statement(bbox)}
 out geom tags;
 """
 
@@ -98,9 +108,9 @@ def facility_geometry(element: dict) -> Polygon | None:
     return Point(point["lon"], point["lat"]).buffer(POINT_PADDING_DEG, quad_segs=2)
 
 
-def finish(geometry, simplify: float = 0.0):
-    """Clip to the scenario's box, simplify and snap coordinates to a ~1 m grid."""
-    clipped = geometry.intersection(current().box)
+def finish(geometry, simplify: float = 0.0, box=None):
+    """Clip to `box` (default: the scenario's), simplify and snap coordinates to a ~1 m grid."""
+    clipped = geometry.intersection(current().box if box is None else box)
     if clipped.is_empty:
         return None
     if simplify:
@@ -143,18 +153,29 @@ def facility_features(client: httpx.Client) -> list[dict]:
     return features
 
 
-def road_features(client: httpx.Client) -> list[dict]:
-    """One zone per road number: a road is cut as soon as the fire touches any stretch of it."""
+def roads_by_ref(elements: list[dict]) -> dict[str, MultiLineString]:
+    """Road ways grouped by road number: a road is cut as soon as the fire touches any stretch of it."""
     by_ref: dict[str, list[LineString]] = {}
-    for element in overpass.elements(client, roads_query(overpass_bbox(current().bbox))):
+    for element in elements:
         coords = [(p["lon"], p["lat"]) for p in element.get("geometry", [])]
-        if len(coords) >= 2:
-            by_ref.setdefault(element["tags"]["ref"], []).append(LineString(coords))
+        ref = element.get("tags", {}).get("ref")
+        if ref and len(coords) >= 2:
+            by_ref.setdefault(ref, []).append(LineString(coords))
+    return {ref: MultiLineString(lines) for ref, lines in by_ref.items()}
+
+
+def road_id(ref: str) -> str:
+    return f"road-{re.sub(r'[^a-z0-9]+', '-', ref.lower()).strip('-')}"
+
+
+def road_features(client: httpx.Client) -> list[dict]:
+    """One zone per road number."""
+    elements = overpass.elements(client, roads_query(overpass_bbox(current().bbox)))
     features = []
-    for ref, lines in by_ref.items():
-        geometry = finish(MultiLineString(lines), simplify=ROAD_TOLERANCE_DEG)
+    for ref, lines in roads_by_ref(elements).items():
+        geometry = finish(lines, simplify=ROAD_TOLERANCE_DEG)
         if geometry is not None:
-            features.append(feature(f"road-{re.sub(r'[^a-z0-9]+', '-', ref.lower()).strip('-')}", ref, "road", None, geometry))
+            features.append(feature(road_id(ref), ref, "road", None, geometry))
     return features
 
 

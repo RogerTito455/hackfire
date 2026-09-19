@@ -73,5 +73,21 @@
   "sms": {
     "videoLink": "Emergencia incendio: abra este enlace para mostrar su situación en vídeo a la coordinación: {link}",
     "crewRoom": "HackFire: la coordinación comparte el mapa con los equipos. Entre aquí: {link}"
+  },
+  "liveOps": {
+    "alert": {
+      "one": "Incendio forestal cerca de {place}: la simulación prevé que llegue en aproximadamente una hora. Siga las indicaciones de Protección Civil y del 112.",
+      "other": "Incendio forestal cerca de {place}: la simulación prevé que llegue en unas {count} horas. Siga las indicaciones de Protección Civil y del 112."
+    },
+    "alertSoon": "Incendio forestal cerca de {place}: la simulación prevé que llegue en menos de una hora. Siga las indicaciones de Protección Civil y del 112.",
+    "alertDue": "Incendio forestal cerca de {place}: según la simulación, podría estar llegando ya. Siga las indicaciones de Protección Civil y del 112.",
+    "unnamed": {
+      "estate": "una urbanización sin nombre",
+      "town": "una población sin nombre",
+      "care_home": "una residencia sin nombre",
+      "health_centre": "un centro de salud sin nombre",
+      "school": "un colegio sin nombre",
+      "road": "una carretera sin número"
+    }
   }
 }

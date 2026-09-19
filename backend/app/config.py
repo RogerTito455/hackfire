@@ -110,6 +110,17 @@ class Settings:
     overpass_url: str = field(
         default_factory=lambda: _env("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
     )
+    # Tried in order after OVERPASS_URL when it is busy (429, 504) or down. Comma-separated.
+    overpass_mirrors: list[str] = field(
+        default_factory=lambda: [
+            url.strip()
+            for url in _env(
+                "OVERPASS_MIRRORS",
+                "https://overpass.openstreetmap.fr/api/interpreter,https://overpass.private.coffee/api/interpreter",
+            ).split(",")
+            if url.strip()
+        ]
+    )
 
 
 settings = Settings()

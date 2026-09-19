@@ -26,9 +26,11 @@ pnpm data:zones     # writes data/zones.geojson (68 zones, 63 KB), served at GET
 
 Everything is clipped to the demo box. Pharmacies, day centres and colleges are left out on purpose.
 
+**Live mode** asks Overpass on demand, for the one live fire the coordinator selects: the same facility and road selectors plus OSM place nodes and named housing estates, inside that fire's Deepfire run plus 1 km. Cached per simulation under `data/live_places/` (not tracked). See [Deepfire, live operations](deepfire.md#live-operations-for-one-selected-fire).
+
 ## Gotchas
 
-- **Public instances come and go.** On 2026-09-19 `overpass-api.de` and several mirrors refused connections from one team machine, one mirror returned 504 on a one-node query, and `https://overpass.openstreetmap.fr/api/interpreter` worked. Set `OVERPASS_URL` to whichever answers. The file is committed, so the demo never depends on this.
+- **Public instances come and go.** On 2026-09-19 `overpass-api.de` and several mirrors refused connections from one team machine, one mirror returned 504 on a one-node query, and `https://overpass.openstreetmap.fr/api/interpreter` worked. Set `OVERPASS_URL` to whichever answers. The file is committed, so the demo never depends on this. Every query now falls back to the mirrors in `OVERPASS_MIRRORS` (default `overpass.openstreetmap.fr`, then `overpass.private.coffee`) when a server is busy or unreachable; on 2026-09-19 at 22:10 CEST `overpass-api.de` still refused connections and `overpass.kumi.systems` timed out.
 - OSM tags are uneven: one school has no name, and unnamed zones are shown by their kind.
 
 ## Sources

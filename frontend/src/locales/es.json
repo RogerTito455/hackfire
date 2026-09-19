@@ -387,5 +387,47 @@
   "dataNote": {
     "replay": "Incendio real (satélite de Deepfire). Vecinos, llamadas y evacuaciones: ficticios.",
     "live": "Incendios reales activos (Deepfire). En este modo no se llama a nadie."
+  },
+  "liveOps": {
+    "section": "Lugares en riesgo",
+    "pick": "Toca un incendio en el mapa o elige uno que Deepfire haya simulado:",
+    "noSimulated": "Deepfire aún no tiene simulación de propagación para los incendios del mapa.",
+    "run": "Simulación {model}, ejecutada el {time}",
+    "back": "Todos los incendios",
+    "note": "Predicción de la simulación ELMFIRE de Deepfire, no un aviso oficial. En una emergencia real, siga al 112 y a Protección Civil.",
+    "loading": "Buscando lugares en OpenStreetMap…",
+    "error": "No se han podido cargar los lugares en riesgo.",
+    "refreshFailed": "No se ha podido actualizar; se muestra la última respuesta.",
+    "retry": "Reintentar",
+    "noRun": "Deepfire no ha simulado la propagación de este incendio, así que no hay lugares en riesgo que mostrar.",
+    "placesStale": "OpenStreetMap no responde: estos lugares son de una simulación anterior de este incendio.",
+    "spreadStale": "Deepfire está saturado: es la última simulación disponible.",
+    "places": "En la trayectoria simulada",
+    "placesNone": "La simulación no alcanza en {hours} h ninguna población, urbanización, residencia, colegio ni centro de salud del mapa.",
+    "nearby": {
+      "one": "{count} lugar más a menos de {metres} m, no alcanzado en {hours} h",
+      "other": "{count} lugares más a menos de {metres} m, no alcanzados en {hours} h"
+    },
+    "due": "Ya",
+    "at": "hacia {time}",
+    "showMore": "Mostrar {count} más",
+    "showFewer": "Mostrar menos",
+    "kind": {
+      "estate": "Urbanización",
+      "town": "Población",
+      "care_home": "Residencia",
+      "health_centre": "Centro de salud",
+      "school": "Colegio",
+      "road": "Carretera"
+    },
+    "alerts": "Borradores de aviso",
+    "alertsNote": "Borradores para que los revise el coordinador. HackFire no envía nada: aquí no hay canal público de avisos (ES-Alert y SMS por zonas son trabajo futuro).",
+    "draft": "Borrador, no enviado",
+    "alertsNone": "Sin borradores: la simulación no alcanza ningún lugar.",
+    "roads": "Carreteras a cortar",
+    "roadsNote": "Carreteras principales que la simulación alcanza en menos de una hora: cortadas para los vecinos, los equipos de emergencia siguen usándolas.",
+    "roadsNone": "Ninguna carretera principal en la próxima hora.",
+    "calls": "Aquí no hay llamadas: llamar a los vecinos requiere un registro de quién vive en estos lugares, que es trabajo futuro.",
+    "source": "Lugares: © colaboradores de OpenStreetMap, consultados el {time}."
   }
 }

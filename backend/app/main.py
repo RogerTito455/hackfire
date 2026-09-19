@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_spread, orders, replay, rescue_video, scenario, text_triage
+from . import autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_operations, live_spread, orders, replay, rescue_video, scenario, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
@@ -204,6 +204,22 @@ def live_spread_runs() -> dict:
         return live_spread.predicted_spread()
     except live.LiveUnavailable as error:
         raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
+
+
+@app.get("/api/live/operations/{fire_id}")
+def live_fire_operations(fire_id: str) -> dict:
+    """For one live fire with a Deepfire ELMFIRE run: the OpenStreetMap places its 12 h footprint
+    reaches (plus a buffer), each one's time to impact, alert drafts that are never sent, and the roads
+    to close to residents. A prediction, not an official warning. Places are fetched on demand for
+    this fire only and cached per simulation."""
+    try:
+        return live_operations.operations(fire_id)
+    except live.LiveUnavailable as error:
+        raise HTTPException(status_code=503, detail="Deepfire is unavailable right now") from error
+    except live_operations.NoSimulation as error:
+        raise HTTPException(status_code=404, detail="No Deepfire spread simulation for this fire") from error
+    except live_operations.PlacesUnavailable as error:
+        raise HTTPException(status_code=503, detail="OpenStreetMap places are unavailable right now") from error
 
 
 @app.get("/api/routes/{neighbor_id}")

@@ -1,7 +1,7 @@
 # Deepfire
 
 **Used for:** step 1 (hotspots, live fires) and step 2 (predicted spread). Slices 2, 3 and 10 (#3, #4, #11).
-**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`), with its predicted spread from Deepfire's own automatic ELMFIRE runs (`GET /api/live/spread`); replay spread done with our own cone, not with this API (see below)
+**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`), with its predicted spread from Deepfire's own automatic ELMFIRE runs (`GET /api/live/spread`) and, for a selected fire, its places at risk, alert drafts and roads to close (`GET /api/live/operations/{fire_id}`); replay spread done with our own cone, not with this API (see below)
 **Owners:** Bryan (hotspots, live mode), Rosa (spread)
 
 ## Access
@@ -57,6 +57,20 @@ Deepfire runs ELMFIRE by itself on active fires (`auto: true`): a physics model 
 The answer is cached in memory for 5 minutes. The last good one is written to `data/live_spread.json` (not tracked, about 750 KB, 160 KB gzipped): when Deepfire fails, the backend serves it with `stale: true` and asks again after a minute; after a restart it also seeds the runs already fetched, so only new ones are downloaded. With nothing cached, the endpoint returns 503 and the dashboard shows the fires without spread. The dashboard polls every 5 minutes in live mode and draws each fire's hours with the replay's ramp (`SPREAD_HOUR_COLORS`), under the fire markers; a fire's popup names the run.
 
 Verified against the live API on 2026-09-19 at about 20:40 CEST: 125 runs in the last 24 hours (114 `COMPLETED`, 11 `NO_SPREAD`), all `auto: true`, ELMFIRE, 12 h, one ensemble member, listed in two pages in 1.1 s. A run's detail is 6–7 KB with 12 hourly MultiPolygons (`hour`, `elapsed_seconds`, no `burn_probability`) and a `summary` (`burnedAreaM2`, `windSpeedAvgMs`, `windDirectionAvg`). 74 of the 141 active clusters matched a completed run; the first answer took 7 s, a refresh 0.5 s and a restart with the file 1.1 s.
+
+### Live operations for one selected fire
+
+Tap a live fire that has a run (or pick it from the list in the sheet) and the dashboard shows, for that fire only: the places at risk, their time to impact, alert drafts and the roads to close. `backend/app/live_operations.py`, served at `GET /api/live/operations/{fire_id}`:
+
+1. **Places at risk.** The run's 12 h footprint plus 1,000 m (`BUFFER_M`) is sent to Overpass in one query: OSM place nodes (city, town, village, hamlet, suburb, quarter, neighbourhood, padded to 150–2,000 m by size), named `landuse=residential` (housing estates), and `fetch_zones`' care homes, schools, health centres and main roads (same selectors, same parsing). Roads are clipped to the search area. Footprints wider than 0.3° are cut into tiles; each request tries `OVERPASS_URL`, then the mirrors (`OVERPASS_MIRRORS`), for at most 30 s in total.
+2. **Cache.** Per simulation id, in memory and in `data/live_places/<simulation id>.json` (git-ignored): a completed run never changes, so a second click is instant. If Overpass fails for a new run, the fire's last cached places come back with `places_stale: true`; with none, the endpoint returns 503. A Deepfire outage follows `/api/live/spread` (`spread_stale: true`, or 503).
+3. **Time to impact.** For each place, the first hourly polygon that touches it (`impact.first_hour_touching`, shared with the replay): `minutes_from_run` from the run's start, `reaches_at`, and `minutes` left now (0 when due). Places inside the buffer that no hour reaches are listed apart, as near but not reached.
+4. **Alert drafts.** One per reached place, soonest first, from `liveOps.*` in `backend/app/locales/`. They are drafts for the coordinator (`draft: true`, `sent: false`): nothing sends them, and the dashboard labels them "Draft, not sent".
+5. **Roads to close.** Roads the run reaches within 60 minutes of now, the replay's rule (`closedRoads`): closed to residents, crews still use them. The map draws them with the replay's dashed red cordon.
+
+No resident is listed and no call is made in live mode: that needs a registry of who lives in these places. See [What works for a real fire](../demo/real-life.md).
+
+Verified on 2026-09-19 at about 22:15 CEST with the Arcos de la Frontera (Cádiz) run from 16:47 CEST: 95 OSM elements from `overpass.openstreetmap.fr` in 1.0–2.4 s (`overpass-api.de` refused the connection, `overpass.kumi.systems` timed out), 18 places (3 towns or villages, 4 housing estates, 7 schools, 3 health centres, 1 road), 11 reached within 12 h, 10 alert drafts, the N-4 to close. A second request took 0.01 s from the cache.
 
 **No run of the 23 July fire.** Checked 2026-09-19 around 21:20 CEST, paging with `cursor` through everything since 2026-07-20: runs go back to 2026-07-21 17:44 UTC, 3,111 in total, all `auto: true`, all ELMFIRE, 12 h. None was created between 22 and 26 July inside lat 40.1–40.7, lon −5.1 to −4.1, and none mentions Ávila, El Tiemblo, Burgohondo, La Atalaya or Navaluenga. The replay keeps our cone.
 
