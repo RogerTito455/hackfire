@@ -1,6 +1,7 @@
 // Backend client. The only file that knows URLs and HTTP.
 
 import type { HotspotCollection } from '../domain/hotspots'
+import type { LeadTime } from '../domain/leadTime'
 import type { SpreadCollection } from '../domain/spread'
 import type { Neighbor, Rescue } from '../domain/triage'
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
@@ -27,3 +28,4 @@ export const setReplayTime = (isoTime: string) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ at: isoTime }),
   })
+export const fetchLeadTime = () => request<LeadTime>('/api/lead-time')

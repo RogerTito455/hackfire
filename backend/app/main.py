@@ -84,6 +84,15 @@ def get_impact() -> dict:
     return table
 
 
+@app.get("/api/lead-time")
+def get_lead_time() -> Response:
+    """La Atalaya's lead time and how it was computed. Written by `pnpm data:lead-time`."""
+    body = replay.lead_time_json()
+    if body is None:
+        raise HTTPException(status_code=404, detail="No cached lead time: run pnpm data:lead-time")
+    return Response(content=body, media_type="application/json")
+
+
 @app.post("/api/replay/time")
 def set_replay_time(request: ReplayTimeRequest) -> dict:
     """The dashboard's slider moved: the agent's answers now refer to this replay moment."""

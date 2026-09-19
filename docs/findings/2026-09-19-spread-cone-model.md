@@ -27,7 +27,7 @@ Hours ahead at which the predicted spread first touches each place, by forecast 
 | 18:30 | already inside the footprint | already inside | 1.9 km/h |
 | 20:30 | 4 h | already inside | 1.0 km/h |
 
-The first forecast that flags La Atalaya is the one issued at **13:30 UTC (15:30 local)**. The lead time is not computed here: it belongs to slice 4 (#5) and needs the definition of "reached" chosen in [the La Atalaya finding](2026-09-19-la-atalaya-location.md). From the 18:30 forecast on, La Atalaya is inside the footprint because the footprint is a hull around hotspots that include isolated ones east of the estate (longitude up to -4.404), not because a hotspot lies within the estate.
+The first forecast that flags La Atalaya is the one issued at **13:30 UTC (15:30 local)**. The lead time built on this flag is in [its own finding](2026-09-19-lead-time.md). From the 18:30 forecast on, La Atalaya is inside the footprint because the footprint is a hull around hotspots that include isolated ones east of the estate (longitude up to -4.404), not because a hotspot lies within the estate.
 
 ## Caveats
 

@@ -1,7 +1,9 @@
 import type { FireForecast } from '../hooks/useFireForecast'
 import type { FireReplay } from '../hooks/useFireReplay'
+import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { Triage } from '../hooks/useTriage'
 import { ReplayControls } from './ReplayControls'
+import { LeadTimeCard } from './LeadTimeCard'
 import { RescueQueue } from './RescueQueue'
 import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
@@ -13,10 +15,11 @@ interface DashboardProps {
   triage: Triage
   replay: FireReplay
   forecast: FireForecast
+  leadTime: LeadTimeView
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
-export function Dashboard({ triage, replay, forecast }: DashboardProps) {
+export function Dashboard({ triage, replay, forecast, leadTime }: DashboardProps) {
   const { neighbors, rescues, counts, online, reset } = triage
   return (
     <div className="layout">
@@ -31,6 +34,11 @@ export function Dashboard({ triage, replay, forecast }: DashboardProps) {
         <section>
           <h2>Triage</h2>
           <StatusCounts counts={counts} />
+        </section>
+
+        <section>
+          <h2>Lead time</h2>
+          <LeadTimeCard view={leadTime} />
         </section>
 
         <section>

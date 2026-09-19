@@ -43,11 +43,19 @@ PEAK_STEPS = 6
 PEAK_DECAY = 0.9
 
 
+def km_per_degree(lat: float) -> tuple[float, float]:
+    """Kilometres per degree of longitude and of latitude at `lat` (equirectangular, fine at 40 km)."""
+    return KM_PER_DEG_LON_AT_EQUATOR * math.cos(math.radians(lat)), KM_PER_DEG_LAT
+
+
 @dataclass(frozen=True)
 class Hotspot:
     lon: float
     lat: float
     observed_at: datetime
+    # Provenance, for reporting; the model does not use them.
+    source: str | None = None
+    confidence: str | None = None
 
 
 @dataclass(frozen=True)
@@ -71,7 +79,7 @@ def forecast(
 
     lon0 = sum(h.lon for h in recent) / len(recent)
     lat0 = sum(h.lat for h in recent) / len(recent)
-    km_per_deg_lon = KM_PER_DEG_LON_AT_EQUATOR * math.cos(math.radians(lat0))
+    km_per_deg_lon, _ = km_per_degree(lat0)
 
     def to_km(hotspot: Hotspot) -> tuple[float, float]:
         return ((hotspot.lon - lon0) * km_per_deg_lon, (hotspot.lat - lat0) * KM_PER_DEG_LAT)

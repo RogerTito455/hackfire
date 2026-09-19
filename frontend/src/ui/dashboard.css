@@ -247,3 +247,36 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.lead {
+  font-size: 14px;
+}
+
+.lead p {
+  margin: 0 0 8px;
+}
+
+.lead .lead-figure {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.lead .lead-figure strong {
+  display: block;
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.lead summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.lead details p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}

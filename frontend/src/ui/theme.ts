@@ -75,11 +75,15 @@ export const ZONE_KIND_LABEL: Record<ZoneKind, string> = {
   road: 'Road',
 }
 
-/** "now", "45 min", "4 h" or "4 h 30 min": how the panel says when the fire arrives. */
-export function formatMinutesToImpact(minutes: number): string {
-  if (minutes <= 0) return 'now'
+/** "45 min", "4 h" or "4 h 30 min". */
+export function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`
+}
+
+/** "now" or a duration: how the panel says when the fire arrives. */
+export function formatMinutesToImpact(minutes: number): string {
+  return minutes <= 0 ? 'now' : formatDuration(minutes)
 }

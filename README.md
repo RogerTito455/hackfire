@@ -29,8 +29,9 @@ Hackathon skeleton. What works today:
 - Dashboard with a map of the demo area, resident pins coloured by triage state, live counts and the rescue queue, polling the backend every 2 seconds.
 - Replay of the fire: 7,068 Deepfire satellite hotspots from 22–24 July 2026, cached in `data/`, on a time slider with play and pause. Hotspots are coloured by age and sized by fire radiative power.
 - Predicted spread and zones at risk: for the replay of 23 July, a cone from the front's velocity gives a forecast every 30 minutes, drawn hour by hour on the map, and the panel lists the places in its path (La Atalaya, El Tiemblo, care homes, schools, health centres, roads) with their time to impact. `get_fire_status` answers from the same numbers.
+- Lead time: La Atalaya is flagged 6 h 8 min before the first satellite hotspot comes within 3 km of it, computed from satellite data only ([how](docs/findings/2026-09-19-lead-time.md)) and shown on the dashboard once the slider passes the flag.
 
-Still to build: lead time, routing, the voice agent and outbound calls, crew notifications, live mode. See [PLAN.md](PLAN.md) and the issues.
+Still to build: routing, the voice agent and outbound calls, crew notifications, live mode. See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 

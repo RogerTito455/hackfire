@@ -12,6 +12,7 @@ HOTSPOTS_FILE = DATA_DIR / "hotspots_2026-07-22_24.geojson"
 DEMO_BOX = box(-4.85, 40.30, -4.40, 40.50)
 SPREAD_FILE = DATA_DIR / "spread_2026-07-23.geojson"
 ZONES_FILE = DATA_DIR / "zones.geojson"
+LEAD_TIME_FILE = DATA_DIR / "lead_time_la-atalaya.json"
 
 
 @cache
@@ -34,3 +35,10 @@ def spread_geojson() -> bytes | None:
 def zones_geojson() -> bytes | None:
     """The zones written by `pnpm data:zones`, or None if it is missing."""
     return ZONES_FILE.read_bytes() if ZONES_FILE.exists() else None
+
+
+@cache
+def lead_time_json() -> bytes | None:
+    """The lead time written by `pnpm data:lead-time`, or None if it is missing."""
+    return LEAD_TIME_FILE.read_bytes() if LEAD_TIME_FILE.exists() else None
+

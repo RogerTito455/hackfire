@@ -17,8 +17,9 @@ from shapely.geometry import mapping
 
 from ..config import DATA_DIR
 from ..impact import HORIZON_HOURS
-from ..replay import DEMO_BOX, HOTSPOTS_FILE
-from ..spread import Hotspot, forecast
+from ..replay import DEMO_BOX
+from ..spread import forecast
+from .common import read_hotspots
 
 OUTPUT = DATA_DIR / "spread_2026-07-23.geojson"
 
@@ -29,18 +30,6 @@ ISSUE_EVERY = timedelta(minutes=30)
 # Polygons are clipped to the demo box, simplified to about 30 m and snapped to a ~1 m grid: the model is not that precise.
 SIMPLIFY_DEG = 0.0003
 COORDINATE_GRID_DEG = 0.00001
-
-
-def read_hotspots() -> list[Hotspot]:
-    collection = json.loads(HOTSPOTS_FILE.read_text(encoding="utf-8"))
-    return [
-        Hotspot(
-            lon=f["geometry"]["coordinates"][0],
-            lat=f["geometry"]["coordinates"][1],
-            observed_at=datetime.fromisoformat(f["properties"]["observed_at"]),
-        )
-        for f in collection["features"]
-    ]
 
 
 def main() -> None:
