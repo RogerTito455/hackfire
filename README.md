@@ -8,7 +8,7 @@ Built at [HackBarna 2026](https://www.hackbarna.com/en/events/aisummit26) (19–
 
 ## The problem
 
-On 23 July 2026 the Burgohondo wildfire in Ávila, the largest in Spain, ran 3 km in 40 minutes and reached the La Atalaya housing estate. More than 1,200 people were evacuated from it and 5 homes were destroyed.
+On 23 July 2026 the Burgohondo wildfire in Ávila ran 3 km in 40 minutes and reached the La Atalaya housing estate in El Tiemblo. Between 1,200 and 1,300 people were evacuated from it and 5 homes were destroyed ([sources](docs/findings/2026-09-19-press-figures.md)).
 
 Public alerting today is one-way and impersonal. ES-Alert broadcasts the same message to a whole area and does not listen: the coordinator does not know who has left, who never got the message, and who cannot move. Rescues surface late, through saturated 112 lines, when crews are already committed.
 

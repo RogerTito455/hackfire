@@ -19,6 +19,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [Norma (QualityClouds)](services/norma.md) | Extension 1: scan, fix, rescan |
 | | [Devin (Cognition)](services/devin.md) | Extension 3: self-improving spread model |
 | **Demo** | [Runbook](demo/runbook.md) | Before the demo, and what to do when something fails on stage |
+| | [Pitch script](demo/pitch.md) | The three minutes, the checked figures, questions to prepare |
 | **Development** | [Workflow](development/workflow.md) | Slices, branches, checks, the tool contract |
 | **Design** | [Icons](../frontend/src/ui/icons/README.md) | The hand-drawn icon set: format rules, map markers, catalogue |
 | **Findings** | [Findings log](findings/README.md) | Things we learned the hard way, dated |
