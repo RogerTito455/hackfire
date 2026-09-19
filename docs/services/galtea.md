@@ -18,6 +18,8 @@ pnpm eval:galtea -k prank-caller      # one scenario (pytest -k)
 pnpm eval:galtea -k "prank-caller or wheelchair-user"
 ```
 
+`--transcripts data/demo_calls.json` (a path relative to the repository) also adds each **passing** scenario's turns and last `report_status` to that file, keeping the scenarios already in it. The demo autopilot shows them (docs/demo/runbook.md). A failing call is printed but not added.
+
 Without `GALTEA_API_KEY` or `SLNG_API_KEY` every scenario is skipped with the reason. When Galtea refuses a setup call, pytest stops with one line saying why.
 
 For each scenario it prints PASS or FAIL, the Galtea session id and the transcript as the resident heard it, with the agent's tool calls in brackets. The same conversations are sessions of the product **HackFire resident agent** on https://platform.galtea.ai.
@@ -78,6 +80,17 @@ What the first `panicked-parent` run shows about the agent: it records only at t
 **Third run, 2026-09-19 around 22:00: #55's prompt rule made things worse.** With its "never say you recorded before calling `report_status`" rule and the explicit tool name in step 6, `panicked-parent` and `wrong-address` failed 2 of 2 each: the agent narrated "lo registro" or said "no hay nada que registrar" without calling the tool. Removing both brought `panicked-parent` and `wheelchair-user` back to PASS. `wrong-address` passed 1 of 3 even with an explicit rule in step 1 ("registra no_answer"): the model is unstable there, not the prompt alone. `confused-elderly` still fails. The singular *usted* examples stay.
 
 **What this means for the demo.** Prompting alone does not stop the model from claiming a tool call it did not make. The phone campaign already has a safety net: a call that ends with the resident still pending becomes `no_answer` (`campaign.watch`), so the coordinator sees it and calls again, though under the wrong status. A browser session (`/api/neighbors/{id}/web-session`) has no such net yet. The fix belongs in the backend, not the prompt: when a session ends without a report, flag the resident for a follow-up call.
+
+**Third run, 2026-09-19 night**, on the prompt of #55 (Galtea version `version_agb0ajfq1uinkw77wp30v6rd`), to record `data/demo_calls.json`: `pnpm eval:galtea -k "panicked-parent or wrong-address or wheelchair-user or refuses-to-leave" --transcripts data/demo_calls.json`, then the two failures once more.
+
+| Scenario | Result | Notes |
+|---|---|---|
+| `wheelchair-user` | PASS, `needs_rescue`, 1 person | Recorded right after she said she cannot leave. Session `session_xwoas9568zl9wngc9746pf7d`, in `data/demo_calls.json` |
+| `refuses-to-leave` | PASS, `needs_rescue`, 1 person | Session `session_plqqc8r5h4rpsahy643fc1dk`, in `data/demo_calls.json` |
+| `panicked-parent` | **FAIL** (2 runs out of 2) | **Never called `report_status`.** Asked the three questions, got "sí, vamos ya" and "somos cuatro", said goodbye. In the first run it even wrote "(ya lo confirmaron, pero lo registro)" in its spoken text without recording. Sessions `session_h4cg97ju754buo83us7j1dbr`, `session_sgegg356ti9jtukromp7kn3s` |
+| `wrong-address` | **FAIL** (2 runs out of 2) | **Never called `report_status`:** "parece que se han equivocado de número. No hay nada que registrar." The prompt's rule is `no_answer`. Sessions `session_pl0ja9qrft1zbo66uijeq0mt`, `session_oxnby1ldx873sn3su1wku752` |
+
+Both passed on the earlier prompt (first run above), so the change of #55 may have made the agent less willing to record outcomes that are not rescues. Not investigated further; the prompt is the voice track's. With the pin left pending, a browser session shows "Not called yet" for a family that is leaving and for a wrong number.
 
 Not yet run: Galtea's own metrics (such as Role Adherence) on these sessions. `evaluations.create(session_id=..., metrics=[...])` does it ([Simulating conversations](https://docs.galtea.ai/sdk/tutorials/simulating-conversations.md)) and spends credits.
 

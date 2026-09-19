@@ -53,9 +53,9 @@
    - The cone ignores wind, slope, fuel and humidity.
    - It is a convex hull that can cover places the fire never touched.
    - Say this plainly if asked.
-7. **The autopilot is a script, not the forecast.**
-   - Its outcomes happen at fixed times rather than when a zone enters the cone.
-   - It shows states, not the calls.
+7. **The autopilot is a script.**
+   - Since autopilot v2 its orders and calls are timed from when each zone enters the forecast, and a rescue shows a real agent transcript against a Galtea resident and draws the crew route. The outcomes themselves are still scripted.
+   - Evacuating and no-answer outcomes show no transcript: the agent did not record those calls in the latest Galtea runs ([Galtea](../services/galtea.md)).
    - It lags the slider by up to about 2.5 s during playback.
    - It must be off before any live call.
 8. **The agents hear English sentences** (`HACKFIRE_AGENT_LOCALE=en`) and translate them while speaking. Setting `es` removes that step. Try `pnpm eval:triage` and `pnpm eval:galtea` first.

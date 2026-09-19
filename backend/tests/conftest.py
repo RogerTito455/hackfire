@@ -19,3 +19,12 @@ def sample_registry(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("app.state.settings", replace(settings, neighbors_json=""))
     monkeypatch.setattr("app.state._REGISTRY_CANDIDATES", [DATA_DIR / "neighbors.sample.json"])
     state.load()
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--transcripts",
+        default=None,
+        help="eval_galtea.py: add each scenario's turns and last report_status to this JSON file "
+        "(docs/services/galtea.md)",
+    )

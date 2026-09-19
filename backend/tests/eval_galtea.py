@@ -8,14 +8,19 @@ named after the agent's fingerprint, for reading and for Galtea's own metrics.
 
 Not part of `pnpm check`: it calls Galtea and SLNG, spends Galtea credits, and a model's answer can
 vary. Run it with `pnpm eval:galtea`, or one scenario with `pnpm eval:galtea -k prank-caller`.
-See docs/services/galtea.md.
+`--transcripts data/demo_calls.json` (relative to the repository) also adds each passing scenario's
+turns and last report_status to that file, which the demo autopilot shows. See docs/services/galtea.md.
 """
+
+import json
+from datetime import UTC, datetime
+from pathlib import Path
 
 import httpx
 import pytest
 
 from app import simulated_residents as sim
-from app.config import settings
+from app.config import REPO_ROOT, settings
 from app.providers import galtea, llm
 
 pytestmark = [
@@ -73,7 +78,9 @@ def slng():
 
 
 @pytest.mark.parametrize("scenario", sim.SCENARIOS, ids=lambda s: s.key)
-def test_simulated_resident_is_triaged_right(scenario: sim.Scenario, run: dict, slng: httpx.Client) -> None:
+def test_simulated_resident_is_triaged_right(
+    scenario: sim.Scenario, run: dict, slng: httpx.Client, request: pytest.FixtureRequest
+) -> None:
     test_case_id = run["cases"].get(scenario.key)
     assert test_case_id, f"no Galtea test case for {scenario.key}; the dataset is {sim.dataset_name()}"
 
@@ -87,4 +94,26 @@ def test_simulated_resident_is_triaged_right(scenario: sim.Scenario, run: dict, 
     print(f"\n--- {scenario.key}: {'PASS' if verdict.passed else 'FAIL'}, {verdict.detail}")
     print(f"    session {simulation.session_id}, {simulation.turns} turns, stopped: {simulation.stopping_reason}")
     print(sim.transcript(call.messages))
+    transcripts = request.config.getoption("--transcripts")
+    if transcripts and verdict.passed:
+        _record(Path(transcripts), scenario, call, simulation, run["version_id"])
+    elif transcripts:
+        print(f"    not added to {transcripts}: the call failed")
     assert verdict.passed, verdict.detail
+
+
+def _record(path: Path, scenario: sim.Scenario, call: sim.ResidentCall, simulation, version_id: str) -> None:
+    """Add this call to the transcripts file, keeping the other scenarios already in it."""
+    path = path if path.is_absolute() else REPO_ROOT / path
+    existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+    recorded = sim.recorded_call(
+        scenario,
+        call.messages,
+        call.reports,
+        model=settings.slng_llm_model,
+        galtea_version=version_id,
+        galtea_session=simulation.session_id,
+        recorded_on=datetime.now(UTC).date().isoformat(),
+    )
+    path.write_text(json.dumps(sim.merge_recorded_call(existing, recorded), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"    added to {path.relative_to(REPO_ROOT) if path.is_relative_to(REPO_ROOT) else path}")

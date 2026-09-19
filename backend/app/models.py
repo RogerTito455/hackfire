@@ -51,10 +51,36 @@ class ReplayTimeRequest(BaseModel):
     at: AwareDatetime = Field(description="Replay moment the dashboard's slider is on")
 
 
+class AutopilotTurn(BaseModel):
+    speaker: Literal["agent", "resident"]
+    text: str
+
+
+class AutopilotTranscript(BaseModel):
+    """A real call of the resident agent with a resident simulated by Galtea (data/demo_calls.json)."""
+
+    scenario: str
+    status: TriageStatus = Field(description="The last status the agent recorded with report_status")
+    turns: list[AutopilotTurn]
+
+
+class AutopilotCall(BaseModel):
+    """A scripted outcome placed on the replay clock: when it lands, whose pin it sets, and the transcript
+    shown next to it."""
+
+    neighbor_id: str
+    at: datetime
+    status: TriageStatus
+    transcript: str | None = Field(default=None, description="A key of `transcripts`")
+
+
 class Autopilot(BaseModel):
     """The demo autopilot (autopilot.py): a labelled simulation of the workflow along the replay."""
 
     enabled: bool
+    # While it is on: every scripted outcome for this registry, oldest first, and the transcripts they name.
+    calls: list[AutopilotCall] = []
+    transcripts: dict[str, AutopilotTranscript] = {}
 
 
 class AutopilotRequest(BaseModel):

@@ -1,33 +1,39 @@
 {
-  "about": "Demo autopilot script, read by backend/app/autopilot.py. A labelled simulation of the coordinator's workflow with the demo residents, not what happened on 23 July 2026. Residents are named by their position in the registry (1 is the first), because the deployed registry has other ids; positions it does not have are skipped. `mobility` and `observation` are keys of the \"demo\" section in backend/app/locales. `zone_of` approves the proposed order for that resident's zone. Times are replay moments in UTC, after La Atalaya was first flagged (13:30).",
+  "about": "Demo autopilot script, read by backend/app/autopilot.py. A labelled simulation of the coordinator's workflow with the demo residents, not what happened on 23 July 2026. Timed by the forecast: a zone's order is approved `after_minutes` after the zone first enters the predicted spread (the first replay moment backend/app/impact.py gives it a time to impact), or `order_after_minutes` when no order names it; each outcome lands `after_minutes` after its resident's zone's order. Residents of a zone the forecast never reaches are not called. Residents are named by their position in the registry (1 is the first), because the deployed registry has other ids; positions it does not have are skipped. `mobility` and `observation` are keys of the \"demo\" section in backend/app/locales. `zone_of` names the zone by one of its residents. `calls` names, per status, the transcripts of data/demo_calls.json the dashboard shows as each outcome lands: the n-th outcome of a status takes the n-th, cycling.",
+  "order_after_minutes": 15,
   "orders": [
-    { "at": "2026-07-23T13:45:00Z", "zone_of": 1 },
-    { "at": "2026-07-23T15:00:00Z", "zone_of": 4 },
-    { "at": "2026-07-23T16:30:00Z", "zone_of": 7 }
+    { "zone_of": 1, "after_minutes": 15 },
+    { "zone_of": 4, "after_minutes": 90 },
+    { "zone_of": 7, "after_minutes": 180 }
   ],
   "outcomes": [
-    { "at": "2026-07-23T14:00:00Z", "position": 1, "status": "evacuating", "people": 2 },
-    { "at": "2026-07-23T14:15:00Z", "position": 2, "status": "no_answer" },
+    { "position": 1, "after_minutes": 15, "status": "evacuating", "people": 2 },
+    { "position": 2, "after_minutes": 30, "status": "no_answer" },
     {
-      "at": "2026-07-23T14:35:00Z",
       "position": 3,
+      "after_minutes": 50,
       "status": "needs_rescue",
       "people": 2,
       "mobility": "wheelchair"
     },
-    { "at": "2026-07-23T15:15:00Z", "position": 4, "status": "evacuating", "people": 3 },
+    { "position": 4, "after_minutes": 15, "status": "evacuating", "people": 3 },
     {
-      "at": "2026-07-23T15:45:00Z",
       "position": 2,
+      "after_minutes": 120,
       "status": "evacuating",
       "people": 1,
       "observation": "secondCall"
     },
-    { "at": "2026-07-23T15:30:00Z", "position": 6, "status": "evacuating", "people": 2 },
-    { "at": "2026-07-23T16:15:00Z", "position": 5, "status": "evacuating", "people": 4 },
-    { "at": "2026-07-23T16:45:00Z", "position": 7, "status": "evacuating", "people": 2 },
-    { "at": "2026-07-23T17:00:00Z", "position": 8, "status": "evacuating", "people": 1 },
-    { "at": "2026-07-23T17:15:00Z", "position": 9, "status": "evacuating", "people": 3 },
-    { "at": "2026-07-23T17:30:00Z", "position": 10, "status": "evacuating", "people": 2 }
-  ]
+    { "position": 6, "after_minutes": 105, "status": "evacuating", "people": 2 },
+    { "position": 5, "after_minutes": 75, "status": "evacuating", "people": 4 },
+    { "position": 7, "after_minutes": 15, "status": "evacuating", "people": 2 },
+    { "position": 8, "after_minutes": 30, "status": "evacuating", "people": 1 },
+    { "position": 9, "after_minutes": 45, "status": "evacuating", "people": 3 },
+    { "position": 10, "after_minutes": 60, "status": "evacuating", "people": 2 }
+  ],
+  "calls": {
+    "evacuating": ["panicked-parent"],
+    "no_answer": ["wrong-address"],
+    "needs_rescue": ["wheelchair-user", "refuses-to-leave"]
+  }
 }
