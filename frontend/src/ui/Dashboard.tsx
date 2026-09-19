@@ -7,7 +7,7 @@ import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Orders } from '../hooks/useOrders'
 import type { TextTriage } from '../hooks/useTextTriage'
 import type { Campaign } from '../hooks/useCampaign'
-import type { Conversations } from '../hooks/useConversation'
+import type { Conversations, CoordinatorConversation } from '../hooks/useConversation'
 import type { VoiceCapabilities } from '../domain/voice'
 import type { Triage } from '../hooks/useTriage'
 import { CrewAlerts } from './CrewAlerts'
@@ -42,8 +42,7 @@ interface DashboardProps {
   voice: VoiceCapabilities
   campaign: Campaign
   conversation: Conversations
-  /** The coordinator's own conversation with the coordinator agent (#10). */
-  coordinatorCall: Conversations
+  coordinatorCall: CoordinatorConversation
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -147,8 +146,7 @@ export function Dashboard({
             <TalkPanel
               neighbor={selected}
               available={voice.web_sessions}
-              orderApproved={orders.orders.some((order) => order.zone === selected.zone && order.approved)}
-              zoneName={orders.orders.find((order) => order.zone === selected.zone)?.zone_name ?? selected.zone}
+              order={orders.orders.find((order) => order.zone === selected.zone)}
               activeId={conversation.neighborId}
               state={conversation.state}
               onTalk={() => conversation.start(selected.id)}
@@ -172,7 +170,7 @@ export function Dashboard({
           <AskAgentPanel
             available={voice.coordinator}
             state={coordinatorCall.state}
-            onAsk={() => coordinatorCall.start('coordinator')}
+            onAsk={coordinatorCall.start}
             onHangUp={coordinatorCall.hangUp}
           />
           <RescueQueue rescues={rescues} />

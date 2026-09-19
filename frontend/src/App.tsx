@@ -9,7 +9,7 @@ import { useTextTriage } from './hooks/useTextTriage'
 import { useFollowAgent } from './hooks/useFollowAgent'
 import { useTriage } from './hooks/useTriage'
 import { useCampaign } from './hooks/useCampaign'
-import { useCoordinatorCall, useResidentCall } from './hooks/useConversation'
+import { useVoiceConversations } from './hooks/useConversation'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
 
@@ -24,23 +24,7 @@ function App() {
   const textTriage = useTextTriage()
   const voice = useVoiceCapabilities()
   const campaign = useCampaign()
-  const residentCall = useResidentCall()
-  const coordinatorAgentCall = useCoordinatorCall()
-  // One conversation at a time: the microphone must reach one agent only.
-  const conversation = {
-    ...residentCall,
-    start: (neighborId: string) => {
-      coordinatorAgentCall.hangUp()
-      return residentCall.start(neighborId)
-    },
-  }
-  const coordinatorCall = {
-    ...coordinatorAgentCall,
-    start: (id: string) => {
-      residentCall.hangUp()
-      return coordinatorAgentCall.start(id)
-    },
-  }
+  const voiceCalls = useVoiceConversations()
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
@@ -75,8 +59,8 @@ function App() {
       textTriage={textTriage}
       voice={voice}
       campaign={campaign}
-      conversation={conversation}
-      coordinatorCall={coordinatorCall}
+      conversation={voiceCalls.resident}
+      coordinatorCall={voiceCalls.coordinator}
       forecast={forecast}
       leadTime={leadTime}
     />

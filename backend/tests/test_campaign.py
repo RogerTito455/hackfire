@@ -79,7 +79,6 @@ def test_an_approved_zone_dials_each_of_its_residents_once(line: FakeLine) -> No
     assert sorted(arguments["neighbor_id"] for _, arguments in line.dialled) == sorted(n["id"] for n in residents)
     for phone, arguments in line.dialled:
         resident = next(n for n in residents if n["id"] == arguments["neighbor_id"])
-        route = client.get(f"/api/routes/{resident['id']}", params={"mode": "car"}).json()["spoken_directions"]
         assert phone.startswith("+")
         assert arguments == {
             "neighbor_id": resident["id"],
@@ -87,7 +86,8 @@ def test_an_approved_zone_dials_each_of_its_residents_once(line: FakeLine) -> No
             "address": resident["address"],
             "zone": "la-atalaya",
             "fire_status": fire_status,
-            "route": route,
+            # The order is to stay indoors: no route to give, and the order is already in fire_status.
+            "route": "",
         }
         # The dashboard URL is public and the registry holds real numbers.
         assert phone not in response.text
@@ -170,3 +170,14 @@ def test_a_reset_stops_an_earlier_campaign_from_marking_the_new_run(
     watch(started[0])  # the earlier campaign's calls end after the reset
 
     assert {n["status"] for n in residents_of("la-atalaya")} == {"pending"}
+
+
+def test_an_approved_order_is_never_undercut_by_a_quiet_moment_on_the_slider() -> None:
+    # With the slider before any forecast, the agent used to say "no risk", then "leave now".
+    assert client.post("/api/replay/time", json={"at": "2026-07-22T06:00:00Z"}).status_code == 200
+    approve("la-atalaya")
+    order = next(o for o in client.get("/api/orders").json() if o["zone"] == "la-atalaya")
+
+    summary = client.post("/tools/get_fire_status", json={"zone": "la-atalaya"}).json()["summary"]
+
+    assert summary == order["message"]

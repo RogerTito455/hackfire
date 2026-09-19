@@ -195,7 +195,7 @@ def start_web_session(neighbor_id: str) -> WebSession:
     if not voice.web_sessions_configured():
         raise HTTPException(status_code=503, detail="The voice agent is not configured (SLNG_API_KEY)")
     try:
-        return voice.web_session(campaign.call_variables(resident), participant_name=resident.name)
+        return voice.web_session(briefing.call_variables(resident), participant_name=resident.name)
     except voice.VoiceUnavailable as error:
         raise HTTPException(status_code=503, detail="The voice agent is unavailable right now") from error
 
@@ -282,7 +282,7 @@ def get_fire_status(request: FireStatusRequest) -> FireStatus:
         zone=request.zone,
         at_risk=minutes is not None,
         minutes_to_impact=minutes,
-        summary=briefing.fire_summary(request.zone),
+        summary=briefing.fire_summary(request.zone, minutes),
     )
 
 

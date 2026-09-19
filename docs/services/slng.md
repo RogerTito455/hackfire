@@ -93,7 +93,7 @@ What writing it taught us (v0.5.5, released 2026-09-18, so expect changes):
 
 The route that keeps the 45-minute timebox honest:
 
-1. Create `get_fire_status`, `get_evacuation_route` and `report_status` as API Request tools in the SLNG dashboard, pointing at the deployed backend (#2). The coordinator agent (#10) will need the other two.
+1. Create `get_evacuation_route` and `report_status` (and `get_fire_status`, published but no longer attached to the resident agent) as API Request tools, pointing at the deployed backend (#2). The coordinator agent (#10) will need the other two.
 2. Name an LLM SLNG serves in `voice/resident/agent.yaml`.
 3. `unmute deploy` to the SLNG target, and check the agent from the SLNG dashboard's browser test. That is checkpoint 1 (#7).
 4. If the SLNG target fights back when the timebox runs out, build the Pipecat variant. `unmute dev` gives a browser voice loop that doubles as the push-to-talk fallback. It still beats hand-writing an STT → LLM → TTS pipeline.

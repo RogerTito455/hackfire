@@ -7,7 +7,7 @@ The voice agents as [Unmute](https://unmute.ai) packages: SLNG's declarative voi
 | Package | Slice | What it does |
 |---|---|---|
 | [`coordinator/`](coordinator/) | 9 (#10) | Tells the coordinator, or a firefighter, which rescues are pending and in what order, and reads the crew's route to one of them; the dashboard draws that route |
-| [`resident/`](resident/) | 6 (#7) | Calls one resident of an at-risk zone, gives the fire status and their exit route, asks the three questions, and records the answer with `report_status` |
+| [`resident/`](resident/) | 6 (#7) | Calls one resident of an at-risk zone, gives the order and their exit route, asks the three questions, and records the answer with `report_status` |
 
 
 ## What is in `resident/`
@@ -60,7 +60,7 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 
    | Name | URL | Parameters (JSON Schema) | Test input |
    |---|---|---|---|
-   | `get_fire_status` | `<backend>/tools/get_fire_status` | `zone` string, required | `{"zone": "la-atalaya"}` |
+   | `get_fire_status` | `<backend>/tools/get_fire_status` | `zone` string, required | `{"zone": "la-atalaya"}`. Published but no longer attached to the resident agent, which gets the same text as `fire_status` |
    | `get_evacuation_route` | `<backend>/tools/get_evacuation_route` | `address` string, required; `mode` string, enum `car`, `walking`, required | `{"address": "PLACEHOLDER street 1, La Atalaya, El Tiemblo", "mode": "car"}` |
    | `report_status` | `<backend>/tools/report_status` | `neighbor_id` string, required; `status` string, enum `evacuating`, `no_answer`, `needs_rescue`, required; `people` integer; `mobility` string; `observation` string | `{"neighbor_id": "n01", "status": "evacuating", "people": 2}` |
 
@@ -72,7 +72,7 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 
 ## The coordinator agent (`coordinator/`, #10)
 
-**Deployed on 2026-09-19** as `hackfire-coordinator-slng` (agent `6d1a743a-4a0e-42b2-aa3f-5052c247137c`), with both API Request tools published against the Railway backend. The coordinator talks to it from the dashboard: **Rescue queue → Ask the agent** (`POST /api/coordinator/web-session`).
+**Deployed on 2026-09-19** as `hackfire-coordinator-slng` (agent `6d1a743a-4a0e-42b2-aa3f-5052c247137c`), with both API Request tools published against the Railway backend. The coordinator talks to it from the dashboard: **Rescue queue → Ask the coordinator agent** (`POST /api/coordinator/web-session`).
 
 Same shape as the resident agent: Nemotron Super 3 to think, Soniox to listen, and Deepgram Aura 2 to speak, with the Spanish voice **Alvaro** (`aura-2-alvaro-es`, speed 1.2) so it doesn't sound like the resident agent's Nestor. Not Fish: it failed on every resident session in eu-north. `unmute validate` and `unmute compile` pass (0.5.5); **not deployed yet**.
 
@@ -92,19 +92,13 @@ To deploy it again, in order (steps 1–2 done on 2026-09-19):
 
 ## After every deploy: the goodbye
 
-SLNG's `end_call` says **"Thanks for calling. Goodbye!"** in English unless its attachment carries a `goodbye_message`, and unmute 0.5.5 cannot set one (it refuses `inject:` on `end_call`). A push replaces the agent and brings the English goodbye back, so after every `unmute deploy` of either agent run:
+SLNG's `end_call` says **"Thanks for calling. Goodbye!"** in English unless its attachment carries a `goodbye_message`, and unmute 0.5.5 cannot set one (it refuses `inject:` on `end_call`). A push replaces the agent and brings the English goodbye back. So deploy both agents with **`pnpm voice:deploy`**, which runs `unmute deploy` for each and then **`pnpm voice:goodbye`** (`backend/app/pipelines/set_goodbye.py`, through `providers/voice.set_goodbye`). The goodbye step alone reads the agent, sets "Hasta luego." on its `end_call` and PUTs it back, changing nothing else; it fails loudly if an agent has no `end_call`.
 
-```bash
-set -a; . ./.env; set +a
-python3 voice/set_goodbye.py 0f035ccc-10d8-4de8-8142-abf4dc484fd8 "Hasta luego."   # resident
-python3 voice/set_goodbye.py 6d1a743a-4a0e-42b2-aa3f-5052c247137c "Hasta luego."   # coordinator
-```
-
-It downloads the agent's config, sets the goodbye and PUTs it back; nothing else changes (checked on 2026-09-19). A scan of both agents' transcripts that day found no other English: they retell the backend's English fire status and routes in Spanish.
+A scan of both agents' transcripts on 2026-09-19 found no other English: they retell the backend's English fire status and routes in Spanish, and both prompts say so.
 
 ## What the agent knows before it speaks
 
-A call starts with six variables (`backend/app/campaign.py`, `call_variables`): `neighbor_id`, `resident_name`, `address`, `zone`, and since 2026-09-19 evening `fire_status` (what `get_fire_status` would answer: the fire at the replay moment plus the zone's approved order) and `route` (the resident's route by car under that order). The agent opens with the order and the route, then asks the three questions; it calls a tool only for a route on foot or when `route` is empty. Before, it looked up the fire mid-call, the resident waited, and a slider left on a quiet moment made it say "no risk" and then give a route. The dashboard test panel uses the defaults in `agent.yaml`.
+A call starts with six variables (`backend/app/briefing.py`, `call_variables`): `neighbor_id`, `resident_name`, `address`, `zone`, and since 2026-09-19 evening `fire_status` (what `get_fire_status` would answer: the fire at the replay moment plus the zone's approved order) and `route` (the resident's route by car under that order). The agent opens with the order and the route, then asks the three questions; it calls a tool only for a route on foot or when `route` is empty. Before, it looked up the fire mid-call, the resident waited, and a slider left on a quiet moment made it say "no risk" and then give a route. The dashboard test panel uses the defaults in `agent.yaml`.
 
 ## Checking the model's triage without voice
 
@@ -115,7 +109,7 @@ A call starts with six variables (`backend/app/campaign.py`, `call_variables`): 
 - **TEST DEFAULTS: the call variables.** All four default to sample resident `n01`, only so the dashboard test works. A dispatch that forgets a variable would silently report on n01. Remove the defaults once calls come from the campaign, unless SLNG refuses to attach the trunk without them; Unmute says it does for inbound trunks.
 - **Where a confinement order comes from: resolved.** The coordinator approves one order per zone in the dashboard (#36): leave for a safe point, or stay indoors. `get_fire_status` appends it to `summary` ("The order for El Tiemblo is to stay indoors until the emergency services say otherwise.") and `get_evacuation_route` starts with it, so the prompt's existing rule for passing on a stay-inside order applies without a contract change.
 - **No triage state for "confined at home".** A resident who stays inside and is fine is reported as `evacuating`, with the observation saying so. A resident who refuses to leave is reported as `needs_rescue`. Both are the prompt's choices; the team should confirm them.
-- **The backend's spoken text is in English.** `FireStatus.summary` and `Route.spoken_directions` are English, and the prompt tells the agent to retell them in Spanish. Retelling costs latency and risks mangling road names; better that the backend writes them in Spanish, since this agent is their only listener.
+- **The backend's spoken text is in English.** `FireStatus.summary`, the order and `Route.spoken_directions` are English, and both prompts tell the agents to retell them in Spanish; transcripts on 2026-09-19 show they do. Writing them in Spanish in the backend would save the retelling, but the dashboard shows the same strings.
 - **Numbers in words.** The prompt asks for numbers written as words (`unos cuarenta minutos`), as agreed for Spanish TTS. Unmute's own guidance (2026-08-28) is the opposite: write digits and let the voice normalise them. Listen to Fish saying both before choosing.
 - **First test call, 2026-09-19.** `report_status` changed n01's pin on the deployed dashboard (checkpoint 1). The agent took ~1.6–1.8 s to start each answer (LLM ~1 s to first token, TTS ~0.2 s) but then spoke for up to 26 s a turn, announcing every tool call and reading the whole route. The prompt now asks for one short sentence a turn and the route as destination, road and time; the voice runs at 1.15. SLNG's session report (`voiceai agents calls get <agent> <call> --json`) has per-turn `llm_node_ttft`, `tts_node_ttfb` and `e2e_latency` for #14.
 

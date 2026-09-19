@@ -15,11 +15,41 @@ export interface Conversations {
   hangUp: () => void
 }
 
-/** Take a resident's call on the dashboard, as that resident. */
-export const useResidentCall = () => useConversation(createWebSession)
+/** The coordinator's own conversation with the coordinator agent (#10). */
+export interface CoordinatorConversation {
+  state: ConversationState
+  start: () => void
+  hangUp: () => void
+}
 
-/** Ask the coordinator agent about the rescues. */
-export const useCoordinatorCall = () => useConversation(createCoordinatorSession)
+export interface VoiceConversations {
+  /** Take a resident's call on the dashboard, as that resident (#8). */
+  resident: Conversations
+  coordinator: CoordinatorConversation
+}
+
+/** Both conversations, one at a time: the microphone must reach one agent only. */
+export function useVoiceConversations(): VoiceConversations {
+  const resident = useConversation(createWebSession)
+  const coordinator = useConversation(createCoordinatorSession)
+  return {
+    resident: {
+      ...resident,
+      start: (neighborId: string) => {
+        coordinator.hangUp()
+        return resident.start(neighborId)
+      },
+    },
+    coordinator: {
+      state: coordinator.state,
+      start: () => {
+        resident.hangUp()
+        void coordinator.start('coordinator')
+      },
+      hangUp: coordinator.hangUp,
+    },
+  }
+}
 
 function useConversation(openSession: (id: string) => Promise<WebSession>): Conversations {
   const [neighborId, setNeighborId] = useState<string | null>(null)
@@ -43,6 +73,7 @@ function useConversation(openSession: (id: string) => Promise<WebSession>): Conv
     setState('connecting')
     try {
       const session = await openSession(id)
+      if (attempt.current !== mine) return // hung up while the session was being created
       const conversation = await joinConversation(session, () => {
         if (attempt.current !== mine) return
         current.current = null
@@ -59,7 +90,14 @@ function useConversation(openSession: (id: string) => Promise<WebSession>): Conv
     }
   }, [openSession])
 
-  const hangUp = useCallback(() => current.current?.hangUp(), [])
+  // Also cancels a conversation still connecting: bumping the attempt makes it hang up on arrival.
+  const hangUp = useCallback(() => {
+    attempt.current += 1
+    const conversation = current.current
+    current.current = null
+    setState('idle')
+    conversation?.hangUp()
+  }, [])
 
   return { neighborId, state, start, hangUp }
 }

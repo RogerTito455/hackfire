@@ -4,10 +4,10 @@ slng: get_evacuation_route
 
 description: >-
   Get the exit route from the resident's home that avoids the predicted fire,
-  as spoken directions. Set mode to "car" if they will leave by car and to
-  "walking" if they will leave on foot; ask them first if you do not know. The
-  address is filled in for you. Call it only when the order is to leave, not
-  when the order is to stay inside.
+  as spoken directions. The route by car is already in the call data, so call
+  this only for a route on foot ("walking"), or by car when the call data has
+  no route. The address is filled in for you. Never call it when the order is
+  to stay inside.
 
 # The model supplies only `mode`; the address comes from the call's variables.
 inject:

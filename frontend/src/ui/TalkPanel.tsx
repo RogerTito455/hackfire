@@ -1,3 +1,4 @@
+import type { EvacuationOrder } from '../domain/orders'
 import type { Neighbor } from '../domain/triage'
 import type { ConversationState } from '../domain/voice'
 import { Icon } from './Icon'
@@ -6,9 +7,8 @@ interface TalkPanelProps {
   neighbor: Neighbor
   /** Whether the backend can open a browser conversation with the agent. */
   available: boolean
-  /** Whether the resident's zone has an approved order: nobody is called without one. */
-  orderApproved: boolean
-  zoneName: string
+  /** The resident's zone order: nobody is called before it is approved. */
+  order: EvacuationOrder | undefined
   /** The resident the agent is talking to, if any, and how that is going. */
   activeId: string | null
   state: ConversationState
@@ -17,12 +17,12 @@ interface TalkPanelProps {
 }
 
 // No phone can ring: the resident agent calls this laptop, and someone answers as the resident.
-export function TalkPanel({ neighbor, available, orderApproved, zoneName, activeId, state, onTalk, onHangUp }: TalkPanelProps) {
+export function TalkPanel({ neighbor, available, order, activeId, state, onTalk, onHangUp }: TalkPanelProps) {
   if (!available) return <p className="empty">The voice agent is not configured (SLNG_API_KEY).</p>
-  if (!orderApproved) {
+  if (!order?.approved) {
     return (
       <p className="empty warning">
-        {zoneName}'s order is not approved: approve it under Evacuation orders, then call {neighbor.name}.
+        {order?.zone_name ?? neighbor.zone}'s order is not approved: approve it under Evacuation orders, then call {neighbor.name}.
       </p>
     )
   }

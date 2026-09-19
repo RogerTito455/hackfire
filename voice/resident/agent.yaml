@@ -1,7 +1,7 @@
 # HackFire resident agent (slice 6, issue #7).
 #
 # One outbound call to one registered resident of a zone the predicted fire is
-# heading for: say who is calling, give the fire status and the exit route, ask
+# heading for: say who is calling, give the order and the exit route, ask
 # three questions, and record the answer with report_status so the resident's
 # pin changes on the coordinator's dashboard.
 #
@@ -60,13 +60,13 @@ models:
       model: "soniox/speech-ai:rt-v5"
       language: es
 
-# Call-start values. The call campaign (#8) sends all four as `arguments` when
+# Call-start values. The call campaign and the dashboard (#8) send all six as `arguments` when
 # it dispatches a call.
 #
 # TEST DEFAULTS(voice): the defaults are sample resident n01 from
 # data/neighbors.sample.json, only because the dashboard's Test agent panel
 # cannot pass arguments and SLNG refuses a session missing a required
-# variable. A real dispatch must always send all four, or the call reports on
+# variable. A real dispatch must always send all six (backend/app/briefing.py), or the call reports on
 # n01. Remove the defaults once calls come from the campaign.
 variables:
   neighbor_id:
@@ -93,12 +93,12 @@ variables:
     type: str
     source: call_start
     default: "The predicted fire area already covers La Atalaya. The order for La Atalaya is to leave now for San Martín de Valdeiglesias."
-    description: The fire at the zone and the coordinator's approved order, as get_fire_status would answer. The backend sends it with every call.
+    description: The fire at the zone and the coordinator's approved order, as get_fire_status answers (only the order when nothing is predicted). The backend sends it with every call.
   route:
     type: str
     source: call_start
     default: "Drive to San Martín de Valdeiglesias along Carretera Toledo a Valladolid, N-403. It is about 6 kilometres, around 9 minutes by car."
-    description: The resident's route by car under the approved order. Empty when the backend has none; the agent then asks get_evacuation_route.
+    description: The resident's route by car under the approved order, without repeating the order. Empty when staying indoors or when the backend has no route; the agent then asks get_evacuation_route if it needs one.
 
 tools:
   - get_evacuation_route

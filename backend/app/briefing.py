@@ -1,18 +1,58 @@
-"""What the resident agent is told about a zone: the fire and the coordinator's order.
+"""What the voice agents are told: the fire and the coordinator's order, and a resident's call data.
 
-The get_fire_status tool answers with it, and a call starts with it (campaign.call_variables), so
-the agent can open with the order instead of looking it up while the resident waits.
+The get_fire_status tool answers with fire_summary, and every call to a resident starts with
+call_variables, so the resident agent opens with the order instead of looking it up while the
+resident waits.
 """
 
+import logging
+
 from . import impact, orders
+from .models import Neighbor, TravelMode
 from .state import state
 
+logger = logging.getLogger(__name__)
 
-def fire_summary(zone: str) -> str:
-    """The fire at the replay moment, then the zone's approved order, if any: one line to say."""
-    summary = _fire_line(zone, state.minutes_to_impact(zone))
+
+def fire_summary(zone: str, minutes: int | None) -> str:
+    """The fire at the replay moment, then the zone's approved order, if any: one line to say.
+
+    With an order and nothing predicted, only the order: "nothing is predicted" must not undercut
+    "leave now" (the slider can sit on a quiet moment).
+    """
     order = orders.approved_order(zone)
+    if order is not None and minutes is None:
+        return order.message
+    summary = _fire_line(zone, minutes)
     return f"{summary} {order.message}" if order else summary
+
+
+def call_variables(neighbor: Neighbor) -> dict[str, str]:
+    """The resident agent's call variables (voice/resident/agent.yaml), for a call or a web session.
+
+    Besides who and where: the fire and the order (fire_status) and the route by car under that
+    order (route). An empty route leaves the agent to ask get_evacuation_route when it needs one.
+    """
+    return {
+        "neighbor_id": neighbor.id,
+        "resident_name": neighbor.name,
+        "address": neighbor.address,
+        "zone": neighbor.zone,
+        "fire_status": fire_summary(neighbor.zone, state.minutes_to_impact(neighbor.zone)),
+        "route": _route_by_car(neighbor),
+    }
+
+
+def _route_by_car(neighbor: Neighbor) -> str:
+    try:
+        directions = orders.route_for(neighbor, TravelMode.CAR).spoken_directions
+    except Exception:
+        # A call must start even when routing fails; the agent can still ask for a route.
+        logger.exception("no route by car for %s at call start", neighbor.id)
+        return ""
+    # route_for leads with the order, which fire_status already carries.
+    order = orders.approved_order(neighbor.zone)
+    return directions.removeprefix(order.message).strip() if order else directions
 
 
 def _spoken_span(minutes: int) -> str:

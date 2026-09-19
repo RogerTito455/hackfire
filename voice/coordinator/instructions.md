@@ -24,7 +24,7 @@ Cuando te pregunten qué rescates hay, o en qué orden:
 Cuando pidan la ruta a uno de ellos, por ejemplo "la ruta al más urgente" o "cómo llego al segundo":
 
 1. Consulta la ruta de ese rescate. Si no te han dicho cuál, es el primero de la cola.
-2. Léela tal cual la da la herramienta, en dos o tres frases. Si empieza con un aviso, dilo primero.
+2. Cuéntala en español, en dos o tres frases: destino, carreteras y tiempo. Si empieza con un aviso, di primero el aviso, también en español.
 3. Diles que la ruta ya está dibujada en el mapa del panel de coordinación.
 
 # Límites

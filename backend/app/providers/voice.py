@@ -34,11 +34,11 @@ def coordinator_configured() -> bool:
     return bool(settings.slng_api_key and settings.slng_coordinator_agent_id)
 
 
-def _request(method: str, path: str, body: dict | None = None, agent_id: str | None = None) -> dict:
+def _request(method: str, agent_id: str, path: str = "", body: dict | None = None) -> dict:
     try:
         response = httpx.request(
             method,
-            f"{_AGENTS_URL}/{agent_id or settings.slng_resident_agent_id}{path}",
+            f"{_AGENTS_URL}/{agent_id}{path}",
             headers={"Authorization": f"Bearer {settings.slng_api_key}"},
             json=body,
             timeout=TIMEOUT_SECONDS,
@@ -54,7 +54,7 @@ def _request(method: str, path: str, body: dict | None = None, agent_id: str | N
 
 def call_resident(phone: str, arguments: dict[str, str]) -> str:
     """Dial one resident. Returns SLNG's call id. `arguments` fill the agent's call variables."""
-    call = _request("POST", "/calls", {"phone_number": phone, "arguments": arguments})
+    call = _request("POST", settings.slng_resident_agent_id, "/calls", {"phone_number": phone, "arguments": arguments})
     call_id = call.get("call_id") or call.get("id")
     if not call_id:
         raise VoiceUnavailable("the dispatch answer carries no call id")
@@ -63,7 +63,7 @@ def call_resident(phone: str, arguments: dict[str, str]) -> str:
 
 def call_ended(call_id: str) -> bool:
     """Whether the call is over, answered or not."""
-    call = _request("GET", f"/calls/{call_id}")
+    call = _request("GET", settings.slng_resident_agent_id, f"/calls/{call_id}")
     return call.get("call_ended_at") is not None or call.get("status") in _ENDED
 
 
@@ -78,8 +78,43 @@ def coordinator_web_session() -> WebSession:
 
 
 def _web_session(body: dict, agent_id: str) -> WebSession:
-    session = _request("POST", "/web-sessions", body, agent_id)
+    session = _request("POST", agent_id, "/web-sessions", body)
     try:
         return WebSession.model_validate(session)
     except ValueError as error:
         raise VoiceUnavailable("the web-session answer is missing fields") from error
+
+
+# SLNG's built-in end_call; its goodbye is English ("Thanks for calling. Goodbye!") unless set.
+_END_CALL_TOOL_ID = "952eb6b1-fa3f-47a5-9ec5-ccee65d5eba3"
+# Fields a GET returns that a PUT refuses.
+_READ_ONLY = {
+    "id", "created_at", "updated_at", "deleted_at", "organisation_id", "livekit_deployment",
+    "models_validation_error", "tools", "template_variables",
+}
+
+
+def set_goodbye(agent_id: str, goodbye: str) -> None:
+    """Make the agent's end_call say `goodbye`, changing nothing else.
+
+    unmute 0.5.5 cannot set end_call's goodbye_message, and a PATCH cannot change tool attachments,
+    so this reads the whole agent and PUTs it back. Raises VoiceUnavailable if SLNG refuses, or if
+    the agent has no end_call attached.
+    """
+    agent = _request("GET", agent_id)
+    body = {key: value for key, value in agent.items() if key not in _READ_ONLY}
+    # A GET returns the call variables as template_variables; a PUT takes defaults plus options.
+    variables = agent.get("template_variables") or {}
+    if variables:
+        body["template_defaults"] = {name: v["default"] for name, v in variables.items() if "default" in v}
+        body["template_variable_options"] = {name: {"required": v.get("required", True)} for name, v in variables.items()}
+    end_calls = [ref for ref in body.get("tool_refs", []) if ref.get("tool_id") == _END_CALL_TOOL_ID]
+    if not end_calls:
+        raise VoiceUnavailable(f"agent {agent_id} has no end_call attached")
+    for ref in end_calls:
+        ref["config_overrides"] = {
+            **(ref.get("config_overrides") or {}),
+            "type": "end_call",
+            "goodbye_message": {"segments": [{"type": "literal", "value": goodbye}]},
+        }
+    _request("PUT", agent_id, body=body)
