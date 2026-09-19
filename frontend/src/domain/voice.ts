@@ -5,6 +5,8 @@
 export interface VoiceCapabilities {
   phone_calls: boolean
   web_sessions: boolean
+  /** The coordinator agent (#10) can be asked from the dashboard. */
+  coordinator: boolean
 }
 
 /** One resident's call in a campaign. Never carries the phone number. */

@@ -30,11 +30,15 @@ def web_sessions_configured() -> bool:
     return bool(settings.slng_api_key and settings.slng_resident_agent_id)
 
 
-def _request(method: str, path: str, body: dict | None = None) -> dict:
+def coordinator_configured() -> bool:
+    return bool(settings.slng_api_key and settings.slng_coordinator_agent_id)
+
+
+def _request(method: str, path: str, body: dict | None = None, agent_id: str | None = None) -> dict:
     try:
         response = httpx.request(
             method,
-            f"{_AGENTS_URL}/{settings.slng_resident_agent_id}{path}",
+            f"{_AGENTS_URL}/{agent_id or settings.slng_resident_agent_id}{path}",
             headers={"Authorization": f"Bearer {settings.slng_api_key}"},
             json=body,
             timeout=TIMEOUT_SECONDS,
@@ -64,8 +68,17 @@ def call_ended(call_id: str) -> bool:
 
 
 def web_session(arguments: dict[str, str], participant_name: str) -> WebSession:
-    """A browser conversation with the agent. `arguments` fill its call variables."""
-    session = _request("POST", "/web-sessions", {"arguments": arguments, "participant_name": participant_name})
+    """A browser conversation with the resident agent. `arguments` fill its call variables."""
+    return _web_session({"arguments": arguments, "participant_name": participant_name}, settings.slng_resident_agent_id)
+
+
+def coordinator_web_session() -> WebSession:
+    """A browser conversation with the coordinator agent, which needs no call variables."""
+    return _web_session({"participant_name": "Coordinator"}, settings.slng_coordinator_agent_id)
+
+
+def _web_session(body: dict, agent_id: str) -> WebSession:
+    session = _request("POST", "/web-sessions", body, agent_id)
     try:
         return WebSession.model_validate(session)
     except ValueError as error:

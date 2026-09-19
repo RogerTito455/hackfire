@@ -59,6 +59,10 @@ class Settings:
     slng_resident_agent_id: str = field(
         default_factory=lambda: _env("SLNG_RESIDENT_AGENT_ID", "0f035ccc-10d8-4de8-8142-abf4dc484fd8")
     )
+    # The deployed coordinator agent (voice/coordinator/), which the dashboard's "Ask the agent" talks to.
+    slng_coordinator_agent_id: str = field(
+        default_factory=lambda: _env("SLNG_COORDINATOR_AGENT_ID", "6d1a743a-4a0e-42b2-aa3f-5052c247137c")
+    )
     # Off until an outbound SIP trunk is attached to the agent in SLNG: SLNG supplies no numbers.
     phone_calls: bool = field(default_factory=lambda: _env("HACKFIRE_PHONE_CALLS") == "1")
     slng_base_url: str = field(default_factory=lambda: _env("SLNG_BASE_URL"))

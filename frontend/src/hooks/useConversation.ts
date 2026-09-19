@@ -1,20 +1,27 @@
-// Take a resident's call in the browser: the agent talks to whoever answers as that resident, for
-// when no phone can ring (#8). The dashboard's usual polling shows the pin change it causes.
+// A voice conversation with an agent in the browser: a resident's call taken on the dashboard when
+// no phone can ring (#8), or the coordinator asking about rescues (#10). The dashboard's usual
+// polling shows what the conversation changes.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ConversationState } from '../domain/voice'
-import { createWebSession } from '../services/api'
+import type { ConversationState, WebSession } from '../domain/voice'
+import { createCoordinatorSession, createWebSession } from '../services/api'
 import { joinConversation, type Conversation } from '../services/voiceSession'
 
 export interface Conversations {
-  /** The resident the agent is talking to, or was last asked to. */
+  /** Who the conversation is about (a resident's id), or was last started for. */
   neighborId: string | null
   state: ConversationState
   start: (neighborId: string) => Promise<void>
   hangUp: () => void
 }
 
-export function useConversation(): Conversations {
+/** Take a resident's call on the dashboard, as that resident. */
+export const useResidentCall = () => useConversation(createWebSession)
+
+/** Ask the coordinator agent about the rescues. */
+export const useCoordinatorCall = () => useConversation(createCoordinatorSession)
+
+function useConversation(openSession: (id: string) => Promise<WebSession>): Conversations {
   const [neighborId, setNeighborId] = useState<string | null>(null)
   const [state, setState] = useState<ConversationState>('idle')
   const current = useRef<Conversation | null>(null)
@@ -35,7 +42,7 @@ export function useConversation(): Conversations {
     setNeighborId(id)
     setState('connecting')
     try {
-      const session = await createWebSession(id)
+      const session = await openSession(id)
       const conversation = await joinConversation(session, () => {
         if (attempt.current !== mine) return
         current.current = null
@@ -50,7 +57,7 @@ export function useConversation(): Conversations {
     } catch {
       if (attempt.current === mine) setState('error')
     }
-  }, [])
+  }, [openSession])
 
   const hangUp = useCallback(() => current.current?.hangUp(), [])
 

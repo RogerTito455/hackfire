@@ -28,6 +28,7 @@ models:
     reasoning:
       description: NVIDIA Nemotron Super 3 (120B) on Bedrock, served by SLNG, as for the resident agent
       model: "bedrock-mantle/nvidia.nemotron-super-3-120b:latest"
+      temperature: 0.2
   speak:
     alvaro:
       # Not Fish: Fish S2.1 Pro failed on every session of the resident agent (tts_error; SLNG

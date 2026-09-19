@@ -173,7 +173,11 @@ def approve_order(zone: str, decision: OrderDecision) -> EvacuationOrder:
 @app.get("/api/voice")
 def voice_capabilities() -> VoiceCapabilities:
     """What the dashboard can start: phone calls (a trunk is set up) and browser conversations."""
-    return VoiceCapabilities(phone_calls=voice.phone_calls_configured(), web_sessions=voice.web_sessions_configured())
+    return VoiceCapabilities(
+        phone_calls=voice.phone_calls_configured(),
+        web_sessions=voice.web_sessions_configured(),
+        coordinator=voice.coordinator_configured(),
+    )
 
 
 @app.post("/api/neighbors/{neighbor_id}/web-session")
@@ -194,6 +198,17 @@ def start_web_session(neighbor_id: str) -> WebSession:
         return voice.web_session(campaign.call_variables(resident), participant_name=resident.name)
     except voice.VoiceUnavailable as error:
         raise HTTPException(status_code=503, detail="The voice agent is unavailable right now") from error
+
+
+@app.post("/api/coordinator/web-session")
+def start_coordinator_session() -> WebSession:
+    """Ask the coordinator agent by voice from the dashboard (#10); the map follows its answers."""
+    if not voice.coordinator_configured():
+        raise HTTPException(status_code=503, detail="The coordinator agent is not configured (SLNG_API_KEY)")
+    try:
+        return voice.coordinator_web_session()
+    except voice.VoiceUnavailable as error:
+        raise HTTPException(status_code=503, detail="The coordinator agent is unavailable right now") from error
 
 
 @app.post("/api/campaigns/{zone}")

@@ -72,6 +72,8 @@ unmute deploy            # pushes; the agent is called hackfire-resident-slng
 
 ## The coordinator agent (`coordinator/`, #10)
 
+**Deployed on 2026-09-19** as `hackfire-coordinator-slng` (agent `6d1a743a-4a0e-42b2-aa3f-5052c247137c`), with both API Request tools published against the Railway backend. The coordinator talks to it from the dashboard: **Rescue queue → Ask the agent** (`POST /api/coordinator/web-session`).
+
 Same shape as the resident agent: Nemotron Super 3 to think, Soniox to listen, and Deepgram Aura 2 to speak, with the Spanish voice **Alvaro** (`aura-2-alvaro-es`, speed 1.2) so it doesn't sound like the resident agent's Nestor. Not Fish: it failed on every resident session in eu-north. `unmute validate` and `unmute compile` pass (0.5.5); **not deployed yet**.
 
 | Tool | API Request tool in SLNG | Parameters |
@@ -82,7 +84,7 @@ Same shape as the resident agent: Nemotron Super 3 to think, Soniox to listen, a
 
 When the agent calls `get_rescue_route`, the backend records that rescue as the **agent's focus** (`GET /api/focus`), and the dashboard, polling every 2 s, opens that resident with the crew route drawn. So "dame la ruta al más urgente" said to the agent appears on the coordinator's map.
 
-To deploy, in order:
+To deploy it again, in order (steps 1–2 done on 2026-09-19):
 1. Create the two API Request tools as for the resident agent, pointing at the Railway backend, and test-run them. `get_rescue_route` needs a rescue in the queue to answer 200: mark a resident *Needs rescue* on the dashboard first.
 2. `cd voice/coordinator && unmute deploy --dry-run`, then `unmute deploy`. The agent is called `hackfire-coordinator-slng`.
 3. Test agent → Web session: "¿Qué rescates tengo y en qué orden?", then "Dame la ruta al más urgente", and watch the dashboard.

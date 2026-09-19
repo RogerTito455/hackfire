@@ -21,6 +21,7 @@ import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
 import { RoutePanel } from './RoutePanel'
 import { TalkPanel } from './TalkPanel'
+import { AskAgentPanel } from './AskAgentPanel'
 import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
@@ -41,6 +42,8 @@ interface DashboardProps {
   voice: VoiceCapabilities
   campaign: Campaign
   conversation: Conversations
+  /** The coordinator's own conversation with the coordinator agent (#10). */
+  coordinatorCall: Conversations
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -58,6 +61,7 @@ export function Dashboard({
   voice,
   campaign,
   conversation,
+  coordinatorCall,
 }: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
@@ -164,6 +168,12 @@ export function Dashboard({
             <Icon name="lifebuoy" size={16} />
             Rescue queue
           </h2>
+          <AskAgentPanel
+            available={voice.coordinator}
+            state={coordinatorCall.state}
+            onAsk={() => coordinatorCall.start('coordinator')}
+            onHangUp={coordinatorCall.hangUp}
+          />
           <RescueQueue rescues={rescues} />
         </section>
 

@@ -9,7 +9,7 @@ import { useTextTriage } from './hooks/useTextTriage'
 import { useFollowAgent } from './hooks/useFollowAgent'
 import { useTriage } from './hooks/useTriage'
 import { useCampaign } from './hooks/useCampaign'
-import { useConversation } from './hooks/useConversation'
+import { useCoordinatorCall, useResidentCall } from './hooks/useConversation'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
 
@@ -24,7 +24,8 @@ function App() {
   const textTriage = useTextTriage()
   const voice = useVoiceCapabilities()
   const campaign = useCampaign()
-  const conversation = useConversation()
+  const conversation = useResidentCall()
+  const coordinatorCall = useCoordinatorCall()
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
@@ -60,6 +61,7 @@ function App() {
       voice={voice}
       campaign={campaign}
       conversation={conversation}
+      coordinatorCall={coordinatorCall}
       forecast={forecast}
       leadTime={leadTime}
     />

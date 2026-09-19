@@ -70,3 +70,4 @@ export const startCampaign = (zone: string) =>
   request<CampaignCall[]>(`/api/campaigns/${encodeURIComponent(zone)}`, { method: 'POST' })
 export const createWebSession = (neighborId: string) =>
   request<WebSession>(`/api/neighbors/${encodeURIComponent(neighborId)}/web-session`, { method: 'POST' })
+export const createCoordinatorSession = () => request<WebSession>('/api/coordinator/web-session', { method: 'POST' })

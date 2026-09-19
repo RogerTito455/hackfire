@@ -91,6 +91,7 @@ class CampaignCall(BaseModel):
 class VoiceCapabilities(BaseModel):
     phone_calls: bool = Field(description="An outbound trunk is set up, so the campaign can ring phones")
     web_sessions: bool = Field(description="The dashboard can take a resident's call in the browser")
+    coordinator: bool = Field(description="The dashboard can talk to the coordinator agent in the browser")
 
 
 class WebSession(BaseModel):
