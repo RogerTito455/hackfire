@@ -10,7 +10,8 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 |---|---|---|
 | `HACKFIRE_CORS_ORIGINS` | A dashboard on another origin calling this backend, such as `pnpm dev:web` against the deployed one. The deployed dashboard is same-origin and needs nothing | Comma-separated origins; spaces and trailing slashes are ignored. Default `http://localhost:5173` |
 | `HACKFIRE_DASHBOARD_DIR` | The deployed backend serving the built dashboard | Set in the `Dockerfile` to `/repo/frontend/dist`. Leave empty locally, where `pnpm dev:web` serves it. See [Deployment](deployment.md) |
-| `HACKFIRE_NEIGHBORS_FILE` | Demo with the real registry (#12) | Path to `data/neighbors.local.json`. Empty uses the sample registry |
+| `HACKFIRE_NEIGHBORS_FILE` | Demo with the real registry (#12) | Path to `data/neighbors.local.json`. Empty uses `data/neighbors.local.json` if it exists, else the sample registry |
+| `HACKFIRE_NEIGHBORS_JSON` | The real registry on Railway (#12), where the local file is not in the image | The whole registry as one line of JSON, set as a Railway variable. Wins over every file. See [Deployment](deployment.md#the-real-registry). Holds phone numbers: never commit it or paste it in a chat |
 | `HACKFIRE_CREW_PHONE` | Crew notification for each new rescue (#9) | A team member's phone, shared privately |
 | `HACKFIRE_PUBLIC_URL` | The link in each crew alert (#9) | The deployed dashboard URL. Empty means `http://localhost:5173` |
 | `HACKFIRE_SCENARIO_TIME` | The replay moment the calls happen at: routes avoid the fire burned up to then, and `get_fire_status` answers for it until the dashboard's slider sets another (#4) | ISO 8601. Empty means `2026-07-23T16:00:00Z` (18:00 CEST): after La Atalaya is first flagged (15:30 CEST), with about 4 h to impact and safe ways out still open. After changing it, run `pnpm data:routes` |

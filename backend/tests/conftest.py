@@ -1,5 +1,8 @@
+from dataclasses import replace
+
 import pytest
 
+from app.config import DATA_DIR, settings
 from app.state import state
 
 
@@ -7,3 +10,12 @@ from app.state import state
 def fresh_replay_clock() -> None:
     """Every test starts with no replay time set, as after a server restart."""
     state.replay_time = None
+
+
+@pytest.fixture(autouse=True)
+def sample_registry(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests run against the sample registry, never a developer's private registry, whether it sits in
+    neighbors.local.json or in HACKFIRE_NEIGHBORS_JSON."""
+    monkeypatch.setattr("app.state.settings", replace(settings, neighbors_json=""))
+    monkeypatch.setattr("app.state._REGISTRY_CANDIDATES", [DATA_DIR / "neighbors.sample.json"])
+    state.load()

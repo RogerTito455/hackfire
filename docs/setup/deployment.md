@@ -51,6 +51,19 @@ Done on 2026-09-19. Railway's import reads the pnpm workspace and configures the
 
 Railway's config-as-code file (`railway.toml`) is not an option for this service: new services cannot use it. See [the finding](../findings/2026-09-19-railway-config-as-code-deprecated.md).
 
+## The real registry
+
+The registry with the team's own phone numbers (#12) reaches the deployed backend as a Railway variable, so it is neither in git nor in the image.
+
+1. Put the team's real numbers in `data/neighbors.local.json` on your machine (it is git-ignored and starts with `REPLACE-ME-NN` placeholders).
+2. Print it as one line and copy it: `python3 -c "import json;print(json.dumps(json.load(open('data/neighbors.local.json')),ensure_ascii=False,separators=(',',':')))" | pbcopy`
+3. In Railway, **Variables → New Variable → `HACKFIRE_NEIGHBORS_JSON`**, paste, and deploy. The variable wins over every file.
+4. Check from outside: `curl -s $B/api/neighbors` lists the residents and no phone number anywhere in the response (`Neighbor.phone` is never serialised).
+
+A malformed value stops the backend at start-up with a message that names the variable and the field, never the content, so the deploy log does not leak a number. Changing the variable redeploys the service and wipes the triage state.
+
+The routes are cached by coordinates (`data/routes_cache.json`, see [openrouteservice](../services/openrouteservice.md)): a resident that is not in the cache costs a live openrouteservice call, and without `ORS_API_KEY` on Railway that route answers 503. After changing the registry, run `pnpm data:routes` with a key that still has quota and commit the file; it holds coordinates and directions, never names or phones. Today only n01 to n05 are cached: n06 to n10 answer 503 until it is rerun.
+
 ## Checking a deploy
 
 ```bash
@@ -69,7 +82,7 @@ With `$B` open in a browser, the `n02` pin turns red at the next poll: within ab
 - **A 502 "Application failed to respond" means the process died**; a Python error would be a 500. To tell, mark a resident with `report_status`, repeat the failing request, and check whether the mark survived: the state is in memory, so a restart wipes it. On 2026-09-19 the first `/api/fire-area` call buffered ~3,000 hotspots in one GEOS pass, peaked at ~1.9 GB and got killed; `replay.burned_area_m` now takes 0.2 s and 54 MB. The image sets `PYTHONFAULTHANDLER=1`, so a crash in native code (GEOS, numpy) prints where it happened to the deploy logs.
 - **Check which commit is Active** before debugging a deploy. The Deployments tab names it; a push that did not match the watch patterns never shows up there.
 - **Every deploy wipes the triage state.** The state is in memory, so a restart reloads the registry. Nobody pushes to `main` during the demo. If state has to survive a redeploy, see [Supabase](../services/supabase.md).
-- **The real registry is not in the image.** `data/neighbors.local.json` is git-ignored, so the deployed backend serves `neighbors.sample.json`. Getting the team's real numbers onto the server without committing them is part of #12.
+- **The real registry is not in the image.** `data/neighbors.local.json` is git-ignored, so without the variable below the deployed backend serves `neighbors.sample.json`. See [The real registry](#the-real-registry).
 - **A frontend-only change also restarts the backend**, because they are one service.
 - **CORS only matters for a dashboard on another origin**, such as `pnpm dev:web` pointed at the deployed backend with `VITE_API_URL`. Add that origin to `HACKFIRE_CORS_ORIGINS` on Railway.
 

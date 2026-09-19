@@ -1,7 +1,7 @@
 # openrouteservice
 
 **Used for:** step 3 (resident's route out) and step 4 (crew's route to a rescue). Slice 5 (#6), reused by #9 and #10.
-**Status:** working. Both routing tools are real; 15 demo routes cached in `data/routes_cache.json`
+**Status:** working. Both routing tools are real; 35 demo routes cached in `data/routes_cache.json` for residents n01 to n05; n06 to n10 of the 10-resident registry are not cached yet and need `ORS_API_KEY` (or `pnpm data:routes`) until they are. On 2026-09-19 the team's key ran out of quota (`403 {"error": "Quota exceeded"}`, even for a trivial route)
 **Owner:** Bryan
 
 ## Access
