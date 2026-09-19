@@ -25,14 +25,16 @@ Calls are triggered by the prediction, hours ahead, while cell towers still work
 
 Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app** (one Railway service; see [Deployment](docs/setup/deployment.md)). What works today:
 
-- Backend with the five agent tools, an in-memory triage state and a prioritised rescue queue. `report_status`, `get_rescue_queue` and both routing tools are real; fire status returns a stub marked `"stub": true`.
+- Backend with the five agent tools, an in-memory triage state and a prioritised rescue queue. All five tools are real: `report_status`, `get_rescue_queue`, `get_fire_status` and both routing tools.
 - Dashboard with a map of the demo area, resident pins coloured by triage state, live counts and the rescue queue, polling the backend every 2 seconds.
 - Replay of the fire: 7,068 Deepfire satellite hotspots from 22–24 July 2026, cached in `data/`, on a time slider with play and pause. Hotspots are coloured by age and sized by fire radiative power.
 - Live mode: a toggle switches the map to Deepfire's active fire clusters right now, refreshed every minute. If Deepfire is down, the page shows a message and the replay keeps working.
+- Predicted spread and zones at risk: for the replay of 23 July, a cone from the front's velocity gives a forecast every 30 minutes, drawn hour by hour on the map, and the panel lists the places in its path (La Atalaya, El Tiemblo, care homes, schools, health centres, roads) with their time to impact. `get_fire_status` answers from the same numbers, for the moment the slider is on.
+- Lead time: La Atalaya is flagged 6 h 8 min before the first satellite hotspot comes within 3 km of it, computed from satellite data only ([how](docs/findings/2026-09-19-lead-time.md)) and shown on the dashboard once the slider passes the flag.
 - Evacuation routes: `get_evacuation_route` and `get_rescue_route` are real. Routes avoid the area burned up to the scenario time and send residents to the safe point farthest from the fire. Click a resident on the map to see their route by car or on foot, and the directions the agent reads them. Demo routes are cached in `data/`.
 - Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard; SMS is not wired yet.
 
-Still to build: the predicted spread and zones at risk, lead time, the voice agent and outbound calls, crew alerts by SMS. See [PLAN.md](PLAN.md) and the issues.
+Still to build: the voice agent and outbound calls, crew alerts by SMS. See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 
@@ -47,7 +49,9 @@ frontend/src/
 backend/app/
   main.py      Dashboard API (/api) and agent tools (/tools)
   models.py    The tool contract
-  state.py     Triage state and rescue prioritisation
+  state.py     Triage state, rescue prioritisation and the replay clock
+  spread.py    Predicted spread: a cone from the front's velocity
+  impact.py    Which zones the predicted spread reaches, and when
   config.py    Every key, URL and path, read from the environment in one place
   providers/   One module per external service: Deepfire, openrouteservice, Nebius, SLNG
   pipelines/   One-off data downloads that write to data/

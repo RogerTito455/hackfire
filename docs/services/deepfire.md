@@ -1,7 +1,7 @@
 # Deepfire
 
 **Used for:** step 1 (hotspots, live fires) and step 2 (predicted spread). Slices 2, 3 and 10 (#3, #4, #11).
-**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`); spread not started
+**Status:** hotspots working (7,068 cached for the replay, `GET /api/hotspots`); live mode working (`GET /api/live/fires`); replay spread done with our own cone, not with this API (see below); the Deepfire simulation is not used yet
 **Owners:** Bryan (hotspots, live mode), Rosa (spread)
 
 ## Access
@@ -38,6 +38,8 @@ The backend caches the answer for 60 s and reuses one token for the life of the 
 `POST /v1/fire-spread/simulations` with `clusterId` or `latitude`/`longitude`, and `durationHours` (1–24). Optional: `model` (`elmfire` default, or `forefire`), `ensembleMembers` (1–50), `sources`, `lookbackHours` (1–168, default 24).
 
 It answers `202` with a `Location` header. Poll `GET /v1/fire-spread/simulations/{id}` about every 10 s until `COMPLETED`, `NO_SPREAD` or `FAILED`. The result is a GeoJSON FeatureCollection with one cumulative MultiPolygon per hour (`hour`, `elapsed_seconds`, and `burn_probability` for ensembles).
+
+**The replay does not use it.** The 23 July spread in `data/spread_2026-07-23.geojson` is our own cone from the front's velocity (`backend/app/spread.py`, [the finding](../findings/2026-09-19-spread-cone-model.md)). The simulation is still the plan for live mode (#11).
 
 **There is no start-time parameter**: a simulation starts from the latest observations, and `lookbackHours` counts back from now. See [the finding](../findings/2026-09-19-deepfire-no-historical-simulation.md) before planning the 23 July replay around it.
 

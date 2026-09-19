@@ -1,16 +1,21 @@
+import type { FireForecast } from '../hooks/useFireForecast'
 import type { FireReplay } from '../hooks/useFireReplay'
+import type { LeadTimeView } from '../hooks/useLeadTime'
 import type { LiveMode } from '../hooks/useLiveFires'
 import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Triage } from '../hooks/useTriage'
-import { LiveStatus } from './LiveStatus'
 import { CrewAlerts } from './CrewAlerts'
+import { LeadTimeCard } from './LeadTimeCard'
+import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
 import { RoutePanel } from './RoutePanel'
+import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
+import { ZonesAtRisk } from './ZonesAtRisk'
 import './dashboard.css'
 
 interface DashboardProps {
@@ -20,10 +25,21 @@ interface DashboardProps {
   onModeChange: (mode: MapMode) => void
   live: LiveMode
   selection: SelectedRoute
+  forecast: FireForecast
+  leadTime: LeadTimeView
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
-export function Dashboard({ triage, replay, mode, onModeChange, live, selection }: DashboardProps) {
+export function Dashboard({
+  triage,
+  replay,
+  mode,
+  onModeChange,
+  live,
+  selection,
+  forecast,
+  leadTime,
+}: DashboardProps) {
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   return (
@@ -40,6 +56,25 @@ export function Dashboard({ triage, replay, mode, onModeChange, live, selection 
           <h2>Triage</h2>
           <StatusCounts counts={counts} />
         </section>
+
+        {mode === 'replay' && (
+          <>
+            <section>
+              <h2>Lead time</h2>
+              <LeadTimeCard view={leadTime} />
+            </section>
+
+            <section>
+              <h2>Where the fire is heading</h2>
+              {forecast.status === 'ready' && <SpreadLegend issuedAt={forecast.issuedAt} />}
+              <ZonesAtRisk
+                status={forecast.status}
+                zones={forecast.zonesAtRisk}
+                hasForecast={forecast.issuedAt !== null}
+              />
+            </section>
+          </>
+        )}
 
         <section>
           <h2>Evacuation route</h2>
@@ -85,6 +120,8 @@ export function Dashboard({ triage, replay, mode, onModeChange, live, selection 
           route={selection.route}
           fireArea={selection.fireArea}
           onSelectNeighbor={selection.select}
+          spread={forecast.spread}
+          zones={forecast.zonesAtRisk}
         />
         <ModeToggle mode={mode} onChange={onModeChange} />
         {mode === 'replay' ? (

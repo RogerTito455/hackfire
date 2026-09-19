@@ -41,15 +41,25 @@ def test_report_status_feeds_rescue_queue() -> None:
 
 
 def test_rescue_queue_orders_by_time_to_impact() -> None:
+    # At the default scenario moment both zones are already covered (0 minutes), so pick a moment
+    # where the two are apart: 15:00 UTC, when El Tiemblo is 2 hours out and La Atalaya 4.
+    client.post("/api/replay/time", json={"at": "2026-07-23T15:00:00Z"})
     neighbors = client.get("/api/neighbors").json()
-    far = next(n for n in neighbors if n["zone"] == "el-tiemblo")
-    near = next(n for n in neighbors if n["zone"] == "la-atalaya")
+    minutes = {
+        zone: client.post("/tools/get_fire_status", json={"zone": zone}).json()["minutes_to_impact"]
+        for zone in ("la-atalaya", "el-tiemblo")
+    }
+    near_zone, far_zone = sorted(minutes, key=minutes.__getitem__)
+    assert minutes[near_zone] < minutes[far_zone]  # otherwise the ordering below proves nothing
+    near = next(n for n in neighbors if n["zone"] == near_zone)
+    far = next(n for n in neighbors if n["zone"] == far_zone)
 
     for neighbor in (far, near):
         client.post("/tools/report_status", json={"neighbor_id": neighbor["id"], "status": "needs_rescue"})
 
     queue = client.post("/tools/get_rescue_queue").json()
     assert [r["neighbor"]["id"] for r in queue] == [near["id"], far["id"]]
+    assert queue[0]["minutes_to_impact"] == minutes[near_zone]
 
 
 def test_reset_restores_the_initial_registry() -> None:

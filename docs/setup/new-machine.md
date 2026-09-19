@@ -66,7 +66,7 @@ pnpm check              # backend tests, then frontend type-check and build
 
 - **Claude Code with the project's MCP servers and skills:** [claude-code.md](claude-code.md).
 - **Demo registry with real phones:** copy `data/neighbors.sample.json` to `data/neighbors.local.json` (git-ignored) and set `HACKFIRE_NEIGHBORS_FILE` in `.env`. Never commit it.
-- **Cached fire data:** `pnpm data:hotspots` needs the Deepfire keys. See [Deepfire](../services/deepfire.md).
+- **Cached fire data:** `pnpm data:hotspots` needs the Deepfire keys. See [Deepfire](../services/deepfire.md). The committed files in `data/` are enough to run the demo: `pnpm data:zones` (no key, see [Overpass](../services/overpass.md)) and `pnpm data:spread` (no network) only regenerate them.
 
 ## Troubleshooting
 
