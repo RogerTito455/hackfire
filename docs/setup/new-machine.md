@@ -73,6 +73,7 @@ pnpm check              # backend tests, then frontend type-check and build
 | Symptom | Cause and fix |
 |---|---|
 | `ERR_PNPM_BAD_SHELL_SECTION` or pnpm edits `~/.bashrc` | You ran `pnpm setup`. Use `pnpm bootstrap` |
+| `Failed to resolve import "…"` in the browser, or `ModuleNotFoundError` in the backend, right after `git pull` | Someone added a dependency. Run `pnpm bootstrap`, then restart `pnpm dev:web` / `pnpm dev:api` |
 | `uv: command not found` right after installing | Open a new shell, or `export PATH="$HOME/.local/bin:$PATH"` |
 | `python-dotenv could not parse statement starting at line N` | Line N of `.env` is not `KEY=value`. Prefix it with `#` or move it out |
 | A key is set in `.env` but the backend sees it empty | Check the name against `.env.example`; the backend reads exactly those names |
