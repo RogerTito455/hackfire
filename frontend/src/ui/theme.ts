@@ -64,7 +64,7 @@ export const LIVE_RADIUS_BY_HOURS: readonly (readonly [hours: number, radius: nu
 
 export const MAP_MODE_LABEL = { replay: 'Replay · 22–24 Jul 2026', live: 'Live · burning now' } as const
 
-export const TRAVEL_MODE_LABEL = { car: 'By car', walking: 'On foot' } as const
+export const ROUTE_KIND_LABEL = { car: 'By car', walking: 'On foot', rescue: 'Crew route' } as const
 
 export const ROUTE_COLOR = '#1a73e8'
 export const FIRE_AREA_COLOR = '#d93025'
@@ -76,4 +76,11 @@ export function formatDistance(metres: number): string {
 export function formatDuration(seconds: number): string {
   const minutes = Math.max(1, Math.round(seconds / 60))
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`
+}
+
+const clockFormat = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+/** Wall-clock time for things happening now, such as crew alerts. */
+export function formatClock(iso: string): string {
+  return clockFormat.format(Date.parse(iso))
 }

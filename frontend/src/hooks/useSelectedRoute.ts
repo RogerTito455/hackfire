@@ -1,27 +1,34 @@
-// The resident selected on the map and their evacuation route, by car or on foot.
+// The resident selected on the map and their route: out by car or on foot, or the crew's way in.
+// A crew alert links to `/?rescue=<neighbor id>`, which opens here with the crew's route.
 
 import { useCallback, useEffect, useState } from 'react'
-import type { FireArea, Route, TravelMode } from '../domain/triage'
-import { fetchFireArea, fetchRoute } from '../services/api'
+import type { FireArea, Route, RouteKind } from '../domain/triage'
+import { fetchFireArea, fetchRescueRoute, fetchRoute } from '../services/api'
 
 export type RouteStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 export interface SelectedRoute {
   neighborId: string | null
-  mode: TravelMode
+  mode: RouteKind
   route: Route | null
   status: RouteStatus
   /** The area the routes avoid; loaded once, with the first route. */
   fireArea: FireArea | null
   select: (neighborId: string | null) => void
-  setMode: (mode: TravelMode) => void
+  setMode: (mode: RouteKind) => void
+  /** Select a resident and show the crew's route to them. */
+  showRescue: (neighborId: string) => void
+}
+
+function rescueFromUrl(): string | null {
+  return new URLSearchParams(window.location.search).get('rescue')
 }
 
 export function useSelectedRoute(): SelectedRoute {
-  const [neighborId, setNeighborId] = useState<string | null>(null)
-  const [mode, setMode] = useState<TravelMode>('car')
+  const [neighborId, setNeighborId] = useState<string | null>(rescueFromUrl)
+  const [mode, setMode] = useState<RouteKind>(() => (rescueFromUrl() === null ? 'car' : 'rescue'))
   const [route, setRoute] = useState<Route | null>(null)
-  const [status, setStatus] = useState<RouteStatus>('idle')
+  const [status, setStatus] = useState<RouteStatus>(() => (rescueFromUrl() === null ? 'idle' : 'loading'))
   const [fireArea, setFireArea] = useState<FireArea | null>(null)
 
   const select = useCallback((next: string | null) => {
@@ -31,7 +38,7 @@ export function useSelectedRoute(): SelectedRoute {
   }, [])
 
   const changeMode = useCallback(
-    (next: TravelMode) => {
+    (next: RouteKind) => {
       setMode(next)
       if (neighborId !== null) {
         setRoute(null)
@@ -41,10 +48,18 @@ export function useSelectedRoute(): SelectedRoute {
     [neighborId],
   )
 
+  const showRescue = useCallback((next: string) => {
+    setNeighborId(next)
+    setMode('rescue')
+    setRoute(null)
+    setStatus('loading')
+  }, [])
+
   useEffect(() => {
     if (neighborId === null) return
     let cancelled = false
-    fetchRoute(neighborId, mode)
+    const load = mode === 'rescue' ? fetchRescueRoute(neighborId) : fetchRoute(neighborId, mode)
+    load
       .then((next) => {
         if (cancelled) return
         setRoute(next)
@@ -74,5 +89,5 @@ export function useSelectedRoute(): SelectedRoute {
     }
   }, [wantsFireArea])
 
-  return { neighborId, mode, route, status, fireArea, select, setMode: changeMode }
+  return { neighborId, mode, route, status, fireArea, select, setMode: changeMode, showRescue }
 }

@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from . import evacuation, live, replay
 from .config import settings
 from .models import (
+    CrewAlert,
     EvacuationRouteRequest,
     FireStatus,
     FireStatusRequest,
@@ -77,6 +78,21 @@ def neighbor_route(neighbor_id: str, mode: TravelMode = TravelMode.CAR) -> Route
     return _route_or_503(lambda: evacuation.evacuation_route(neighbor, mode))
 
 
+@app.get("/api/rescue-routes/{neighbor_id}")
+def neighbor_rescue_route(neighbor_id: str) -> Route:
+    """The crew's route from the fire station to the resident, for the dashboard to draw."""
+    neighbor = state.get(neighbor_id)
+    if neighbor is None:
+        raise HTTPException(status_code=404, detail=f"Unknown neighbor {neighbor_id}")
+    return _route_or_503(lambda: evacuation.rescue_route(neighbor))
+
+
+@app.get("/api/alerts")
+def list_alerts() -> list[CrewAlert]:
+    """Crew alerts for new rescues, newest first."""
+    return state.alerts()
+
+
 @app.get("/api/fire-area")
 def fire_area() -> dict:
     """The area routes avoid: everything burned up to the scenario time."""
@@ -132,7 +148,9 @@ def report_status(request: ReportStatusRequest) -> Neighbor:
     neighbor = state.report(request)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
-    # TODO(voice): when status is needs_rescue, notify the fire crew by SMS or call.
+    # New rescues become crew alerts in state (shown on the dashboard).
+    # TODO(voice): also send each new alert to settings.crew_phone by SMS through
+    # providers/voice.notify_crew, once SLNG/Twilio can send messages, and set sent_by_sms.
     return neighbor
 
 

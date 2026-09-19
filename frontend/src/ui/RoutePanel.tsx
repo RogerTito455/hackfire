@@ -1,21 +1,21 @@
-import type { Neighbor, Route, TravelMode } from '../domain/triage'
+import type { Neighbor, Route, RouteKind } from '../domain/triage'
 import type { RouteStatus } from '../hooks/useSelectedRoute'
-import { formatDistance, formatDuration, formatSpanishTime, TRAVEL_MODE_LABEL } from './theme'
+import { formatDistance, formatDuration, formatSpanishTime, ROUTE_KIND_LABEL } from './theme'
 
 interface RoutePanelProps {
   neighbor: Neighbor | null
-  mode: TravelMode
+  mode: RouteKind
   route: Route | null
   status: RouteStatus
   /** ISO time the avoided fire area runs up to. */
   avoidsUntil: string | null
-  onModeChange: (mode: TravelMode) => void
+  onModeChange: (mode: RouteKind) => void
   onClose: () => void
 }
 
-const MODES: readonly TravelMode[] = ['car', 'walking']
+const MODES: readonly RouteKind[] = ['car', 'walking', 'rescue']
 
-// The selected resident's way out: what the agent would read them, and the route on the map.
+// The selected resident's way out, as the agent would read it to them, or the crew's way in.
 export function RoutePanel({ neighbor, mode, route, status, avoidsUntil, onModeChange, onClose }: RoutePanelProps) {
   if (neighbor === null) {
     return <p className="empty">Click a resident on the map to see their route out.</p>
@@ -38,7 +38,7 @@ export function RoutePanel({ neighbor, mode, route, status, avoidsUntil, onModeC
             className={mode === option ? 'active' : ''}
             onClick={() => onModeChange(option)}
           >
-            {TRAVEL_MODE_LABEL[option]}
+            {ROUTE_KIND_LABEL[option]}
           </button>
         ))}
       </div>

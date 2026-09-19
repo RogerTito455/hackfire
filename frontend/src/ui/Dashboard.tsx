@@ -4,6 +4,7 @@ import type { MapMode } from '../hooks/useMapMode'
 import type { SelectedRoute } from '../hooks/useSelectedRoute'
 import type { Triage } from '../hooks/useTriage'
 import { LiveStatus } from './LiveStatus'
+import { CrewAlerts } from './CrewAlerts'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
@@ -23,7 +24,7 @@ interface DashboardProps {
 
 // Presentation only: everything arrives through props, nothing is fetched here.
 export function Dashboard({ triage, replay, mode, onModeChange, live, selection }: DashboardProps) {
-  const { neighbors, rescues, counts, online, reset } = triage
+  const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   return (
     <div className="layout">
@@ -56,6 +57,17 @@ export function Dashboard({ triage, replay, mode, onModeChange, live, selection 
         <section>
           <h2>Rescue queue</h2>
           <RescueQueue rescues={rescues} />
+        </section>
+
+        <section>
+          <h2>Crew alerts</h2>
+          <CrewAlerts
+            alerts={alerts}
+            onShowRoute={(neighborId) => {
+              onModeChange('replay')
+              selection.showRescue(neighborId)
+            }}
+          />
         </section>
 
         <button type="button" className="reset" onClick={reset}>

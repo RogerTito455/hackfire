@@ -57,3 +57,17 @@ export interface FireArea {
   geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown }
   properties: { until: string }
 }
+
+/** What the map shows for a selected resident: their way out, or the crew's way in. */
+export type RouteKind = TravelMode | 'rescue'
+
+/** Mirrors CrewAlert in backend/app/models.py. */
+export interface CrewAlert {
+  rescue_id: string
+  neighbor_id: string
+  message: string
+  link: string
+  created_at: string
+  /** False: shown on the dashboard only. */
+  sent_by_sms: boolean
+}

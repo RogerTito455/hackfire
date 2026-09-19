@@ -33,6 +33,8 @@ class Settings:
     # The built dashboard (frontend/dist). Set in the Dockerfile; empty locally, where Vite serves it.
     dashboard_dir: str = field(default_factory=lambda: _env("HACKFIRE_DASHBOARD_DIR"))
     crew_phone: str = field(default_factory=lambda: _env("HACKFIRE_CREW_PHONE"))
+    # Where the dashboard is reachable, for the link in each crew alert.
+    public_url: str = field(default_factory=lambda: _env("HACKFIRE_PUBLIC_URL", "http://localhost:5173").rstrip("/"))
     # The replay moment the calls happen at: routes avoid the fire burned up to then.
     # Default: 23 July 2026, 20:30 CEST, when the front was ~4 km from La Atalaya.
     scenario_time: datetime = field(
