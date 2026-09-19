@@ -10,10 +10,12 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import briefing, campaign, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
+from . import autopilot, briefing, campaign, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
+    Autopilot,
+    AutopilotRequest,
     CampaignCall,
     RescueVideo,
     RescueVideoLink,
@@ -134,7 +136,27 @@ def get_lead_time() -> Response:
 def set_replay_time(request: ReplayTimeRequest) -> dict:
     """The dashboard's slider moved: the agent's answers now refer to this replay moment."""
     state.replay_time = request.at
+    # The demo autopilot, when on, sets the scripted residents and orders for this moment.
+    autopilot.follow(state.clock())
     return {"at": request.at}
+
+
+@app.get("/api/autopilot")
+def get_autopilot() -> Autopilot:
+    """Whether the demo autopilot is on (autopilot.py). Off by default."""
+    return Autopilot(enabled=autopilot.enabled())
+
+
+@app.post("/api/autopilot")
+def set_autopilot(request: AutopilotRequest) -> Autopilot:
+    """Turn the demo autopilot on or off. On, it applies the script at `at` (or the replay clock) and
+    follows the slider from then on; off, it puts back the state from before it was turned on. It never
+    places a call or sends an SMS."""
+    if request.enabled:
+        autopilot.turn_on(request.at or state.clock())
+    else:
+        autopilot.turn_off()
+    return Autopilot(enabled=autopilot.enabled())
 
 
 @app.get("/api/live/fires")
@@ -248,6 +270,9 @@ def video_capabilities() -> VideoCapabilities:
 @app.post("/api/rescues/{neighbor_id}/video")
 def request_rescue_video(neighbor_id: str) -> RescueVideoLink:
     """Ask a resident who needs rescue for live video: a single-use link, texted when SMS works (#18)."""
+    # The resident's link is texted to their real phone: not for a simulated rescue.
+    if autopilot.enabled():
+        raise HTTPException(status_code=409, detail="Turn off the call simulation before asking a resident for video")
     try:
         return rescue_video.request(neighbor_id)
     except rescue_video.UnknownResident as error:
@@ -285,6 +310,9 @@ def join_rescue_video(link_id: str) -> VideoAccess:
 @app.post("/api/campaigns/{zone}")
 def start_campaign(zone: str, background: BackgroundTasks) -> list[CampaignCall]:
     """The coordinator starts the calls to a zone's residents, once its order is approved."""
+    # The simulation approves orders, but real phones must never ring for a simulated workflow.
+    if autopilot.enabled():
+        raise HTTPException(status_code=409, detail="Turn off the call simulation before calling residents")
     try:
         calls = campaign.start(zone)
     except campaign.NoPhoneLine as error:
@@ -334,7 +362,9 @@ def triage_from_text(request: TextTriageRequest, background: BackgroundTasks) ->
 
 @app.post("/api/reset")
 def reset() -> dict:
-    """Reload the registry and forget the replay moment, orders and alerts. Restarts the demo."""
+    """Reload the registry and forget the replay moment, orders and alerts. Restarts the demo with
+    the autopilot off."""
+    autopilot.forget()
     state.load()
     state.replay_time = None
     campaign.forget()

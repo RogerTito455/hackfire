@@ -1,3 +1,4 @@
+import { useAutopilot } from './hooks/useAutopilot'
 import { useFireForecast } from './hooks/useFireForecast'
 import { useFireReplay } from './hooks/useFireReplay'
 import { useLeadTime } from './hooks/useLeadTime'
@@ -29,11 +30,14 @@ function App() {
   const campaign = useCampaign()
   const voiceCalls = useVoiceConversations()
   const rescueVideo = useRescueVideo()
+  // The demo autopilot changes the triage state: show it now, not on the next poll.
+  const autopilot = useAutopilot(triage.refresh)
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
   const resetDemo = async () => {
     await triage.reset()
+    await autopilot.refresh()
     selection.select(null)
     textTriage.clear()
     if (replay.range) replay.setTime(replay.range.start)
@@ -66,6 +70,7 @@ function App() {
       conversation={voiceCalls.resident}
       coordinatorCall={voiceCalls.coordinator}
       rescueVideo={rescueVideo}
+      autopilot={autopilot}
       forecast={forecast}
       leadTime={leadTime}
     />

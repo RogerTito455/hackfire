@@ -16,6 +16,8 @@ export interface Triage {
   counts: StatusCounts
   online: boolean
   reset: () => Promise<void>
+  /** Poll now rather than on the next tick. */
+  refresh: () => Promise<void>
 }
 
 export function useTriage(): Triage {
@@ -56,5 +58,5 @@ export function useTriage(): Triage {
 
   const counts = useMemo(() => countByStatus(neighbors), [neighbors])
 
-  return { neighbors, rescues, alerts, focus, counts, online, reset }
+  return { neighbors, rescues, alerts, focus, counts, online, reset, refresh }
 }

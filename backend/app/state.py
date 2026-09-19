@@ -116,6 +116,43 @@ class TriageState:
             self._alerts.append(_crew_alert(updated))
         return updated
 
+    def script(
+        self,
+        neighbor_id: str,
+        status: TriageStatus,
+        people: int | None,
+        mobility: str | None,
+        observation: str | None,
+        at: datetime | None,
+    ) -> None:
+        """Set a resident as the demo autopilot's script says (autopilot.py), replacing the whole triage
+        record so scrubbing back undoes it. A scripted rescue gets a crew alert on the dashboard only:
+        nothing here texts anyone."""
+        with self._lock:
+            neighbor = self._neighbors.get(neighbor_id)
+            if neighbor is None:
+                return
+            updated = neighbor.model_copy(
+                update={"status": status, "people": people, "mobility": mobility, "observation": observation, "updated_at": at}
+            )
+            self._neighbors[neighbor_id] = updated
+            alerted = any(alert.neighbor_id == neighbor_id for alert in self._alerts)
+            if status != TriageStatus.NEEDS_RESCUE:
+                self._alerts = [alert for alert in self._alerts if alert.neighbor_id != neighbor_id]
+            elif not alerted:
+                alert = _crew_alert(updated)
+                self._alerts.append(alert.model_copy(update={"created_at": at or alert.created_at}))
+
+    def snapshot(self) -> tuple:
+        """Residents, alerts and orders as they are now, for `restore`."""
+        with self._lock:
+            return dict(self._neighbors), list(self._alerts), dict(self.orders)
+
+    def restore(self, saved: tuple) -> None:
+        with self._lock:
+            neighbors, alerts, orders = saved
+            self._neighbors, self._alerts, self.orders = dict(neighbors), list(alerts), dict(orders)
+
     def mark_alert_sent(self, rescue_id: str) -> None:
         self._alerts = [
             alert.model_copy(update={"sent_by_sms": True}) if alert.rescue_id == rescue_id else alert
