@@ -16,7 +16,6 @@ from ..config import settings
 from ..models import TravelMode
 from ..state import state
 
-
 # openrouteservice's free plan allows 40 directions a minute.
 PAUSE_SECONDS = 1.6
 

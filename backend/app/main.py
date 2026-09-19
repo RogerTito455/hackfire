@@ -1,6 +1,8 @@
+import logging
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+import httpx
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
@@ -10,21 +12,22 @@ from pydantic import BaseModel, Field
 from . import evacuation, impact, live, orders, replay, text_triage
 from .config import settings
 from .models import (
-    EvacuationOrder,
-    OrderDecision,
-    SafePoint,
     CrewAlert,
+    EvacuationOrder,
     EvacuationRouteRequest,
     FireStatus,
     FireStatusRequest,
     Neighbor,
+    OrderDecision,
     ReplayTimeRequest,
     ReportStatusRequest,
     Rescue,
     RescueRouteRequest,
     Route,
+    SafePoint,
     TravelMode,
 )
+from .providers import sms
 from .state import state
 
 app = FastAPI(title="HackFire", version="0.1.0")
@@ -180,7 +183,7 @@ def text_triage_available() -> dict:
 
 
 @app.post("/api/triage/text")
-def triage_from_text(request: TextTriageRequest) -> dict:
+def triage_from_text(request: TextTriageRequest, background: BackgroundTasks) -> dict:
     """The last resort when voice fails: classify a typed answer and record it like a call would."""
     if state.get(request.neighbor_id) is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
@@ -188,7 +191,7 @@ def triage_from_text(request: TextTriageRequest) -> dict:
         report, classification = text_triage.report_from_text(request.neighbor_id, request.text)
     except text_triage.ClassifierUnavailable as error:
         raise HTTPException(status_code=503, detail="The classifier is unavailable; use the buttons") from error
-    neighbor = report_status(report)
+    neighbor = report_status(report, background)
     return {"neighbor": neighbor.model_dump(mode="json"), "classification": classification.model_dump(mode="json")}
 
 
@@ -258,14 +261,30 @@ def get_evacuation_route(request: EvacuationRouteRequest) -> Route:
     return _route_or_503(lambda: orders.route_for(neighbor, request.mode))
 
 
+logger = logging.getLogger("hackfire")
+
+
+def _text_the_crew(rescue_id: str, message: str) -> None:
+    """Runs after the response, so the voice agent never waits on Twilio. A failure is logged and
+    the alert stays on the dashboard, marked as not sent."""
+    try:
+        sms.send(settings.crew_phone, message)
+    except httpx.HTTPError:
+        logger.exception("crew SMS for %s failed", rescue_id)
+        return
+    state.mark_alert_sent(rescue_id)
+
+
 @app.post("/tools/report_status")
-def report_status(request: ReportStatusRequest) -> Neighbor:
+def report_status(request: ReportStatusRequest, background: BackgroundTasks) -> Neighbor:
+    alerts_before = len(state.alerts())
     neighbor = state.report(request)
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
-    # New rescues become crew alerts in state (shown on the dashboard).
-    # TODO(voice): also send each new alert to settings.crew_phone by SMS through
-    # providers/voice.notify_crew, once SLNG/Twilio can send messages, and set sent_by_sms.
+    # A new rescue became a crew alert (state.py): text it to the crew when Twilio is set up.
+    if len(state.alerts()) > alerts_before and sms.configured() and settings.crew_phone:
+        alert = state.alerts()[0]
+        background.add_task(_text_the_crew, alert.rescue_id, alert.message)
     return neighbor
 
 

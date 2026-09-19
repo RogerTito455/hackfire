@@ -98,6 +98,12 @@ class TriageState:
             self._alerts.append(_crew_alert(updated))
         return updated
 
+    def mark_alert_sent(self, rescue_id: str) -> None:
+        self._alerts = [
+            alert.model_copy(update={"sent_by_sms": True}) if alert.rescue_id == rescue_id else alert
+            for alert in self._alerts
+        ]
+
     def alerts(self) -> list[CrewAlert]:
         """Crew alerts, newest first. One per resident each time they become needs_rescue."""
         return list(reversed(self._alerts))
