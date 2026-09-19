@@ -18,6 +18,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [Norma (QualityClouds)](services/norma.md) | Extension 1: scan, fix, rescan |
 | | [Devin (Cognition)](services/devin.md) | Extension 3: self-improving spread model |
 | **Development** | [Workflow](development/workflow.md) | Slices, branches, checks, the tool contract |
+| **Design** | [Icons](../frontend/src/ui/icons/README.md) | The hand-drawn icon set: format rules, map markers, catalogue |
 | **Findings** | [Findings log](findings/README.md) | Things we learned the hard way, dated |
 
 ## Adding a page
