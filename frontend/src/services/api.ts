@@ -11,6 +11,7 @@ import type { AgentFocus, CrewAlert, FireArea, Neighbor, Rescue, Route, TravelMo
 import type { ImpactTable, ZoneCollection } from '../domain/zones'
 import type { CampaignCall, VoiceCapabilities, WebSession } from '../domain/voice'
 import type { RescueVideo, RescueVideoLink, VideoAccess, VideoCapabilities } from '../domain/video'
+import type { CrewPlan } from '../domain/crewPlan'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
@@ -103,3 +104,4 @@ export async function joinVideo(linkId: string): Promise<VideoAccess | 'used' | 
   if (!response.ok) throw new Error(`/api/video returned ${response.status}`)
   return response.json() as Promise<VideoAccess>
 }
+export const fetchCrewPlan = (crews: number) => request<CrewPlan>(`/api/crew-plan?crews=${crews}`)

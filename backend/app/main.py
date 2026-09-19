@@ -10,13 +10,14 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import autopilot, briefing, campaign, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
+from . import autopilot, briefing, campaign, crew_plan, evacuation, i18n, impact, live, orders, replay, rescue_video, text_triage
 from .config import settings
 from .models import (
     AgentFocus,
     Autopilot,
     AutopilotRequest,
     CampaignCall,
+    CrewPlan,
     RescueVideo,
     RescueVideoLink,
     VideoCapabilities,
@@ -307,6 +308,12 @@ def join_rescue_video(link_id: str) -> VideoAccess:
         raise HTTPException(status_code=503, detail="Live video is unavailable right now") from error
 
 
+@app.get("/api/crew-plan")
+def get_crew_plan(crews: int | None = None) -> CrewPlan:
+    """Which crew goes to which rescue, in order, and whether it gets there before the fire."""
+    return crew_plan.build(max(1, min(crews or settings.crews, 10)))
+
+
 @app.post("/api/campaigns/{zone}")
 def start_campaign(zone: str, background: BackgroundTasks) -> list[CampaignCall]:
     """The coordinator starts the calls to a zone's residents, once its order is approved."""
@@ -434,6 +441,12 @@ def report_status(request: ReportStatusRequest, background: BackgroundTasks) -> 
 @app.post("/tools/get_rescue_queue")
 def get_rescue_queue() -> list[Rescue]:
     return state.rescue_queue()
+
+
+@app.post("/tools/get_crew_plan")
+def get_crew_plan_tool() -> CrewPlan:
+    """For the coordinator agent: the crews' plan with the default number of crews."""
+    return crew_plan.build(settings.crews)
 
 
 @app.post("/tools/get_rescue_route")

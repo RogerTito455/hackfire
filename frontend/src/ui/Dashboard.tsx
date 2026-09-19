@@ -11,6 +11,7 @@ import type { Campaign } from '../hooks/useCampaign'
 import type { Conversations, CoordinatorConversation } from '../hooks/useConversation'
 import type { VoiceCapabilities } from '../domain/voice'
 import type { RescueVideoControl } from '../hooks/useRescueVideo'
+import type { CrewPlanView } from '../hooks/useCrewPlan'
 import type { Triage } from '../hooks/useTriage'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
@@ -25,6 +26,7 @@ import { LiveStatus } from './LiveStatus'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
+import { CrewPlanPanel } from './CrewPlanPanel'
 import { RoutePanel } from './RoutePanel'
 import { TalkPanel } from './TalkPanel'
 import { AskAgentPanel } from './AskAgentPanel'
@@ -51,6 +53,7 @@ interface DashboardProps {
   coordinatorCall: CoordinatorConversation
   rescueVideo: RescueVideoControl
   autopilot: AutopilotControl
+  crewPlan: CrewPlanView
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
@@ -71,6 +74,7 @@ export function Dashboard({
   coordinatorCall,
   rescueVideo,
   autopilot,
+  crewPlan,
 }: DashboardProps) {
   const { t } = useI18n()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
@@ -206,6 +210,22 @@ export function Dashboard({
                   }
                 : undefined
             }
+          />
+        </section>
+
+        <section className="group">
+          <h2 className="icon-button">
+            <Icon name="fire-truck" size={18} />
+            {t('section.crewPlan')}
+          </h2>
+          <CrewPlanPanel
+            plan={crewPlan.plan}
+            crews={crewPlan.crews}
+            onCrewsChange={crewPlan.setCrews}
+            onShowRoute={(neighborId) => {
+              onModeChange('replay')
+              selection.showRescue(neighborId)
+            }}
           />
         </section>
 

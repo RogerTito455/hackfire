@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import AwareDatetime, BaseModel, Field, field_validator
 
@@ -143,6 +144,32 @@ class WebSession(BaseModel):
     livekit_url: str
     livekit_token: str
     max_session_seconds: int
+
+
+Verdict = Literal["in_time", "tight", "late", "no_route"]
+
+
+class CrewAssignment(BaseModel):
+    """One rescue in the crews' plan. Minutes count from now."""
+
+    rescue_id: str
+    neighbor_id: str
+    name: str
+    address: str
+    people: int | None
+    crew: int = Field(description="Crew number, from 1")
+    depart_min: int = Field(description="When the crew leaves the fire station")
+    drive_min: int | None = Field(description="Drive from the fire station; None when no route is known")
+    eta_min: int | None = Field(description="Arrival at the resident")
+    minutes_to_impact: int | None = Field(description="Predicted minutes until the fire reaches the resident's zone")
+    margin_min: int | None = Field(description="minutes_to_impact minus eta_min; negative means after the fire")
+    verdict: Verdict
+
+
+class CrewPlan(BaseModel):
+    crews: int
+    on_scene_min: int = Field(description="Minutes a crew spends getting people into the vehicle")
+    assignments: list[CrewAssignment]
 
 
 class Rescue(BaseModel):

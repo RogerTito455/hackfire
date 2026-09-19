@@ -22,6 +22,7 @@ export async function publishCamera(access: VideoAccess, target: HTMLElement): P
   await connect(session, access.token)
   const publisher = OT.initPublisher(target, {
     facingMode: 'environment',
+    mirror: false, // the back camera: show the scene as it is
     publishCaptions: true,
     insertMode: 'append',
     width: '100%',

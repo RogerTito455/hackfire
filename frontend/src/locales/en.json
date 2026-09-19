@@ -35,7 +35,8 @@
     "fire": "Where the fire is heading",
     "alerts": "Crew alerts",
     "typedBackup": "Voice not working? Type the answer",
-    "callResident": "Call this resident"
+    "callResident": "Call this resident",
+    "crewPlan": "Crew plan"
   },
   "time": {
     "now": "now"
@@ -283,5 +284,22 @@
     "footer": {
       "license": "MIT licence"
     }
+  },
+  "crewPlan": {
+    "title": "Crew plan",
+    "crews": "Crews",
+    "fewer": "One crew fewer",
+    "more": "One crew more",
+    "empty": "No rescues to plan.",
+    "crew": "Crew {number}",
+    "standBy": "Stands by at the fire station.",
+    "leavesNow": "Leaves now",
+    "leavesIn": "Leaves in {time}",
+    "arrivesIn": "arrives in {time}",
+    "in_time": "{time} before the fire",
+    "tight": "Only {time} before the fire",
+    "late": "Arrives {time} after the fire",
+    "noRoute": "No route from the fire station",
+    "noForecast": "The fire is not forecast to reach it"
   }
 }

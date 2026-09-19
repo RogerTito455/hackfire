@@ -12,6 +12,7 @@ import { useTriage } from './hooks/useTriage'
 import { useCampaign } from './hooks/useCampaign'
 import { useVoiceConversations } from './hooks/useConversation'
 import { useRescueVideo } from './hooks/useRescueVideo'
+import { useCrewPlan } from './hooks/useCrewPlan'
 import { useVoiceCapabilities } from './hooks/useVoiceCapabilities'
 import { Dashboard } from './ui/Dashboard'
 import { useI18n } from './ui/i18n'
@@ -32,6 +33,7 @@ function App() {
   const rescueVideo = useRescueVideo()
   // The demo autopilot changes the triage state: show it now, not on the next poll.
   const autopilot = useAutopilot(triage.refresh)
+  const crewPlan = useCrewPlan()
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
@@ -71,6 +73,7 @@ function App() {
       coordinatorCall={voiceCalls.coordinator}
       rescueVideo={rescueVideo}
       autopilot={autopilot}
+      crewPlan={crewPlan}
       forecast={forecast}
       leadTime={leadTime}
     />

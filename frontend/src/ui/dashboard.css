@@ -1302,3 +1302,75 @@ button:active {
   font-weight: 600;
   color: var(--text-h);
 }
+
+/* The fire crews' plan: one block per crew, its rescues in order, the margin against the fire. */
+
+.crew-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.crew-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.crew-count button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  cursor: pointer;
+}
+
+.crew h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.crew ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.crew-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.verdict {
+  font-weight: 600;
+}
+
+.verdict.in-time {
+  color: #2e9e5b;
+}
+
+.verdict.tight {
+  color: #e08a00;
+}
+
+.verdict.late,
+.verdict.no-route {
+  color: var(--alert);
+}

@@ -35,7 +35,8 @@
     "fire": "Hacia dónde va el fuego",
     "alerts": "Avisos a bomberos",
     "typedBackup": "¿Falla la voz? Escribe la respuesta",
-    "callResident": "Llamar a este vecino"
+    "callResident": "Llamar a este vecino",
+    "crewPlan": "Plan de los equipos"
   },
   "time": {
     "now": "ya"
@@ -283,5 +284,22 @@
     "footer": {
       "license": "Licencia MIT"
     }
+  },
+  "crewPlan": {
+    "title": "Plan de los equipos",
+    "crews": "Equipos",
+    "fewer": "Un equipo menos",
+    "more": "Un equipo más",
+    "empty": "No hay rescates que planificar.",
+    "crew": "Equipo {number}",
+    "standBy": "En espera en el parque de bomberos.",
+    "leavesNow": "Sale ya",
+    "leavesIn": "Sale en {time}",
+    "arrivesIn": "llega en {time}",
+    "in_time": "{time} antes que el fuego",
+    "tight": "Solo {time} antes que el fuego",
+    "late": "Llega {time} después del fuego",
+    "noRoute": "Sin ruta desde el parque de bomberos",
+    "noForecast": "No se prevé que el fuego llegue"
   }
 }
