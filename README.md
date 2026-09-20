@@ -51,7 +51,7 @@ Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app**
 - Calls (#8): once a zone's order is approved, **Call residents** phones every pending resident through SLNG and turns unanswered calls into *no answer*. There is no SIP trunk yet, so this stays off (`HACKFIRE_PHONE_CALLS`), and the coordinator takes a resident's call in the browser instead: select the resident → **Call … (answer here)**.
 - Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard, and texted to the crew by SMS once Twilio credentials are set.
 
-Still to build: outbound phone calls, which need a phone number (#8), and deploying the coordinator agent (#10). See [PLAN.md](PLAN.md) and the issues.
+Still to build: outbound phone calls, which need a phone number (#8). See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 

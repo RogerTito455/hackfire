@@ -41,6 +41,7 @@ frontend/src/hooks/        State and polling; returns plain data
 frontend/src/ui/           Presentational components, theme.ts, CSS
 frontend/src/App.tsx       Composition root only: hook → UI
 voice/                     Unmute packages for the SLNG voice agents; `unmute validate` inside each
+video/                     Remotion project for the presentation video; not part of the app
 data/                      Static demo data (registry, cached hotspots and spread)
 docs/                      Setup, one page per service, workflow, findings log. Update it as you go
 Dockerfile                 The one deployed image, backend plus built dashboard (docs/setup/deployment.md)
@@ -61,6 +62,10 @@ pnpm data:spread     # rebuild the predicted spread from the cached hotspots (no
 pnpm data:lead-time  # recompute La Atalaya's lead time from the cached files (no network)
 pnpm data:routes     # plan the demo routes that are not cached yet (openrouteservice); resumable; --refresh replaces all, all or nothing
 pnpm check:routes    # prove every route (incl. every order destination) is cached; give it a URL to check a deployment
+pnpm voice:latency   # the resident agent's latency from SLNG's call reports: median and worst per turn (--since, --all)
+pnpm voice:deploy    # push both voice agents to SLNG, then set their Spanish goodbye; needs SLNG_API_KEY, changes the live agents (prompt edits are not live until this runs)
+pnpm voice:goodbye   # only re-set the agents' Spanish goodbye (voice:deploy already runs it)
+pnpm video:studio    # the presentation video's Remotion studio; video:render, video:voice, video:sfx, video:music and video:data build its parts
 ```
 
 Run `pnpm check` before every commit.

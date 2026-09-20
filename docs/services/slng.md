@@ -100,6 +100,16 @@ The route that keeps the 45-minute timebox honest:
 
 Install: take the Linux archive and `checksums.txt` from https://github.com/slng-ai/unmute/releases and check the archive before extracting, or `go install github.com/slng-ai/unmute@latest` (Go 1.26+). Its Claude Code skills (`unmute`, `unmute-deploy`, `unmute-manifest`) are installed in the repo with `unmute skill install`; the text lives in `.agents/skills/` and `.claude/skills/` points to it.
 
+## Latency numbers (#14)
+
+SLNG keeps a report of every finished call. `pnpm voice:latency` reads them (only reads) and prints the median and worst case for the slide and how they were computed; `--since <ISO time>` and `--all` change which calls count. It needs the `SLNG_API_KEY` **of the project that holds the agent**: a key from another project authenticates but lists no agents.
+
+- **Which calls.** By default, those that started after the agent's `updated_at`, the moment its current version was deployed. Any edit or redeploy moves that moment and leaves earlier calls out, so **measure once the agent is frozen** and say the deployment time next to the numbers. The script prints it.
+- **How a turn is timed.** From the resident's `stopped_speaking_at` to the agent's next `started_speaking_at`. Not SLNG's `e2e_latency`: that field is only on messages where the agent answers directly. When it calls a tool first (the slow turns) the message that finally speaks has none, so a median over it would leave them out. Where SLNG does give one it equals this figure (checked: 0.000 s apart). The code is `backend/app/latency.py`, with tests on the shapes seen in a real report: a tool-call turn, a resident message that continues a turn, an agent already speaking, an interrupted reply, null timings.
+- **Where it lives.** `GET /v1/agents/{id}/calls` answers `{items, meta}`, 20 to a page (`?page=`); `GET …/calls/{call_id}` carries `livekit_session_report.chat_history.items` (messages with `metrics`, `function_call`, `function_call_output`). The report only exists once the call has ended.
+- **What makes a bad call.** A browser session left open stops at 300 s ("web session max duration reached") with no conversation in it; hang up yourself. A call that has just ended can lack its report for a minute: the script says so and leaves it out instead of counting it as zero turns. The greeting has no resident turn before it, so it is not a turn.
+- **What to report.** At least ten turns (SLNG's brief), the median and the worst case, the deployment time of the agent version, and the split between turns answered directly and turns with a tool (the latter are slower). Put them in a finding with the calls used ([template](../findings/README.md)) and hand the two numbers to the slide (#15).
+
 ## CLI and SDKs
 
 - **`voiceai` CLI** (source: https://github.com/slng-ai/sdks): `whoami`, `tts`, `stt`, `agents {list,create,push}`, `agents calls dispatch`, `trunks list`, `mcp list`. Handy for scripting the voice track and for checking what trunk we have. The install script `https://docs.slng.ai/install.sh` returned 404 on 2026-09-19; take `voiceai-linux-x64` from the latest `cli-v*` release of `slng-ai/sdks` instead (see [voice/README.md](../../voice/README.md#commands)). It reads `VOICEAI_API_KEY`, not `SLNG_API_KEY`, so export both.

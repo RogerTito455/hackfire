@@ -3,8 +3,9 @@
 A phone call needs an outbound SIP trunk attached to the agent in SLNG's dashboard, because SLNG
 supplies no numbers (docs/findings/2026-09-19-slng-bring-your-own-number.md). Until one exists,
 HACKFIRE_PHONE_CALLS stays off and the dashboard talks to the agent in the browser instead.
-Web sessions ran against the live API on 2026-09-19. Dispatching a call and reading its state are
-not yet run, for want of a trunk: the field names follow the API reference.
+Web sessions, the agent, the list of calls and a call's session report ran against the live API on
+2026-09-19. Dispatching a phone call is not yet run, for want of a trunk: its field names follow the
+API reference.
 See https://docs.slng.ai/api-reference/calls/dispatch-call.md
 """
 
@@ -63,8 +64,32 @@ def call_resident(phone: str, arguments: dict[str, str]) -> str:
 
 def call_ended(call_id: str) -> bool:
     """Whether the call is over, answered or not."""
-    call = _request("GET", settings.slng_resident_agent_id, f"/calls/{call_id}")
+    call = get_call(call_id)
     return call.get("call_ended_at") is not None or call.get("status") in _ENDED
+
+
+def resident_agent() -> dict:
+    """The resident agent as SLNG holds it: `updated_at` is when the current version was deployed."""
+    return _request("GET", "")
+
+
+def get_call(call_id: str) -> dict:
+    """One call, with its session report (`livekit_session_report`) once it has ended."""
+    return _request("GET", f"/calls/{call_id}")
+
+
+def list_calls() -> list[dict]:
+    """Every call of the resident agent, newest first. SLNG pages the list, 20 to a page."""
+    calls: list[dict] = []
+    page = 1
+    while True:
+        answer = _request("GET", f"/calls?page={page}")
+        if not isinstance(answer.get("items"), list):
+            raise VoiceUnavailable("the list of calls has no `items`: SLNG changed its shape")
+        calls += answer["items"]
+        if page >= answer.get("meta", {}).get("pages", 1):
+            return calls
+        page += 1
 
 
 def web_session(arguments: dict[str, str], participant_name: str) -> WebSession:
