@@ -70,27 +70,35 @@ Radius follows hierarchy: sheet 22 px, groups 14 px, controls 10 px, pills fully
 ## Layout
 
 ```
-Phone (< 900 px)                    Wide screen (≥ 900 px)
-┌──────────────────────────┐        ┌───────────┬──────────────────────────┐
-│ (◆)(•) [Replay|Live](ES) │        │ replay    │ (logo HackFire)(• Online)│
-│                          │        │ strip     │        [Replay|Live](ES) │
-│           map            │        │───────────│                          │
-│                          │        │ way out   │           map            │
-│╭────────── ─── ─────────╮│        │ rescues   │                          │
-││ ▶ time    slider       ││        │ orders    │                          │
-││ [5][0][0][0]  strip    ││        │ fire      │                          │
-││ way out, rescues, …    ││        │ alerts    │                          │
-╰┴────────────────────────┴╯        └───────────┴──────────────────────────┘
+Phone (< 900 px)                    Wide screen (≥ 900 px): the console
+┌──────────────────────────┐        ┌──────────────────────┬───────────────┐
+│ (◆)(•) [Replay|Live](ES) │        │ HackFire • [Replay|Live]  (ES)       │
+│                          │        ├──────────────────────┤               │
+│           map            │        │ ▶ time slider                        │
+│                          │        │ [5][0][0][0]  strip, data note       │
+│╭────────── ─── ─────────╮│        ├──────────┬───────────┤     map       │
+││ ▶ time    slider       ││        │ way out ◂│ the open  │               │
+││ [5][0][0][0]  strip    ││        │ rescues 3│ section,  │               │
+││ way out, rescues, …    ││        │ crews    │ at a size │               │
+││ (every section stacked)││        │ …      ⟳ │ you read  │               │
+╰┴────────────────────────┴╯        └──────────┴───────────┴───────────────┘
 ```
 
 - **The map is the screen.** It fills the viewport; everything else floats over it.
+- **A key on the map** ([`MapLegend.tsx`](frontend/src/ui/MapLegend.tsx)), because a red dashed road and a grey circled one are the same thing to anyone who did not build this: the hotspot and forecast ramps with their ends named, a place in the path, the way out, the road the fire reached, the road the coordinator closed, and the four resident states. It is open on a laptop, bottom left, and folded to its title on a phone, under the top bar.
 - **Top bar:** four pills clear of the notch: the logo, the connection dot, the mode toggle, the language. Under 480 px the brand name hides and the inactive mode shrinks to its icon, like a native segmented control.
 - **Bottom sheet** ([`BottomSheet.tsx`](frontend/src/ui/BottomSheet.tsx)) with three heights, as in a maps app:
   - *peek* shows exactly the header (replay scrubber and status strip). It is measured, not fixed, so a longer language never cuts the strip.
   - *half* (52 % of the viewport) opens by itself when a resident is selected.
   - *full* (90 %).
   - Drag the handle, or tap it to cycle through the heights. Enter and Space work too.
-- **Wide screens:** the sheet becomes a 400 px side panel on the left and the handle disappears.
+- **Wide screens: the console** ([`Console.tsx`](frontend/src/ui/Console.tsx)), not the sheet. The top bar becomes its header, the scrubber and the status strip sit under it across the whole width, and below them a rail names every section beside the one that is open:
+  - the rail carries each section's icon, its name and a live count (rescues waiting, roads closed, orders written), so nothing the dashboard can do is a scroll away; the open one is marked with the same blue bar the landing uses for the step it is showing, and **Reset demo** sits at its foot.
+  - the open section is a panel with room to be read, not a row in a list. Rail and panel together are 520 px, 632 px from 1200 px and 736 px from 1500 px; the map keeps the rest and is never covered.
+  - selecting a resident on the map opens *Way out*, the way it opens the sheet halfway on a phone. Sections stay mounted while another is read, so a call or a video keeps running.
+- **Each mode gets its own sections.** Rescues, the crew plan, closures, orders, the fire and the crew alerts all read the demo registry, so they belong to the replay; live mode shows the places the selected real fire reaches, and the activity log and service status, which both modes need. The reset belongs to the demo too.
+- **Every section says what it is for** in one line under its heading, and the [`DataNote`](frontend/src/ui/DataNote.tsx) badge says where its numbers come from: a dashed outline for the demo registry, solid ink for data nobody here wrote, the same pair the alert drafts already use for draft and official.
+- **Before a resident is picked**, *Way out* lists the registry ([`ResidentPicker.tsx`](frontend/src/ui/ResidentPicker.tsx)), each name with its status icon, so a resident can be reached without hunting for their pin under the smoke.
 - **Groups** are native inset lists: one white rounded group per topic, rows separated by hairlines, not a wall of identical cards. The selected resident's group has a blue inset outline.
 - Left-aligned text everywhere except the one-line hint under the groups.
 
@@ -179,6 +187,9 @@ Before merging a UI change, check that it does not bring back:
 The dashboard picture is `frontend/public/dashboard-phone.webp`, a 390 × 780 screenshot at 2× of a local run with the sample registry, never the real one.
 
 ## Revisions
+
+- **2026-09-20, density.** The situation strip took 260 px, a third of a 1366 x 768 laptop, before a single rescue was visible: the scrubber and the demo switch now share a line and each state is one line, which brought it to 185 px. Measured at 1920, 1600, 1440, 1366, 1280 and 1024.
+- **2026-09-20, the console.** On a laptop the ten sections were stacked in one 460 px column, so half the dashboard was two scrolls away and nothing said what a section was for; and live mode kept showing the replay's sections, which put demo residents next to real fires. Wide screens now get the rail and one open section, every section carries a line of its own, and each mode shows only what it can honestly show. The phone keeps the bottom sheet exactly as it was, with the same two additions.
 
 - **2026-09-19, mobile redesign.** The earlier idea of a hi-vis yellow accent was dropped: yellow already means *freshly detected hotspot* on the map, and an accent in the same colour would read as fire. Blue took the "act here" role instead. Map mode labels were shortened to *Replay* and *Live* so the top bar fits a 320 px screen.
 - **2026-09-19, calm landing.** The loud landing (a 900-weight headline over glowing hotspots, a fire-coloured band with a counting lead time, colour fields in every section) read as a generic startup page. It became a paper page with hairlines and one dark hero, and the lead time became a range (about 6 hours, 5 to 8 depending on the radius) because one satellite pixel decides the arrival.

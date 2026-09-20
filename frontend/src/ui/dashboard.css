@@ -1611,7 +1611,8 @@ button:active {
 
 @media (min-width: 900px) {
   .app {
-    --sidebar: 460px;
+    --sidebar: 520px;
+    --rail: 176px;
     --header: 56px;
   }
 
@@ -2178,4 +2179,405 @@ button:active {
     min-height: 36px;
     border-radius: 8px;
   }
+}
+
+/* --- One line under each heading: what the section is for, in plain words ------------------- */
+
+.section-blurb {
+  max-width: 58ch;
+  margin: -2px 0 10px;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* Where what you are reading comes from: the demo registry, or the satellites right now. Dashed is
+   the same "draft" mark the alert drafts carry; solid ink is data nobody here wrote. */
+
+.data-badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.data-badge[data-mode='replay'] {
+  border: 1px dashed var(--line);
+  color: var(--ink-2);
+}
+
+.data-badge[data-mode='live'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* --- The console: a rail that names every section, one of them open beside it ----------------
+   Laptops and desktops only; phones keep the bottom sheet, unchanged. The rail is there so nothing
+   the dashboard can do is two scrolls away, and the open section gets room to be read instead of
+   the 460 px column that held all ten at once. */
+
+@media (min-width: 900px) {
+  .console .sheet-header {
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* The scripted call is pinned above the split: it must not scroll away mid-demo. */
+  .console .sheet-header .call-card {
+    max-height: 32vh;
+    margin-top: 10px;
+    overflow-y: auto;
+  }
+
+  .console .sheet-body {
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .rail {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 8px 8px 12px;
+    border-right: 1px solid var(--line);
+    background: var(--mist);
+  }
+
+  .rail ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rail-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    min-height: 40px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .rail-item .icon {
+    color: var(--ink-2);
+  }
+
+  /* The open section, marked the way the landing marks the step it is showing. */
+  .rail-item.current {
+    background: var(--paper);
+    box-shadow: inset 3px 0 0 var(--route);
+  }
+
+  .rail-item.current .icon {
+    color: var(--route);
+  }
+
+  .rail-count {
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--line);
+    color: var(--ink);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rail-item.current .rail-count {
+    background: var(--route-soft);
+    color: var(--route);
+  }
+
+  .rail .reset {
+    margin: auto 2px 0;
+  }
+
+  .stage {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    font-size: 15px;
+  }
+
+  /* One section at a time, so it reads as a panel and not as a row in a list. */
+  .stage .group {
+    padding: 18px 20px 28px;
+    border-bottom: 0;
+  }
+
+  .stage .group[hidden] {
+    display: none;
+  }
+
+  .stage .group h2 {
+    margin-bottom: 4px;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+
+  /* The selected resident is named inside the panel, so the blue inset would only be noise here. */
+  .stage .group-selected {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .stage .section-blurb {
+    font-size: 13.5px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .app {
+    --sidebar: 632px;
+    --rail: 208px;
+  }
+
+  .rail-item {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1500px) {
+  .app {
+    --sidebar: 736px;
+    --rail: 232px;
+  }
+
+  .stage .group {
+    padding: 22px 26px 32px;
+  }
+}
+
+/* --- The registry as a list, so a resident can be reached by name --------------------------- */
+
+.picker {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.picker li + li {
+  border-top: 1px solid var(--line);
+}
+
+.group .picker-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.picker-status {
+  display: flex;
+}
+
+.picker-state {
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.group .picker-item:active {
+  transform: scale(0.99);
+}
+
+@media (min-width: 900px) {
+  .group .picker-item {
+    min-height: 40px;
+    font-size: 14.5px;
+  }
+
+  /* The reset stays reachable at the foot of a rail that has to scroll. */
+  .rail .reset {
+    position: sticky;
+    bottom: 0;
+    margin: auto 2px 0;
+    background: var(--mist);
+  }
+}
+
+/* --- What the map means, on the map ---------------------------------------------------------
+   Folded away on a phone, open on a laptop. It floats over the map, so it carries the same shadow
+   as the sheet and the top-bar pills. */
+
+.map-legend {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--safe-top) + 62px);
+  left: 10px;
+  max-width: 262px;
+  padding: 4px 10px 6px;
+  border-radius: var(--radius-group);
+  background: var(--paper);
+  box-shadow: var(--float);
+  font-size: 12px;
+}
+
+.map-legend summary {
+  padding: 5px 2px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.map-legend ul {
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 3px 0;
+}
+
+.legend-name {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.legend-scale {
+  color: var(--ink-2);
+  font-size: 11px;
+}
+
+.legend-ramp {
+  height: 8px;
+  border-radius: 999px;
+}
+
+.legend-line {
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-zone {
+  height: 12px;
+  border-radius: 3px;
+  opacity: 0.55;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  margin: 0 auto;
+  border-radius: 50%;
+}
+
+.legend-marker,
+.legend-states {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.legend-triangle {
+  width: 0;
+  height: 0;
+  margin: 0 auto;
+  border-right: 7px solid transparent;
+  border-bottom: 12px solid var(--ink);
+  border-left: 7px solid transparent;
+}
+
+@media (min-width: 900px) {
+  .map-legend {
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    max-width: 300px;
+  }
+
+  /* --- Density: the situation strip was taking a third of a 1366 x 768 laptop ---------------
+     The four states go on one line each, so the map and the open section get the height back. */
+  .console .sheet-header {
+    padding: 10px 16px 8px;
+  }
+
+  .console .status-strip li,
+  .console .status-strip li.none {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-rows: auto;
+    column-gap: 6px;
+    min-height: 34px;
+    padding: 5px 9px;
+  }
+
+  .console .status-strip strong {
+    justify-self: start;
+    font-size: 17px;
+  }
+
+  .console .status-strip li > span:last-child {
+    grid-column: auto;
+    margin-top: 0;
+    font-size: 11.5px;
+  }
+
+  .console .data-note {
+    margin: 8px 0 0;
+  }
+
+  /* Someone is waiting for a crew: the rail says so without opening the section. */
+  .rail-count.urgent,
+  .rail-item.current .rail-count.urgent {
+    background: var(--fire-3);
+    color: #fff;
+  }
+}
+
+@media (min-width: 900px) {
+  /* The scrubber and the demo switch share a line: on a 768 px laptop those 44 px are a rescue row. */
+  .console .sheet-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+    align-items: center;
+  }
+
+  .console .sheet-header > .status-strip,
+  .console .sheet-header > .data-note,
+  .console .sheet-header > .group {
+    grid-column: 1 / -1;
+  }
+
+  .console .sheet-header > .autopilot {
+    margin: 0;
+  }
+}
+
+/* The four resident states need more room than a swatch: the row gives them their own width. */
+.legend-row.states {
+  grid-template-columns: auto minmax(0, 1fr);
 }

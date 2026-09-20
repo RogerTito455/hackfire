@@ -8,15 +8,30 @@
     "connected": "Conectado",
     "offline": "Sin conexión",
     "language": "Idioma: {name}",
-    "tapResident": "Toca un vecino en el mapa para ver su salida.",
     "reset": "Reiniciar la demo",
-    "about": "Qué es HackFire"
+    "about": "Qué es HackFire",
+    "residents": "Vecinos del registro",
+    "noResidents": "El registro está vacío."
   },
   "sheet": {
     "label": "Panel de coordinación",
     "peek": "Mostrar más",
     "half": "Ampliar el panel",
     "full": "Recoger el panel"
+  },
+  "console": {
+    "rail": "Secciones"
+  },
+  "legend": {
+    "title": "Qué hay en el mapa",
+    "hotspots": "Focos del satélite",
+    "forecast": "Por dónde se prevé que avance",
+    "zone": "Pueblo o edificio en su camino",
+    "fireRoad": "Carretera alcanzada por el fuego",
+    "closed": "Carretera que has cortado",
+    "residents": "Vecinos, según lo que contestaron",
+    "fires": "Incendios activos",
+    "dgt": "Incidencia oficial de la DGT"
   },
   "mode": {
     "label": "Modo del mapa",
@@ -41,7 +56,19 @@
     "crewPlan": "Plan de los equipos",
     "closures": "Carreteras cortadas",
     "activity": "Registro de actuaciones",
-    "services": "Estado de los servicios"
+    "services": "Estado de los servicios",
+    "blurb": {
+      "wayOut": "Toca un vecino para ver su salida, a pie o en coche, y llamarle para dársela.",
+      "rescues": "Quien no puede salir solo, por orden de llegada del fuego.",
+      "crewPlan": "Qué equipo va a cada rescate y si llega antes que el fuego.",
+      "closures": "Carreteras que el fuego ya ha alcanzado. Toca el mapa para cortar otra.",
+      "orders": "Qué se le dice a cada zona y a qué punto seguro se la manda.",
+      "fire": "Focos del satélite, la previsión de las próximas horas y el tiempo que dan.",
+      "alerts": "Cada rescate enviado a los equipos, con su hora y su ruta.",
+      "activity": "Todas las llamadas, órdenes y avisos, en orden y listos para descargar.",
+      "services": "Qué servicios respondieron en la última comprobación y cuándo.",
+      "liveOps": "Pueblos y edificios a los que llega el incendio elegido, y sus borradores de aviso."
+    }
   },
   "time": {
     "now": "ya"
@@ -393,7 +420,11 @@
   },
   "dataNote": {
     "replay": "Incendio real (satélite de Deepfire). Vecinos, llamadas y evacuaciones: ficticios.",
-    "live": "Incendios reales activos (Deepfire). En este modo no se llama a nadie."
+    "live": "Incendios reales activos (Deepfire). En este modo no se llama a nadie.",
+    "badge": {
+      "replay": "Vecinos de demo",
+      "live": "Datos en directo"
+    }
   },
   "liveOps": {
     "section": "Lugares en riesgo",

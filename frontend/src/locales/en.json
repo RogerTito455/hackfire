@@ -8,15 +8,30 @@
     "connected": "Connected",
     "offline": "Offline",
     "language": "Language: {name}",
-    "tapResident": "Tap a resident on the map to see their way out.",
     "reset": "Reset demo",
-    "about": "About HackFire"
+    "about": "About HackFire",
+    "residents": "Residents in the registry",
+    "noResidents": "The registry is empty."
   },
   "sheet": {
     "label": "Coordination panel",
     "peek": "Show more",
     "half": "Expand panel",
     "full": "Collapse panel"
+  },
+  "console": {
+    "rail": "Sections"
+  },
+  "legend": {
+    "title": "What's on the map",
+    "hotspots": "Satellite hotspots",
+    "forecast": "Where the fire is forecast to go",
+    "zone": "Town or building in its path",
+    "fireRoad": "Road the fire has reached",
+    "closed": "Road you closed",
+    "residents": "Residents, by what they answered",
+    "fires": "Fires burning now",
+    "dgt": "Official DGT incident"
   },
   "mode": {
     "label": "Map mode",
@@ -41,7 +56,19 @@
     "crewPlan": "Crew plan",
     "closures": "Road closures",
     "activity": "Activity log",
-    "services": "Service status"
+    "services": "Service status",
+    "blurb": {
+      "wayOut": "Tap a resident to get their route out, on foot or by car, and call them with it.",
+      "rescues": "Whoever cannot leave on their own, in the order the fire reaches them.",
+      "crewPlan": "Which crew takes each rescue, and whether it gets there before the fire.",
+      "closures": "Roads the fire has already reached. Tap the map to close another one.",
+      "orders": "What each zone is told to do, and the safe point it is sent to.",
+      "fire": "Satellite hotspots, the forecast for the hours ahead, and the lead time they buy.",
+      "alerts": "Every rescue sent to the crews, with its time and its route.",
+      "activity": "Every call, order and alert, in order, ready to download.",
+      "services": "Which providers answered the last check, and when.",
+      "liveOps": "Towns and buildings the selected fire reaches, and the alert drafts for them."
+    }
   },
   "time": {
     "now": "now"
@@ -393,7 +420,11 @@
   },
   "dataNote": {
     "replay": "Real fire (Deepfire satellite data). Residents, calls and evacuations: fictional.",
-    "live": "Real fires burning now (Deepfire). Nobody is called in this mode."
+    "live": "Real fires burning now (Deepfire). Nobody is called in this mode.",
+    "badge": {
+      "replay": "Demo residents",
+      "live": "Live data"
+    }
   },
   "liveOps": {
     "section": "Places at risk",

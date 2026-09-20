@@ -23,6 +23,7 @@ import type { ActivityLog as ActivityLogView, ServiceStatus as ServiceStatusView
 import { ActivityLog } from './ActivityLog'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
+import { Console, type ConsoleSection } from './Console'
 import { CrewAlerts } from './CrewAlerts'
 import { DataNote } from './DataNote'
 import { Icon } from './Icon'
@@ -33,9 +34,11 @@ import { TextTriagePanel } from './TextTriagePanel'
 import { LeadTimeCard } from './LeadTimeCard'
 import { LiveOperationsPanel } from './LiveOperationsPanel'
 import { LiveStatus } from './LiveStatus'
+import { MapLegend } from './MapLegend'
 import { ModeToggle } from './ModeToggle'
 import { ReplayControls } from './ReplayControls'
 import { RescueQueue } from './RescueQueue'
+import { ResidentPicker } from './ResidentPicker'
 import { CrewPlanPanel } from './CrewPlanPanel'
 import { ClosuresPanel } from './ClosuresPanel'
 import { ShareWithCrewsPanel } from './ShareWithCrewsPanel'
@@ -47,6 +50,7 @@ import { AskAgentPanel } from './AskAgentPanel'
 import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
+import { useWideScreen } from './useWideScreen'
 import { ZonesAtRisk } from './ZonesAtRisk'
 import './dashboard.css'
 
@@ -81,6 +85,11 @@ interface DashboardProps {
 }
 
 // Presentation only: everything arrives through props, nothing is fetched here.
+//
+// The sections are built once and laid out twice: stacked inside the bottom sheet on a phone, and
+// beside the rail in the console on a laptop. Each one declares which mode it belongs to, so live
+// mode shows live data alone: the rescues, orders, crew plan and closures all read the demo
+// registry, and showing them next to real fires said things that were not true.
 export function Dashboard({
   triage,
   replay,
@@ -108,6 +117,7 @@ export function Dashboard({
   services,
 }: DashboardProps) {
   const { t } = useI18n()
+  const wide = useWideScreen()
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   const watched = rescueVideo.live ? neighbors.find((neighbor) => neighbor.id === rescueVideo.live?.neighborId) : undefined
@@ -121,108 +131,60 @@ export function Dashboard({
           waiting: rescueVideo.live.state === 'waiting',
         }
       : null
-  return (
-    <div className="app">
-      <div className="map-area">
-        <TriageMap
-          mode={mode}
-          replayBounds={replayBounds}
-          neighbors={neighbors}
-          hotspots={replay.hotspots}
+
+  // The replay's scrubber or the live status, then what the numbers below are: always in view.
+  const header =
+    mode === 'replay' ? (
+      <>
+        <ReplayControls
+          status={replay.status}
+          range={replay.range}
           time={replay.time}
-          live={live.data}
-          liveSpread={live.spread}
-          dgt={live.dgt}
-          liveOperations={liveOperations.data}
-          onSelectLiveFire={liveOperations.select}
-          selectedNeighborId={selection.neighborId}
-          route={selection.route}
-          routeKind={selection.mode}
-          fireArea={selection.fireArea}
-          onSelectNeighbor={selection.select}
-          closures={closures.closures}
-          closing={closures.closing}
-          onMapClick={(lon, lat) => void closures.close(lon, lat)}
-          spread={forecast.spread}
-          zones={forecast.zonesAtRisk}
-          liveVideo={liveVideo}
+          observedCount={replay.observedCount}
+          playing={replay.playing}
+          onTimeChange={replay.setTime}
+          onTogglePlay={replay.togglePlay}
         />
-      </div>
+        <AutopilotToggle
+          enabled={autopilot.enabled}
+          busy={autopilot.busy}
+          onToggle={() => autopilot.toggle(replay.time)}
+        />
+        <StatusCounts counts={counts} />
+        <DataNote mode={mode} />
+      </>
+    ) : (
+      <>
+        <LiveStatus {...live} />
+        <DataNote mode={mode} />
+      </>
+    )
 
-      <header className="topbar">
-        <h1 className="brand">
-          <a className="brand-link" href="/about" aria-label={t('app.about')}>
-            <Icon name="logo" size={26} />
-            <span className="brand-name">HackFire</span>
-          </a>
-        </h1>
-        <span className={online ? 'conn ok' : 'conn down'} role="status">
-          <span className="conn-dot" aria-hidden="true" />
-          <span className="conn-label">{online ? t('app.connected') : t('app.offline')}</span>
-        </span>
-        <ModeToggle mode={mode} onChange={onModeChange} />
-        <LanguagePicker />
-      </header>
+  const call =
+    mode === 'replay' && scriptedCall.call && scriptedCall.transcript ? (
+      <ScriptedCallCard
+        call={scriptedCall.call}
+        transcript={scriptedCall.transcript}
+        residentName={neighbors.find((neighbor) => neighbor.id === scriptedCall.call?.neighbor_id)?.name ?? null}
+        shown={scriptedCall.shown}
+        typing={scriptedCall.typing}
+      />
+    ) : null
 
-      <BottomSheet
-        wake={selection.neighborId ?? liveOperations.fireId}
-        header={
+  const replaySections: ConsoleSection[] = [
+    {
+      id: 'wayOut',
+      icon: 'route',
+      title: t('section.wayOut'),
+      // Once a resident is open the panel names them and says what their route avoids: a line
+      // telling you to tap one would be describing what you have already done.
+      blurb: selected === null ? t('section.blurb.wayOut') : '',
+      selected: selected !== null,
+      content:
+        selected === null ? (
+          <ResidentPicker neighbors={neighbors} onSelect={selection.select} />
+        ) : (
           <>
-            {mode === 'replay' ? (
-              <>
-                <ReplayControls
-                  status={replay.status}
-                  range={replay.range}
-                  time={replay.time}
-                  observedCount={replay.observedCount}
-                  playing={replay.playing}
-                  onTimeChange={replay.setTime}
-                  onTogglePlay={replay.togglePlay}
-                />
-                <AutopilotToggle
-                  enabled={autopilot.enabled}
-                  busy={autopilot.busy}
-                  onToggle={() => autopilot.toggle(replay.time)}
-                />
-              </>
-            ) : (
-              <LiveStatus {...live} />
-            )}
-            <StatusCounts counts={counts} />
-            <DataNote mode={mode} />
-          </>
-        }
-      >
-        {mode === 'replay' && scriptedCall.call && scriptedCall.transcript && (
-          <ScriptedCallCard
-            call={scriptedCall.call}
-            transcript={scriptedCall.transcript}
-            residentName={triage.neighbors.find((n) => n.id === scriptedCall.call?.neighbor_id)?.name ?? null}
-            shown={scriptedCall.shown}
-            typing={scriptedCall.typing}
-          />
-        )}
-        {mode === 'live' && (
-          <section className="group">
-            <h2 className="icon-button">
-              <Icon name="flame" size={18} />
-              {t('liveOps.section')}
-            </h2>
-            <LiveOperationsPanel
-              fires={live.spread?.fires ?? []}
-              view={liveOperations}
-              onSelect={liveOperations.select}
-              onRetry={liveOperations.retry}
-            />
-          </section>
-        )}
-
-        {selected !== null && (
-          <section className="group group-selected">
-            <h2 className="icon-button">
-              <Icon name="route" size={18} />
-              {t('section.wayOut')}
-            </h2>
             <RoutePanel
               neighbor={selected}
               mode={selection.mode}
@@ -251,14 +213,18 @@ export function Dashboard({
               <summary>{t('section.typedBackup')}</summary>
               <TextTriagePanel key={selected.id} neighbor={selected} triage={textTriage} />
             </details>
-          </section>
-        )}
-
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="lifebuoy" size={18} />
-            {t('section.rescues')}
-          </h2>
+          </>
+        ),
+    },
+    {
+      id: 'rescues',
+      icon: 'lifebuoy',
+      title: t('section.rescues'),
+      blurb: t('section.blurb.rescues'),
+      count: rescues.length,
+      urgent: rescues.length > 0,
+      content: (
+        <>
           <AskAgentPanel
             available={voice.coordinator}
             state={coordinatorCall.state}
@@ -281,13 +247,17 @@ export function Dashboard({
                 : undefined
             }
           />
-        </section>
-
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="fire-truck" size={18} />
-            {t('section.crewPlan')}
-          </h2>
+        </>
+      ),
+    },
+    {
+      id: 'crewPlan',
+      icon: 'fire-truck',
+      title: t('section.crewPlan'),
+      blurb: t('section.blurb.crewPlan'),
+      count: crewPlan.plan?.assignments.length,
+      content: (
+        <>
           <ShareWithCrewsPanel
             available={rescueVideo.capabilities.video}
             state={crewRoom.state}
@@ -304,106 +274,208 @@ export function Dashboard({
               selection.showRescue(neighborId)
             }}
           />
-        </section>
+        </>
+      ),
+    },
+    {
+      id: 'closures',
+      icon: 'road-closed',
+      title: t('section.closures'),
+      blurb: t('section.blurb.closures'),
+      count: closures.closures.length,
+      content: (
+        <ClosuresPanel
+          closures={closures.closures}
+          closing={closures.closing}
+          saving={closures.saving}
+          error={closures.error}
+          onToggleClosing={() => {
+            if (!closures.closing) onModeChange('replay')
+            closures.setClosing(!closures.closing)
+          }}
+          onReopen={(closureId) => void closures.reopen(closureId)}
+          nameOf={(neighborId) => neighbors.find((neighbor) => neighbor.id === neighborId)?.name ?? neighborId}
+        />
+      ),
+    },
+    {
+      id: 'orders',
+      icon: 'flag',
+      title: t('section.orders'),
+      blurb: t('section.blurb.orders'),
+      count: orders.orders.length,
+      content: (
+        <OrdersPanel
+          orders={orders.orders}
+          safePoints={orders.safePoints}
+          saving={orders.saving}
+          onApprove={orders.approve}
+          phoneCalls={voice.phone_calls}
+          calling={campaign.calling}
+          campaign={campaign.result}
+          onCall={campaign.call}
+        />
+      ),
+    },
+    {
+      id: 'fire',
+      icon: 'flame',
+      title: t('section.fire'),
+      blurb: t('section.blurb.fire'),
+      count: forecast.zonesAtRisk.length,
+      content: (
+        <>
+          <LeadTimeCard view={leadTime} />
+          {forecast.status === 'ready' && (
+            <SpreadLegend issuedAt={forecast.issuedAt} closedRoads={closedRoads(forecast.zonesAtRisk).length} />
+          )}
+          <ZonesAtRisk status={forecast.status} zones={forecast.zonesAtRisk} hasForecast={forecast.issuedAt !== null} />
+        </>
+      ),
+    },
+    {
+      id: 'alerts',
+      icon: 'bell',
+      title: t('section.alerts'),
+      blurb: t('section.blurb.alerts'),
+      count: alerts.length,
+      content: (
+        <CrewAlerts
+          alerts={alerts}
+          onShowRoute={(neighborId) => {
+            onModeChange('replay')
+            selection.showRescue(neighborId)
+          }}
+        />
+      ),
+    },
+  ]
 
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="road-closed" size={18} />
-            {t('section.closures')}
-          </h2>
-          <ClosuresPanel
-            closures={closures.closures}
-            closing={closures.closing}
-            saving={closures.saving}
-            error={closures.error}
-            onToggleClosing={() => {
-              if (!closures.closing) onModeChange('replay')
-              closures.setClosing(!closures.closing)
-            }}
-            onReopen={(closureId) => void closures.reopen(closureId)}
-            nameOf={(neighborId) => neighbors.find((neighbor) => neighbor.id === neighborId)?.name ?? neighborId}
-          />
-        </section>
+  const liveSections: ConsoleSection[] = [
+    {
+      id: 'liveOps',
+      icon: 'flame',
+      title: t('liveOps.section'),
+      blurb: t('section.blurb.liveOps'),
+      count: liveOperations.data?.places.length,
+      content: (
+        <LiveOperationsPanel
+          fires={live.spread?.fires ?? []}
+          view={liveOperations}
+          onSelect={liveOperations.select}
+          onRetry={liveOperations.retry}
+        />
+      ),
+    },
+  ]
 
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="flag" size={18} />
-            {t('section.orders')}
-          </h2>
-          <OrdersPanel
-            orders={orders.orders}
-            safePoints={orders.safePoints}
-            saving={orders.saving}
-            onApprove={orders.approve}
-            phoneCalls={voice.phone_calls}
-            calling={campaign.calling}
-            campaign={campaign.result}
-            onCall={campaign.call}
-          />
-        </section>
+  // Operations: the same in both modes, because both are audited.
+  const operationsSections: ConsoleSection[] = [
+    {
+      id: 'activity',
+      icon: 'replay',
+      title: t('section.activity'),
+      blurb: t('section.blurb.activity'),
+      content: (
+        <ActivityLog
+          events={activity.events}
+          loaded={activity.loaded}
+          failed={activity.failed}
+          downloadUrl={activity.downloadUrl}
+        />
+      ),
+    },
+    {
+      id: 'services',
+      icon: 'satellite',
+      title: t('section.services'),
+      blurb: t('section.blurb.services'),
+      content: <ServiceStatus providers={services.providers} loaded={services.loaded} failed={services.failed} />,
+    },
+  ]
 
-        {mode === 'replay' && (
-          <section className="group">
-            <h2 className="icon-button">
-              <Icon name="flame" size={18} />
-              {t('section.fire')}
-            </h2>
-            <LeadTimeCard view={leadTime} />
-            {forecast.status === 'ready' && (
-              <SpreadLegend issuedAt={forecast.issuedAt} closedRoads={closedRoads(forecast.zonesAtRisk).length} />
-            )}
-            <ZonesAtRisk
-              status={forecast.status}
-              zones={forecast.zonesAtRisk}
-              hasForecast={forecast.issuedAt !== null}
-            />
-          </section>
-        )}
+  const sections = [...(mode === 'replay' ? replaySections : liveSections), ...operationsSections]
 
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="bell" size={18} />
-            {t('section.alerts')}
-          </h2>
-          <CrewAlerts
-            alerts={alerts}
-            onShowRoute={(neighborId) => {
-              onModeChange('replay')
-              selection.showRescue(neighborId)
-            }}
-          />
-        </section>
+  // The reset belongs to the demo: in live mode there is nothing of ours to put back.
+  const resetButton =
+    mode === 'replay' ? (
+      <button type="button" className="reset icon-button" onClick={reset}>
+        <Icon name="reset" size={16} />
+        {t('app.reset')}
+      </button>
+    ) : null
 
-        {selected === null && (
-          <p className="hint">{t('app.tapResident')}</p>
-        )}
+  const wake = selection.neighborId ?? liveOperations.fireId
 
-        {/* Operations: the activity log, then the service status at the bottom of the sidebar. */}
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="flag" size={18} />
-            {t('section.activity')}
-          </h2>
-          <ActivityLog
-            events={activity.events}
-            loaded={activity.loaded}
-            failed={activity.failed}
-            downloadUrl={activity.downloadUrl}
-          />
-        </section>
-        <section className="group">
-          <h2 className="icon-button">
-            <Icon name="satellite" size={18} />
-            {t('section.services')}
-          </h2>
-          <ServiceStatus providers={services.providers} loaded={services.loaded} failed={services.failed} />
-        </section>
+  return (
+    <div className="app">
+      <div className="map-area">
+        <TriageMap
+          mode={mode}
+          replayBounds={replayBounds}
+          neighbors={neighbors}
+          hotspots={replay.hotspots}
+          time={replay.time}
+          live={live.data}
+          liveSpread={live.spread}
+          dgt={live.dgt}
+          liveOperations={liveOperations.data}
+          onSelectLiveFire={liveOperations.select}
+          selectedNeighborId={selection.neighborId}
+          route={selection.route}
+          routeKind={selection.mode}
+          fireArea={selection.fireArea}
+          onSelectNeighbor={selection.select}
+          closures={closures.closures}
+          closing={closures.closing}
+          onMapClick={(lon, lat) => void closures.close(lon, lat)}
+          spread={forecast.spread}
+          zones={forecast.zonesAtRisk}
+          liveVideo={liveVideo}
+        />
+        <MapLegend mode={mode} />
+      </div>
 
-        <button type="button" className="reset icon-button" onClick={reset}>
-          <Icon name="reset" size={16} />
-          {t('app.reset')}
-        </button>
-      </BottomSheet>
+      <header className="topbar">
+        <h1 className="brand">
+          <a className="brand-link" href="/about" aria-label={t('app.about')}>
+            <Icon name="logo" size={26} />
+            <span className="brand-name">HackFire</span>
+          </a>
+        </h1>
+        <span className={online ? 'conn ok' : 'conn down'} role="status">
+          <span className="conn-dot" aria-hidden="true" />
+          <span className="conn-label">{online ? t('app.connected') : t('app.offline')}</span>
+        </span>
+        <ModeToggle mode={mode} onChange={onModeChange} />
+        <LanguagePicker />
+      </header>
+
+      {wide ? (
+        <Console
+          sections={sections}
+          header={header}
+          pinned={call}
+          wake={wake}
+          wakeSection={selection.neighborId !== null ? 'wayOut' : 'liveOps'}
+          footer={resetButton}
+        />
+      ) : (
+        <BottomSheet wake={wake} header={header}>
+          {call}
+          {sections.map((section) => (
+            <section key={section.id} className={section.selected ? 'group group-selected' : 'group'}>
+              <h2 className="icon-button">
+                <Icon name={section.icon} size={18} />
+                {section.title}
+              </h2>
+              {section.blurb !== '' && <p className="section-blurb">{section.blurb}</p>}
+              {section.content}
+            </section>
+          ))}
+          {resetButton}
+        </BottomSheet>
+      )}
     </div>
   )
 }
