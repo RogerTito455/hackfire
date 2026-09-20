@@ -242,6 +242,8 @@ export function Dashboard({
               order={orders.orders.find((order) => order.zone === selected.zone)}
               activeId={conversation.neighborId}
               state={conversation.state}
+              muted={conversation.muted}
+              onMutedChange={conversation.setMuted}
               onTalk={() => conversation.start(selected.id)}
               onHangUp={conversation.hangUp}
             />
@@ -260,6 +262,8 @@ export function Dashboard({
           <AskAgentPanel
             available={voice.coordinator}
             state={coordinatorCall.state}
+            muted={coordinatorCall.muted}
+            onMutedChange={coordinatorCall.setMuted}
             onAsk={coordinatorCall.start}
             onHangUp={coordinatorCall.hangUp}
           />

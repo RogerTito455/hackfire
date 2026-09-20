@@ -23,6 +23,16 @@ The replay alone leaves the status strip at "Not called yet" for every resident.
 - **Turn it off before any live call.** Anything the voice agent records while it is on is overwritten on the next slider move and thrown away when it is switched off.
 - From a terminal: `curl -X POST <url>/api/autopilot -H 'Content-Type: application/json' -d '{"enabled": false}'`; `GET <url>/api/autopilot` says whether it is on.
 
+## The microphone during a call
+
+The browser call keeps the microphone open, so a noisy room talks over the resident. While a call is live, both call panels have a **Silenciar el micrófono** button:
+
+- Tap it and the agent hears nothing; the button turns red and reads **Micrófono silenciado, toca para hablar**.
+- Tap it again before answering as the resident.
+- Every new call starts with the microphone open.
+
+On stage: mute between your lines, and keep the laptop close to whoever plays the resident.
+
 ## If something fails on stage
 
 | Failure | What to do |
@@ -36,5 +46,5 @@ The replay alone leaves the status strip at "Not called yet" for every resident.
 
 ## Still open in #13
 
-- Push-to-talk instead of open listening, and pre-recorded resident audio: voice track (#7, Roger).
+- Pre-recorded resident audio: not recorded. The typed answer covers the same failure.
 - Feature freeze Saturday 21:00.

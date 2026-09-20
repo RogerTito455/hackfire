@@ -110,7 +110,9 @@
     "onTheLine": "El agente de vecinos está llamando a {name}: contesta en su nombre.",
     "hangUp": "Colgar",
     "take": "Llamar a {name} (contestas aquí)",
-    "failed": "No se pudo conectar con el agente. Usa la respuesta escrita de abajo."
+    "failed": "No se pudo conectar con el agente. Usa la respuesta escrita de abajo.",
+    "mute": "Silenciar el micrófono",
+    "unmute": "Micrófono silenciado, toca para hablar"
   },
   "ask": {
     "connecting": "Conectando con el agente…",

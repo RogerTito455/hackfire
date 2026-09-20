@@ -11,14 +11,19 @@ export interface Conversations {
   /** Who the conversation is about (a resident's id), or was last started for. */
   neighborId: string | null
   state: ConversationState
+  /** Whether the microphone is closed right now; false whenever no call is live. */
+  muted: boolean
   start: (neighborId: string) => Promise<void>
+  setMuted: (muted: boolean) => void
   hangUp: () => void
 }
 
 /** The coordinator's own conversation with the coordinator agent (#10). */
 export interface CoordinatorConversation {
   state: ConversationState
+  muted: boolean
   start: () => void
+  setMuted: (muted: boolean) => void
   hangUp: () => void
 }
 
@@ -43,6 +48,8 @@ export function useVoiceConversations(): VoiceConversations {
     },
     coordinator: {
       state: coordinator.state,
+      muted: coordinator.muted,
+      setMuted: coordinator.setMuted,
       start: () => {
         resident.hangUp()
         void coordinator.start('coordinator')
@@ -57,6 +64,7 @@ function useConversation(openSession: (id: string) => Promise<WebSession>, onEnd
   const [neighborId, setNeighborId] = useState<string | null>(null)
   const [state, setState] = useState<ConversationState>('idle')
   const current = useRef<Conversation | null>(null)
+  const [muted, setMutedState] = useState(false)
   // The id of the conversation that is live, so its end is reported exactly once.
   const liveId = useRef<string | null>(null)
   const ended = useRef(onEnded)
@@ -99,6 +107,7 @@ function useConversation(openSession: (id: string) => Promise<WebSession>, onEnd
       }
       current.current = conversation
       liveId.current = id
+      setMutedState(false)
       setState('live')
     } catch {
       if (attempt.current === mine) setState('error')
@@ -115,5 +124,13 @@ function useConversation(openSession: (id: string) => Promise<WebSession>, onEnd
     endLive()
   }, [endLive])
 
-  return { neighborId, state, start, hangUp }
+  // The microphone closes and opens mid-call; a new call always starts with it open.
+  const setMuted = useCallback((next: boolean) => {
+    const conversation = current.current
+    if (conversation === null) return
+    setMutedState(next)
+    void conversation.setMicrophone(!next).catch(() => setMutedState((was) => !was))
+  }, [])
+
+  return { neighborId, state, muted, start, setMuted, hangUp }
 }

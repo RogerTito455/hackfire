@@ -6,12 +6,14 @@ interface AskAgentPanelProps {
   /** Whether the backend can open a conversation with the coordinator agent. */
   available: boolean
   state: ConversationState
+  muted: boolean
+  onMutedChange: (muted: boolean) => void
   onAsk: () => void
   onHangUp: () => void
 }
 
 // The coordinator asks the agent by voice which rescues to do first; the map draws the route it gives.
-export function AskAgentPanel({ available, state, onAsk, onHangUp }: AskAgentPanelProps) {
+export function AskAgentPanel({ available, state, muted, onMutedChange, onAsk, onHangUp }: AskAgentPanelProps) {
   const { t } = useI18n()
   if (!available) return null
   if (state === 'connecting') return <p className="empty">{t('ask.connecting')}</p>
@@ -19,6 +21,10 @@ export function AskAgentPanel({ available, state, onAsk, onHangUp }: AskAgentPan
     return (
       <div className="talk">
         <p className="talk-live">{t('ask.onTheLine')}</p>
+        <button type="button" className="talk-mic icon-button" aria-pressed={muted} onClick={() => onMutedChange(!muted)}>
+          <Icon name={muted ? 'mic-off' : 'mic'} size={16} />
+          {muted ? t('talk.unmute') : t('talk.mute')}
+        </button>
         <button type="button" className="talk-hang-up icon-button" onClick={onHangUp}>
           <Icon name="close" size={16} />
           {t('ask.hangUp')}

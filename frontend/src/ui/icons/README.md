@@ -85,6 +85,8 @@ The marker colours (`MARKER_OUTLINE_COLOR`, `PLACE_MARKER_INK`) live in `ui/them
 | <img src="lifebuoy.svg" width="24"> | `lifebuoy` | Triage status "Needs rescue" | Next to the status label, status marker | A ring with four diagonal bands |
 | <img src="live.svg" width="24"> | `live` | Live mode | Map mode toggle | A dot with two broadcast arcs on each side |
 | <img src="logo.svg" width="24"> | `logo` | The HackFire mark | Brand mark; the favicon is a red copy | A flame inside a rounded shield |
+| <img src="mic.svg" width="24"> | `mic` | The microphone is open during a call | The mute button in the call panels | A capsule over an arc, with a stand |
+| <img src="mic-off.svg" width="24"> | `mic-off` | The microphone is closed | The same button once muted | The same microphone, cut by a stroke |
 | <img src="pause.svg" width="24"> | `pause` | Pause the replay | Replay controls | Two rounded upright bars |
 | <img src="phone.svg" width="24"> | `phone` | A call to a resident | Landing page, "how it works" | The handset of `phone-missed`, ringing: two sound arcs at the top right instead of the × |
 | <img src="phone-missed.svg" width="24"> | `phone-missed` | Triage status "No answer" | Next to the status label, status marker | A phone handset with a small × at the top right |

@@ -110,7 +110,9 @@
     "onTheLine": "The resident agent is calling {name}: answer as them.",
     "hangUp": "Hang up",
     "take": "Call {name} (answer here)",
-    "failed": "Could not reach the agent. Use the typed answer below."
+    "failed": "Could not reach the agent. Use the typed answer below.",
+    "mute": "Mute the microphone",
+    "unmute": "Microphone off, tap to speak"
   },
   "ask": {
     "connecting": "Connecting to the agent…",
