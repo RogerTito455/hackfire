@@ -25,6 +25,11 @@ def _origins(name: str, default: str) -> list[str]:
     return [origin for origin in origins if origin] or [default]
 
 
+def _list(name: str) -> list[str]:
+    """Comma-separated values, spaces and trailing slashes forgiven. Empty when unset."""
+    return [item.strip().rstrip("/") for item in _env(name).split(",") if item.strip()]
+
+
 def _private_key(value: str) -> str:
     """A PEM key given inline, or read from the path given instead. Empty when unset or unreadable."""
     if not value or value.startswith("-----BEGIN"):
@@ -55,6 +60,14 @@ class Settings:
     twilio_from_number: str = field(default_factory=lambda: _env("TWILIO_FROM_NUMBER"))
     # Where the dashboard is reachable, for the link in each crew alert.
     public_url: str = field(default_factory=lambda: _env("HACKFIRE_PUBLIC_URL", "http://localhost:5173").rstrip("/"))
+    # The dashboard's Content-Security-Policy (app/main.py, docs/findings/2026-09-20-csp.md).
+    # Extra sources beyond the built-in ones, comma-separated, added to connect-src: another
+    # backend a dashboard is pointed at, a Vonage region, a tile mirror. HACKFIRE_PUBLIC_URL
+    # is added on its own.
+    csp_connect_origins: list[str] = field(default_factory=lambda: _list("HACKFIRE_CSP_CONNECT"))
+    # Report the policy instead of enforcing it: the browser logs violations and blocks nothing.
+    # The escape hatch if the policy ever gets in the way of a live demo.
+    csp_report_only: bool = field(default_factory=lambda: _env("HACKFIRE_CSP_REPORT_ONLY") == "1")
     # The language of what the voice agents are told (tool answers, call data) and of the crew SMS.
     # The dashboard picks its own per request (Accept-Language). Any code in app/locales/.
     agent_locale: str = field(default_factory=lambda: _env("HACKFIRE_AGENT_LOCALE", "en"))
