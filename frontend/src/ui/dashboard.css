@@ -870,6 +870,11 @@ body,
   display: flex;
   flex-direction: column;
   height: calc(var(--sheet-peek, 196px) + var(--safe-bottom));
+  /* The real window height, measured in JS and fed in: on a phone `100vh` is the window with the
+     browser's URL bar hidden, so a sheet sized in vh climbs higher than the code thinks and swallows
+     the top bar — with it the way back. The gap keeps the top bar and the map's key clear; TOP_GAP
+     in BottomSheet.tsx is the same number, and the two have to agree for the drag to snap right. */
+  --sheet-top-gap: calc(var(--safe-top) + 110px);
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   background: var(--mist);
   box-shadow: var(--float);
@@ -877,15 +882,16 @@ body,
 }
 
 /* Half opens on to something: the header can be tall (a scrubber, four counters, a live note), so
-   half is whatever leaves SHEET_BODY of panel under it, and never less than the old 52%. */
+   half is whatever leaves SHEET_BODY of panel under it, and never less than 52% of the window. */
 .sheet[data-snap='half'] {
-  height: min(90vh, max(52vh, calc(var(--sheet-peek, 196px) + 240px)));
-  height: min(90dvh, max(52dvh, calc(var(--sheet-peek, 196px) + 240px)));
+  height: min(
+    calc(var(--sheet-vh, 100vh) - var(--sheet-top-gap)),
+    max(calc(var(--sheet-vh, 100vh) * 0.52), calc(var(--sheet-peek, 196px) + 240px))
+  );
 }
 
 .sheet[data-snap='full'] {
-  height: 90vh;
-  height: 90dvh;
+  height: calc(var(--sheet-vh, 100vh) - var(--sheet-top-gap));
 }
 
 .sheet-grab {
@@ -901,8 +907,9 @@ body,
    takes the swipe for a scroll, cancels the pointer and the sheet answers the wrong gesture. */
 .sheet-handle {
   touch-action: none;
-  width: 44px;
-  height: 20px;
+  display: block;
+  width: 100%;
+  height: 32px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -914,9 +921,26 @@ body,
   display: block;
   width: 40px;
   height: 5px;
-  margin: 7px auto;
+  margin: 2px auto 6px;
   border-radius: 999px;
   background: var(--line);
+}
+
+/* Which way a tap will take it: up to open, down to close. Turns over when the sheet is open. */
+.sheet-handle::after {
+  content: '';
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: 0 auto;
+  border-right: 2px solid var(--ink-2);
+  border-bottom: 2px solid var(--ink-2);
+  transform: rotate(-135deg);
+  transition: transform 200ms var(--ease-out);
+}
+
+.sheet[data-snap='full'] .sheet-handle::after {
+  transform: rotate(45deg);
 }
 
 .sheet-header {
@@ -1058,7 +1082,9 @@ body,
 
 @media (prefers-reduced-motion: reduce) {
   .autopilot-track,
-  .autopilot-knob {
+  .autopilot-knob,
+  .sheet,
+  .sheet-handle::after {
     transition: none;
   }
 }
