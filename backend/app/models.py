@@ -113,6 +113,7 @@ class Route(BaseModel):
     distance_m: float | None = None
     duration_s: float | None = None
     spoken_directions: str
+    brief: str | None = Field(default=None, description="The same route in one sentence, for a phone call")
     geometry: dict | None = Field(default=None, description="GeoJSON LineString")
     stub: bool = False
 

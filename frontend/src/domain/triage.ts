@@ -46,6 +46,8 @@ export interface Route {
   distance_m: number | null
   duration_s: number | null
   spoken_directions: string
+  /** The same route in one sentence, which is what the voice agent says on a call. */
+  brief?: string | null
   /** GeoJSON LineString; null when no route avoids the fire. */
   geometry: { type: 'LineString'; coordinates: [number, number][] } | null
   stub: boolean

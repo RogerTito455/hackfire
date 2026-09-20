@@ -196,6 +196,19 @@ def say(data: dict) -> str:
     return " ".join(sentences)
 
 
+def say_brief(data: dict) -> str:
+    """One sentence for a phone call: where to go, by which road, and how long.
+
+    The full directions (`say`) name up to three roads and the distance, which is more than someone
+    packing a car can hold. The dashboard still shows all of it.
+    """
+    if data.get("none") or data.get("blocked"):
+        return say(data)
+    roads = data["roads"]
+    way = t("route.along", roads=roads[0]) if roads else ""
+    return t("route.brief", destination=data["destination"], way=way, duration=_duration_phrase(data["duration_s"], data["mode"]))
+
+
 def spoken_directions(feature: dict, mode: TravelMode, destination: str, avoided_fire: bool, ahead_h: float = 0) -> str:
     """Two or three sentences a person can follow on a phone call."""
     return say(directions(feature, mode, destination, avoided_fire, ahead_h))
@@ -239,7 +252,7 @@ def _from_cache(cached: dict) -> Route:
     """A cached route, its directions written in the request's language when their data is known."""
     route = Route(**cached)
     data = cached.get("directions") or legacy_directions(cached)
-    return route.model_copy(update={"spoken_directions": say(data)}) if data else route
+    return route.model_copy(update={"spoken_directions": say(data), "brief": say_brief(data)}) if data else route
 
 
 # --- Planning and cache --------------------------------------------------------
@@ -341,6 +354,7 @@ def plan(
             distance_m=summary.get("distance"),
             duration_s=summary.get("duration"),
             spoken_directions=say(data),
+            brief=say_brief(data),
             geometry=feature["geometry"],
         )
     _memory[key] = {**route.model_dump(mode="json"), "directions": data}

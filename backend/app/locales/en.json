@@ -35,7 +35,8 @@
     "warning": "Warning: no route avoids the burned area.",
     "none": "No route that keeps away from the fire was found. Follow the instructions of the emergency services on site.",
     "closed": "The road to {destination} is closed.",
-    "blocked": "The usual route goes through a closed road, and no other route can be planned right now. Follow the instructions of the emergency services on site."
+    "blocked": "The usual route goes through a closed road, and no other route can be planned right now. Follow the instructions of the emergency services on site.",
+    "brief": "Drive to {destination}{way}, {duration}."
   },
   "order": {
     "leave": "The order for {zone} is to leave now for {destination}.",

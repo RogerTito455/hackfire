@@ -49,7 +49,9 @@ def call_variables(neighbor: Neighbor) -> dict[str, str]:
 
 def _route_by_car(neighbor: Neighbor) -> str:
     try:
-        directions = orders.route_for(neighbor, TravelMode.CAR).spoken_directions
+        route = orders.route_for(neighbor, TravelMode.CAR)
+        # What the agent says on the phone is the short version; the dashboard keeps the full one.
+        directions = route.brief or route.spoken_directions
     except Exception:
         # A call must start even when routing fails; the agent can still ask for a route.
         logger.exception("no route by car for %s at call start", neighbor.id)
