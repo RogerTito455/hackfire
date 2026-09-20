@@ -22,6 +22,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | | [Supabase](services/supabase.md) | Hosted Postgres; not adopted, see the page |
 | | [Vonage Video](services/vonage.md) | Extension 2: live video from a resident who needs rescue |
 | | [Norma (QualityClouds)](services/norma.md) | Extension 1: scan, fix, rescan |
+| | [Defence (Norma)](../DEFENCE.md) | What we fixed, what we did not, and why — the reviewer's summary |
 | | [Devin (Cognition)](services/devin.md) | Extension 3: self-improving spread model |
 | **Demo** | [Runbook](demo/runbook.md) | Before the demo, and what to do when something fails on stage |
 | | [Presentation script](demo/presentation.md) | The three minutes on stage, second by second: the project explained and the live product, with fallbacks |
