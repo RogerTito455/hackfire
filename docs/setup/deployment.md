@@ -95,6 +95,7 @@ With `$B` open in a browser, the `n02` pin turns red at the next poll: within ab
 - **The real registry is not in the image.** `data/neighbors.local.json` is git-ignored, so without the variable below the deployed backend serves `neighbors.sample.json`. See [The real registry](#the-real-registry).
 - **A frontend-only change also restarts the backend**, because they are one service.
 - **CORS only matters for a dashboard on another origin**, such as `pnpm dev:web` pointed at the deployed backend with `VITE_API_URL`. Add that origin to `HACKFIRE_CORS_ORIGINS` on Railway.
+- **Every response carries a Content-Security-Policy**, built in `backend/app/main.py` and enforced. It allows this origin, the OpenStreetMap tiles, `wss:` for the voice call and Vonage's hosts, and nothing else. A dashboard pointed at another backend, or another origin the app has to reach, goes in `HACKFIRE_CSP_CONNECT`. If it ever blocks something mid-demo, `HACKFIRE_CSP_REPORT_ONLY=1` turns it into a report and blocks nothing. See [the finding](../findings/2026-09-20-csp.md).
 
 ## Building the image locally
 

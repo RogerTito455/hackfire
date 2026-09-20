@@ -64,6 +64,58 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
+# --- Content-Security-Policy -------------------------------------------------
+# What the dashboard's pages are allowed to load and talk to, so an injected string cannot become
+# an injected script. Every response carries it, pages and assets alike: the tile cache's service
+# worker takes its own policy from the headers of its script, so it needs the header too.
+# Each source below is in the code, not a guess; docs/findings/2026-09-20-csp.md explains them.
+
+# The basemap (OSM_STYLE in ui/TriageMap.tsx) and what public/tile-cache-sw.js caches for it.
+TILE_HOST = "https://tile.openstreetmap.org"
+# Vonage Video (#18, services/videoCall.ts): configuration and logging over https, signalling and
+# media over wss. A project's own Rumor server is a subdomain of its own, so wildcards it is.
+VONAGE_HOSTS = ("https://*.opentok.com", "https://*.tokbox.com")
+
+
+def content_security_policy() -> str:
+    """The policy every response carries. Extra connect sources come from the environment."""
+    # LiveKit's room (services/voiceSession.ts) is a wss URL SLNG hands out per call, on whichever
+    # deployment it picks, so the host cannot be listed ahead of time. `wss:` allows secure
+    # WebSockets and nothing else; with script-src 'self' there is no script here to abuse it.
+    connect = ["'self'", TILE_HOST, "wss:", *VONAGE_HOSTS, settings.public_url, *settings.csp_connect_origins]
+    return "; ".join(
+        [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "object-src 'none'",
+            "frame-ancestors 'none'",
+            "form-action 'self'",
+            "script-src 'self'",
+            # MapLibre GL runs its tile worker from a blob URL it builds itself.
+            "worker-src 'self' blob:",
+            "style-src 'self'",
+            # data: for the arrows and badges in MapLibre's own stylesheet, blob: for the images
+            # the map and the video SDKs build in memory.
+            f"img-src 'self' data: blob: {TILE_HOST}",
+            "font-src 'self'",
+            # The agent's audio and a resident's video arrive as streams the browser attaches.
+            "media-src 'self' blob:",
+            "connect-src " + " ".join(dict.fromkeys(source for source in connect if source)),
+        ]
+    )
+
+
+async def security_headers(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    """Stamp the Content-Security-Policy on every response: pages, assets and the API alike."""
+    response = await call_next(request)
+    header = "Content-Security-Policy-Report-Only" if settings.csp_report_only else "Content-Security-Policy"
+    response.headers[header] = content_security_policy()
+    return response
+
+
+app.middleware("http")(security_headers)
+
+
 @app.middleware("http")
 async def request_locale(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     """The language of the sentences this request gets back (app/i18n.py).
