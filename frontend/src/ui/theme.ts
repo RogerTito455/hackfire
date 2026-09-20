@@ -80,6 +80,14 @@ export function formatMinutes(minutes: number): string {
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`
 }
 
+/** How long ago, in units that read the same in both languages: "40 min", "6 h", "12 d". */
+export function formatAgo(milliseconds: number): string {
+  const minutes = Math.max(0, Math.round(milliseconds / 60_000))
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.round(minutes / 60)
+  return hours < 48 ? `${hours} h` : `${Math.round(hours / 24)} d`
+}
+
 /** `now` (the locale's word for it) or a duration: how the panel says when the fire arrives. */
 export function formatMinutesToImpact(minutes: number, now: string): string {
   return minutes <= 0 ? now : formatMinutes(minutes)
@@ -158,6 +166,9 @@ export const CLOSURE_COLOR = '#3c4043'
 /** The DGT's official forest-fire incidents in live mode: a warning triangle in navy ink with a fire
  * dot, so they never read as one of Deepfire's round fire markers. */
 export const DGT_MARKER = { ink: '#0f1b3d', fill: '#ffffff', fire: '#ff7a1a' } as const
+/** A road the DGT itself has shut: the navy of its warning triangle, so official data never reads as
+ * our red prediction cordon. Drawn dashed over a white casing, the same cordon idiom. */
+export const DGT_CLOSURE_COLOR = DGT_MARKER.ink
 
 export const ORDER_STATE_COLOR = { proposed: '#e0a100', approved: '#2e9e5b' } as const
 

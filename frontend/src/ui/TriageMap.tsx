@@ -15,8 +15,8 @@ import { HOUR, MINUTE, type Hotspot } from '../domain/hotspots'
 import { burningHours, type LiveFires } from '../domain/liveFires'
 import { closureArea, type RoadClosure } from '../domain/closures'
 import { liveSpreadPolygons, simulationFor, type LiveSpread } from '../domain/liveSpread'
-import { operationsBounds, type LiveOperations } from '../domain/liveOperations'
-import type { DgtOverview } from '../domain/liveDgt'
+import { operationsBounds, type ClosureFocus, type LiveOperations } from '../domain/liveOperations'
+import { dgtClosures, dgtGeometry, type DgtOverview } from '../domain/liveDgt'
 import type { Bounds } from '../domain/scenario'
 import type { SpreadPolygon } from '../domain/spread'
 import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
@@ -27,8 +27,10 @@ import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg } from './markers
 import {
   BASEMAP_PAINT,
   CLOSURE_COLOR,
+  DGT_CLOSURE_COLOR,
   DGT_MARKER,
   FIRE_AREA_COLOR,
+  formatAgo,
   formatSpanishTime,
   HOTSPOT_AGE_COLORS,
   HOTSPOT_RADIUS_BY_FRP,
@@ -76,6 +78,7 @@ const LIVE_FIRES = 'live-fires'
 const LIVE_SPREAD = 'live-spread'
 const LIVE_OPS = 'live-ops'
 const LIVE_DGT = 'live-dgt'
+const LIVE_DGT_CLOSED = 'live-dgt-closed'
 const FIRE_AREA = 'fire-area'
 const ROUTE = 'route'
 const CLOSURES = 'closures'
@@ -215,7 +218,20 @@ function dgtMarkerImage(): ImageData | null {
 
 // --- Live mode: the selected fire's places at risk and roads to close ---------------------------
 
-const LIVE_OPS_LAYERS = [`${LIVE_OPS}-fill`, `${LIVE_OPS}-outline`, `${LIVE_OPS}-roads-casing`, `${LIVE_OPS}-roads`]
+const LIVE_OPS_LAYERS = [
+  `${LIVE_OPS}-fill`,
+  `${LIVE_OPS}-outline`,
+  `${LIVE_OPS}-roads-focus`,
+  `${LIVE_OPS}-roads-casing`,
+  `${LIVE_OPS}-roads`,
+]
+// The DGT's own closures near the selected fire: the same cordon idiom in its official navy.
+const LIVE_DGT_CLOSED_LAYERS = [
+  `${LIVE_DGT_CLOSED}-focus`,
+  `${LIVE_DGT_CLOSED}-casing`,
+  LIVE_DGT_CLOSED,
+  `${LIVE_DGT_CLOSED}-point`,
+]
 // Places the simulation never reaches are drawn in the ramp's palest purple.
 const NOT_REACHED_MINUTES = 720
 
@@ -226,7 +242,32 @@ function liveOperationsCollection(operations: LiveOperations | null): GeoJSONDat
     features: (operations?.places ?? []).map((place) => ({
       type: 'Feature',
       geometry: place.geometry,
-      properties: { kind: place.kind, minutes: place.minutes ?? NOT_REACHED_MINUTES, closed: closed.has(place.id) },
+      properties: {
+        id: place.id,
+        name: place.name ?? '',
+        kind: place.kind,
+        minutes: place.minutes ?? NOT_REACHED_MINUTES,
+        closed: closed.has(place.id),
+      },
+    })),
+  } as unknown as GeoJSONData
+}
+
+/** The DGT's official closures near the selected fire: a stretch when it gives one, else a point. */
+function dgtClosureCollection(operations: LiveOperations | null): GeoJSONData {
+  return {
+    type: 'FeatureCollection',
+    features: dgtClosures(operations?.dgt.records ?? []).map((record) => ({
+      type: 'Feature',
+      geometry: dgtGeometry(record),
+      properties: {
+        id: record.id,
+        road: record.road ?? '',
+        management: record.management,
+        cause: record.cause,
+        place: record.municipality ?? record.province ?? '',
+        since: record.since ?? 0,
+      },
     })),
   } as unknown as GeoJSONData
 }
@@ -296,6 +337,9 @@ const zoneLineWidth = [
 // Predicted spread and the zones it reaches belong to the replay; live mode hides them.
 const REPLAY_LAYERS = ['spread-fill', 'spread-outline', 'zones-fill', 'zones-outline', 'roads-closed-casing', 'roads-closed']
 
+/** A filter that matches no feature: how a highlight layer draws nothing until a road is tapped. */
+const NOTHING = ['==', ['get', 'id'], ''] as ExpressionSpecification
+
 // Roads the fire reaches within the hour: closed to residents, open to crews (domain/zones.ts).
 const ROAD_CLOSED_FILTER = [
   'all',
@@ -326,6 +370,10 @@ interface TriageMapProps {
   liveOperations?: LiveOperations | null
   /** A tap on a live fire selects it. */
   onSelectLiveFire?: (fireId: string) => void
+  /** The closed road the panel (or a tap on the map) picked: the map flies to it and marks it. */
+  closureFocus?: ClosureFocus | null
+  /** A tap on a cordon, so the panel can select the same row. */
+  onFocusClosure?: (focus: ClosureFocus) => void
   /** Live mode: the DGT's official forest-fire incidents, drawn as small warning triangles. */
   dgt?: DgtOverview | null
   selectedNeighborId: string | null
@@ -358,6 +406,8 @@ export function TriageMap({
   liveSpread = null,
   liveOperations = null,
   onSelectLiveFire,
+  closureFocus = null,
+  onFocusClosure,
   dgt = null,
   selectedNeighborId,
   route,
@@ -404,6 +454,10 @@ export function TriageMap({
   useEffect(() => {
     onLiveFire.current = onSelectLiveFire
   }, [onSelectLiveFire])
+  const onFocus = useRef(onFocusClosure)
+  useEffect(() => {
+    onFocus.current = onFocusClosure
+  }, [onFocusClosure])
 
   useEffect(() => {
     if (!container.current || map.current || startBounds === null) return
@@ -525,6 +579,15 @@ export function TriageMap({
         layout: { visibility: 'none' },
         paint: { 'line-color': zoneColor, 'line-width': zoneLineWidth },
       })
+      // A halo under the cordon marks the road the coordinator tapped in the panel.
+      instance.addLayer({
+        id: `${LIVE_OPS}-roads-focus`,
+        type: 'line',
+        source: LIVE_OPS,
+        filter: NOTHING,
+        layout: { visibility: 'none', 'line-cap': 'round' },
+        paint: { 'line-color': ROAD_CLOSED_COLOR, 'line-width': 16, 'line-opacity': 0.3 },
+      })
       instance.addLayer({
         id: `${LIVE_OPS}-roads-casing`,
         type: 'line',
@@ -540,6 +603,44 @@ export function TriageMap({
         filter: ['==', ['get', 'closed'], true],
         layout: { visibility: 'none' },
         paint: { 'line-color': ROAD_CLOSED_COLOR, 'line-width': 4, 'line-dasharray': [1.2, 0.8] },
+      })
+      // The DGT's own closures near the selected fire: the same cordon, in the official navy.
+      instance.addSource(LIVE_DGT_CLOSED, { type: 'geojson', data: EMPTY, attribution: 'Road closures: DGT' })
+      instance.addLayer({
+        id: `${LIVE_DGT_CLOSED}-focus`,
+        type: 'line',
+        source: LIVE_DGT_CLOSED,
+        filter: NOTHING,
+        layout: { visibility: 'none', 'line-cap': 'round' },
+        paint: { 'line-color': DGT_CLOSURE_COLOR, 'line-width': 16, 'line-opacity': 0.3 },
+      })
+      instance.addLayer({
+        id: `${LIVE_DGT_CLOSED}-casing`,
+        type: 'line',
+        source: LIVE_DGT_CLOSED,
+        layout: { visibility: 'none', 'line-cap': 'round' },
+        paint: { 'line-color': '#fff', 'line-width': 7 },
+      })
+      instance.addLayer({
+        id: LIVE_DGT_CLOSED,
+        type: 'line',
+        source: LIVE_DGT_CLOSED,
+        layout: { visibility: 'none' },
+        paint: { 'line-color': DGT_CLOSURE_COLOR, 'line-width': 4, 'line-dasharray': [1.2, 0.8] },
+      })
+      // A closure the DGT gives as one point has no stretch to dash: a navy dot marks the spot.
+      instance.addLayer({
+        id: `${LIVE_DGT_CLOSED}-point`,
+        type: 'circle',
+        source: LIVE_DGT_CLOSED,
+        filter: ['==', ['geometry-type'], 'Point'],
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-radius': 6,
+          'circle-color': DGT_CLOSURE_COLOR,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#fff',
+        },
       })
       instance.addSource(LIVE_FIRES, {
         type: 'geojson',
@@ -645,6 +746,49 @@ export function TriageMap({
           .setDOMContent(livePopupContent(lines))
           .addTo(instance)
       })
+      // A tap on either cordon says which road it is and why it is shut, and selects its row in the
+      // panel: official closures are the DGT's, the red ones are ours.
+      for (const layer of [LIVE_DGT_CLOSED, `${LIVE_DGT_CLOSED}-point`]) {
+        instance.on('click', layer, (event) => {
+          const feature = event.features?.[0]
+          if (!feature) return
+          const { id, road, management, cause, place, since } = feature.properties as {
+            id: string
+            road: string
+            management: string
+            cause: string
+            place: string
+            since: number
+          }
+          const { t, intl: locale } = words.current
+          const lines = [t('map.dgtClosed', { road: road || t('liveOps.dgtNoRoad') })]
+          lines.push(`${t(`liveOps.dgtType.${management}`)}, ${t(`liveOps.dgtCause.${cause}`)}${place ? `, ${place}` : ''}`)
+          if (since > 0) {
+            lines.push(t('map.dgtClosedFor', { age: formatAgo(Date.now() - since), time: formatSpanishTime(since, locale) }))
+          }
+          lines.push(t('map.dgtSource'))
+          onFocus.current?.({ kind: 'official', id, lon: event.lngLat.lng, lat: event.lngLat.lat })
+          new Popup({ offset: 12, closeButton: false, focusAfterOpen: false })
+            .setLngLat(event.lngLat)
+            .setDOMContent(livePopupContent(lines))
+            .addTo(instance)
+        })
+      }
+      instance.on('click', `${LIVE_OPS}-roads`, (event) => {
+        const feature = event.features?.[0]
+        if (!feature) return
+        const { id, name } = feature.properties as { id: string; name: string }
+        const { t } = words.current
+        const lines = [
+          t('map.roadPredicted', { road: name || t('liveOps.kind.road') }),
+          t('map.roadPredictedWhy'),
+        ]
+        onFocus.current?.({ kind: 'predicted', id, lon: event.lngLat.lng, lat: event.lngLat.lat })
+        new Popup({ offset: 12, closeButton: false, focusAfterOpen: false })
+          .setLngLat(event.lngLat)
+          .setDOMContent(livePopupContent(lines))
+          .addTo(instance)
+      })
       // Norma rct-prf-setstate-in-useeffect: this is MapLibre's 'load' callback, not the effect
       // body; the style is ready when the map says so, which no render can derive.
       setStyleReady(true)
@@ -704,7 +848,7 @@ export function TriageMap({
 
   useEffect(() => {
     if (!styleReady || !map.current) return
-    for (const layer of [...LIVE_SPREAD_LAYERS, ...LIVE_OPS_LAYERS, LIVE_DGT]) {
+    for (const layer of [...LIVE_SPREAD_LAYERS, ...LIVE_OPS_LAYERS, ...LIVE_DGT_CLOSED_LAYERS, LIVE_DGT]) {
       map.current.setLayoutProperty(layer, 'visibility', mode === 'live' ? 'visible' : 'none')
     }
   }, [styleReady, mode])
@@ -714,6 +858,7 @@ export function TriageMap({
   useEffect(() => {
     if (!styleReady || !map.current) return
     map.current.getSource<GeoJSONSource>(LIVE_OPS)?.setData(liveOperationsCollection(liveOperations))
+    map.current.getSource<GeoJSONSource>(LIVE_DGT_CLOSED)?.setData(dgtClosureCollection(liveOperations))
     if (liveOperations === null) {
       fitted.current = null
       return
@@ -723,6 +868,26 @@ export function TriageMap({
     const bounds = operationsBounds(liveOperations, simulationFor(liveRuns.current, liveOperations.fireId))
     if (bounds) map.current.fitBounds(bounds, { padding: routePadding(), duration: 800, maxZoom: 13 })
   }, [styleReady, liveOperations])
+
+  // The closure the coordinator tapped, in the panel or on the map: the map flies to it and marks it.
+  useEffect(() => {
+    if (!styleReady || !map.current) return
+    const instance = map.current
+    const highlight = (layer: string, kind: ClosureFocus['kind']) =>
+      instance.setFilter(
+        layer,
+        closureFocus?.kind === kind ? (['==', ['get', 'id'], closureFocus.id] as ExpressionSpecification) : NOTHING,
+      )
+    highlight(`${LIVE_OPS}-roads-focus`, 'predicted')
+    highlight(`${LIVE_DGT_CLOSED}-focus`, 'official')
+    if (closureFocus === null) return
+    instance.flyTo({
+      center: [closureFocus.lon, closureFocus.lat],
+      zoom: Math.max(instance.getZoom(), 12),
+      padding: routePadding(),
+      duration: 800,
+    })
+  }, [styleReady, closureFocus])
 
   useEffect(() => {
     if (!styleReady || !map.current) return

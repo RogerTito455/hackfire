@@ -31,7 +31,9 @@
     "closed": "Road you closed",
     "residents": "Residents, by what they answered",
     "fires": "Fires burning now",
-    "dgt": "Official DGT incident"
+    "dgt": "Official DGT incident",
+    "dgtClosed": "Road the DGT has closed (official)",
+    "predictedClosed": "Road to close: the forecast reaches it (prediction)"
   },
   "mode": {
     "label": "Map mode",
@@ -257,6 +259,10 @@
     "resident": "{name}: {status}",
     "dgtFire": "Official DGT incident: forest fire on the {road}",
     "dgtWhere": "{place}, since {time}",
+    "dgtClosed": "Official DGT closure: {road}",
+    "dgtClosedFor": "Closed for {age}, since {time}",
+    "roadPredicted": "{road}: close it to residents",
+    "roadPredictedWhy": "HackFire's prediction: the simulated spread reaches this road within the hour. Crews still use it.",
     "dgtSource": "Source: DGT (DATEX II). Official data, not Deepfire's."
   },
   "video": {
@@ -450,6 +456,7 @@
     "at": "about {time}",
     "showMore": "Show {count} more",
     "showFewer": "Show fewer",
+    "showOnMap": "Show on the map",
     "kind": {
       "estate": "Housing estate",
       "town": "Town or village",
@@ -476,6 +483,8 @@
     "dgtUnavailable": "The DGT feed is not answering; its closures cannot be shown.",
     "dgtStale": "The DGT feed is not answering: its list from {time}.",
     "dgtSince": "Since {time}",
+    "dgtFor": "closed for {age}",
+    "dgtOnMap": "The closed roads are drawn on the map in navy; ours are the red dashed ones.",
     "dgtKm": "km {km}",
     "dgtNoRoad": "Unnamed road",
     "dgtSource": "Source: DGT, National Access Point (DATEX II feed).",

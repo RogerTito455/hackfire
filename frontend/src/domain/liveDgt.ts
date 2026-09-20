@@ -2,6 +2,8 @@
 // National Access Point (DATEX II): forest-fire incidents and road or carriageway closures. Official
 // data, shown next to HackFire's own suggestions and never mixed with them. Pure types and functions.
 
+import type { GeoJsonGeometry } from './spread'
+
 /** One DATEX II situation record, as served by the backend. */
 export interface DgtRecordResponse {
   id: string
@@ -58,6 +60,8 @@ export interface DgtRecord {
   id: string
   road: string | null
   kind: DgtKind
+  /** The DGT shuts the road or a whole carriageway here, so the map draws it as an official cordon. */
+  closure: boolean
   /** How the road is managed, when a forest fire's record also closes it. */
   management: DgtKind
   cause: DgtCause
@@ -68,6 +72,8 @@ export interface DgtRecord {
   km: number | null
   municipality: string | null
   province: string | null
+  /** The far end of the stretch the record covers; null when the DGT gives only a point. */
+  to: { lon: number; lat: number } | null
 }
 
 function management(value: string | null): DgtKind {
@@ -79,6 +85,7 @@ export function parseDgtRecord(record: DgtRecordResponse): DgtRecord {
   return {
     id: record.id,
     road: record.road,
+    closure: record.closure,
     kind: record.forest_fire ? 'forestFire' : management(record.management),
     management: management(record.management),
     cause: KNOWN_CAUSES.find((known) => known === record.cause) ?? 'other',
@@ -88,6 +95,26 @@ export function parseDgtRecord(record: DgtRecordResponse): DgtRecord {
     km: record.from.km,
     municipality: record.from.municipality,
     province: record.from.province,
+    to: record.to === null ? null : { lon: record.to.lon, lat: record.to.lat },
+  }
+}
+
+/** The records that shut a road or a carriageway: what the map draws as an official cordon. Pure. */
+export function dgtClosures(records: readonly DgtRecord[]): DgtRecord[] {
+  return records.filter((record) => record.closure)
+}
+
+/** Where a record is: the stretch the DGT gives, or its single point. Pure. */
+export function dgtGeometry(record: DgtRecord): GeoJsonGeometry {
+  if (record.to === null || (record.to.lon === record.lon && record.to.lat === record.lat)) {
+    return { type: 'Point', coordinates: [record.lon, record.lat] }
+  }
+  return {
+    type: 'LineString',
+    coordinates: [
+      [record.lon, record.lat],
+      [record.to.lon, record.to.lat],
+    ],
   }
 }
 

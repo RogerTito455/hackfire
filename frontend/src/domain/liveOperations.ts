@@ -2,7 +2,7 @@
 // drafts and the roads to close to residents. A prediction for the coordinator, never a warning sent
 // to anyone. Pure types and functions.
 
-import { parseDgtNear, type DgtNear, type DgtNearResponse } from './liveDgt'
+import { dgtClosures, dgtGeometry, parseDgtNear, type DgtNear, type DgtNearResponse } from './liveDgt'
 import type { Bounds } from './scenario'
 import type { GeoJsonGeometry } from './spread'
 import type { SimulatedFire } from './liveSpread'
@@ -131,6 +131,15 @@ export function roadsToClose(operations: LiveOperations): LivePlace[] {
   return operations.places.filter((place) => closed.has(place.id))
 }
 
+/** The closed road the coordinator tapped, so the map and the panel agree on which one it is.
+ * `official` is a DGT record, `predicted` a road our simulation reaches within the hour. */
+export interface ClosureFocus {
+  kind: 'official' | 'predicted'
+  id: string
+  lon: number
+  lat: number
+}
+
 function walk(coordinates: unknown, visit: (lon: number, lat: number) => void): void {
   if (!Array.isArray(coordinates)) return
   if (typeof coordinates[0] === 'number') {
@@ -140,7 +149,24 @@ function walk(coordinates: unknown, visit: (lon: number, lat: number) => void): 
   for (const item of coordinates) walk(item, visit)
 }
 
-/** The box around the run's footprint and every place listed, for the map to fit; null when empty. */
+/** The middle of a geometry's box: where the map flies when a closure is tapped. Null when empty. */
+export function geometryCenter(geometry: GeoJsonGeometry): [number, number] | null {
+  let west = Infinity
+  let south = Infinity
+  let east = -Infinity
+  let north = -Infinity
+  walk(geometry.coordinates, (lon, lat) => {
+    west = Math.min(west, lon)
+    south = Math.min(south, lat)
+    east = Math.max(east, lon)
+    north = Math.max(north, lat)
+  })
+  return west === Infinity ? null : [(west + east) / 2, (south + north) / 2]
+}
+
+/** The box around the run's footprint, every place listed and every official closure drawn beside
+ * them, for the map to fit; null when empty. A closure the map draws outside the box would never be
+ * seen, so it belongs in it. */
 export function operationsBounds(operations: LiveOperations, run?: SimulatedFire): Bounds | null {
   let west = Infinity
   let south = Infinity
@@ -152,7 +178,11 @@ export function operationsBounds(operations: LiveOperations, run?: SimulatedFire
     east = Math.max(east, lon)
     north = Math.max(north, lat)
   }
-  const geometries = [...operations.places.map((place) => place.geometry), ...(run?.hours ?? []).map((hour) => hour.geometry)]
+  const geometries = [
+    ...operations.places.map((place) => place.geometry),
+    ...(run?.hours ?? []).map((hour) => hour.geometry),
+    ...dgtClosures(operations.dgt.records).map(dgtGeometry),
+  ]
   for (const geometry of geometries) walk(geometry.coordinates, visit)
   return west === Infinity
     ? null

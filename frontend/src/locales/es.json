@@ -31,7 +31,9 @@
     "closed": "Carretera que has cortado",
     "residents": "Vecinos, según lo que contestaron",
     "fires": "Incendios activos",
-    "dgt": "Incidencia oficial de la DGT"
+    "dgt": "Incidencia oficial de la DGT",
+    "dgtClosed": "Carretera cortada por la DGT (oficial)",
+    "predictedClosed": "Carretera a cortar: la previsión la alcanza (predicción)"
   },
   "mode": {
     "label": "Modo del mapa",
@@ -257,6 +259,10 @@
     "resident": "{name}: {status}",
     "dgtFire": "Incidencia oficial de la DGT: incendio forestal en la {road}",
     "dgtWhere": "{place}, desde {time}",
+    "dgtClosed": "Corte oficial de la DGT: {road}",
+    "dgtClosedFor": "Cortada desde hace {age} (desde {time})",
+    "roadPredicted": "{road}: cortar para los vecinos",
+    "roadPredictedWhy": "Predicción de HackFire: la simulación alcanza esta carretera en menos de una hora. Los equipos de emergencia la siguen usando.",
     "dgtSource": "Fuente: DGT (DATEX II). Datos oficiales, no de Deepfire."
   },
   "video": {
@@ -450,6 +456,7 @@
     "at": "hacia {time}",
     "showMore": "Mostrar {count} más",
     "showFewer": "Mostrar menos",
+    "showOnMap": "Ver en el mapa",
     "kind": {
       "estate": "Urbanización",
       "town": "Población",
@@ -476,6 +483,8 @@
     "dgtUnavailable": "El servicio de la DGT no responde; no se pueden mostrar sus cortes.",
     "dgtStale": "El servicio de la DGT no responde: su lista de las {time}.",
     "dgtSince": "Desde {time}",
+    "dgtFor": "cortada desde hace {age}",
+    "dgtOnMap": "Los cortes se dibujan en el mapa en azul marino; los nuestros son los rojos discontinuos.",
     "dgtKm": "km {km}",
     "dgtNoRoad": "Vía sin nombre",
     "dgtSource": "Fuente: DGT, Punto de Acceso Nacional (DATEX II).",

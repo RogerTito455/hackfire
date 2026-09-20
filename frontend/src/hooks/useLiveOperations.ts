@@ -2,7 +2,7 @@
 // close. Fetched for that fire only, and refreshed while it stays selected.
 
 import { useEffect, useState } from 'react'
-import { parseLiveOperations, type LiveOperations } from '../domain/liveOperations'
+import { parseLiveOperations, type ClosureFocus, type LiveOperations } from '../domain/liveOperations'
 import { simulationFor, type LiveSpread } from '../domain/liveSpread'
 import { fetchLiveOperations, liveOperationsCapUrl } from '../services/api'
 
@@ -19,12 +19,16 @@ export interface LiveOperationsView {
   data: LiveOperations | null
   /** Where the selected fire's alert drafts download as CAP 1.2 (status Draft); null with no drafts. */
   capUrl: string | null
+  /** The closed road the coordinator tapped, in the panel or on the map; null when none is picked. */
+  focus: ClosureFocus | null
   select: (fireId: string | null) => void
+  focusClosure: (focus: ClosureFocus | null) => void
   retry: () => void
 }
 
 export function useLiveOperations(enabled: boolean, spread: LiveSpread | null): LiveOperationsView {
   const [fireId, setFireId] = useState<string | null>(null)
+  const [focus, setFocus] = useState<ClosureFocus | null>(null)
   const [data, setData] = useState<LiveOperations | null>(null)
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -35,6 +39,7 @@ export function useLiveOperations(enabled: boolean, spread: LiveSpread | null): 
     if (!enabled) {
       setFireId(null)
       setData(null)
+      setFocus(null)
       setFailed(false)
     }
   }
@@ -68,6 +73,8 @@ export function useLiveOperations(enabled: boolean, spread: LiveSpread | null): 
     if (next === fireId) return
     setFireId(next)
     setData(null)
+    // Another fire's closures are another list: nothing is picked in it yet.
+    setFocus(null)
     setFailed(false)
   }
 
@@ -84,7 +91,9 @@ export function useLiveOperations(enabled: boolean, spread: LiveSpread | null): 
     status,
     data: shown,
     capUrl: shown !== null && shown.alerts.length > 0 ? liveOperationsCapUrl(shown.fireId) : null,
+    focus: shown === null ? null : focus,
     select,
+    focusClosure: setFocus,
     retry: () => {
       setFailed(false)
       setAttempt((count) => count + 1)

@@ -2154,6 +2154,45 @@ button:active {
   font-weight: 700;
 }
 
+/* A closed road you can tap: the map flies to it and marks it. The row keeps .zone's grid, moved
+   into the button so the whole row is one 44 px target. */
+.zone.tappable {
+  display: block;
+  padding: 0;
+}
+
+.zone.tappable > button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+
+.zone.tappable.picked > button {
+  box-shadow: inset 0 0 0 2px var(--route);
+  background: var(--selected-bg);
+}
+
+/* How many roads are closed, so a list cut at eight still says its size. */
+.subhead-count {
+  margin-left: auto;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* The microphone button in a live call: quiet until it is muted, then fire red. */
 .talk-mic {
   min-height: 44px;
