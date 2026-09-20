@@ -161,3 +161,16 @@ def test_the_endpoint_lists_every_provider(monkeypatch: pytest.MonkeyPatch) -> N
 def test_the_dgt_feed_is_up_or_down_by_its_status_code() -> None:
     assert provider_status.check_dgt(answering(lambda r: httpx.Response(200) if r.method == "HEAD" else httpx.Response(405))).state == ProviderState.UP
     assert provider_status.check_dgt(answering(lambda _r: httpx.Response(503))).state == ProviderState.DEGRADED
+
+
+def test_an_unconfigured_sms_provider_is_left_out_of_the_panel(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A coordinator sees what the demo runs on, not a list of what nobody set up."""
+    provider_status.forget()
+    optional = Provider("twilio", "Twilio SMS", lambda _c: Check(ProviderState.NOT_CONFIGURED, "twilioOff"), optional=True)
+    required = Provider("deepfire", "Deepfire", lambda _c: Check(ProviderState.UP, "ok"))
+    ids = [status.id for status in provider_status.statuses([required, optional])]
+    assert ids == ["deepfire"]
+
+    configured = Provider("vonage", "Vonage SMS", lambda _c: Check(ProviderState.CONFIGURED, "vonageOn"), optional=True)
+    provider_status.forget()
+    assert [status.id for status in provider_status.statuses([required, configured])] == ["deepfire", "vonage"]
