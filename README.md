@@ -21,6 +21,31 @@ Public alerting today is one-way and impersonal. ES-Alert broadcasts the same me
 
 Calls are triggered by the prediction, hours ahead, while cell towers still work. "No answer" is a signal too: it tells the coordinator where to send a patrol.
 
+One household, end to end:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant F as Forecast<br/>(spread · impact)
+  participant C as Coordinator<br/>(dashboard)
+  participant A as Resident agent<br/>(SLNG)
+  participant R as Resident
+  participant T as /tools
+  participant K as Fire crew
+
+  F->>C: La Atalaya is reached in 45 min
+  C->>C: approve the order for the zone
+  C->>A: call this household
+  A->>T: get_fire_status(zone)
+  A->>T: get_evacuation_route(address, car)
+  A->>R: the order and the way out, in Spanish
+  R-->>A: "my mother can't walk"
+  A->>T: report_status(needs_rescue, people, mobility)
+  T-->>C: the pin turns red, the queue reorders
+  T-->>K: SMS with the crew's route (Vonage)
+  K->>T: get_rescue_queue() / get_crew_plan(), by voice
+```
+
 ## What is real and what is fictional
 
 - **Real:**
@@ -57,6 +82,56 @@ Still to build: outbound phone calls, which need a phone number (#8). See [PLAN.
 
 A single repo, run on localhost and deployed straight from `main` as one Railway service: the backend serves the API, the agent tools and the built dashboard on one URL ([Deployment](docs/setup/deployment.md)). No staging environment.
 
+```mermaid
+flowchart LR
+  subgraph browser["Browser — the coordinator"]
+    dash["Dashboard<br/>React · MapLibre GL"]
+  end
+
+  subgraph slng["SLNG — voice agents"]
+    resident["Resident agent<br/>Nemotron Super 3 · Aura 2"]
+    coordinator["Coordinator agent"]
+  end
+
+  subgraph service["One Railway service — FastAPI + the built dashboard"]
+    api["/api<br/>dashboard endpoints"]
+    tools["/tools<br/>the agent contract"]
+    state["state.py<br/>triage · rescue queue · replay clock"]
+    logic["spread · impact · lead_time<br/>evacuation · orders · live_operations"]
+    providers["providers/<br/>the only outbound HTTP"]
+  end
+
+  cache[("data/<br/>hotspots · spread · zones<br/>routes · registry · places")]
+
+  subgraph external["External services"]
+    deepfire["Deepfire<br/>hotspots · ELMFIRE runs"]
+    ors["openrouteservice"]
+    overpass["OpenStreetMap<br/>Overpass"]
+    dgt["DGT<br/>DATEX II"]
+    vonage["Vonage<br/>SMS · live video"]
+  end
+
+  dash -->|"polling, JSON"| api
+  resident -->|"six tool calls"| tools
+  coordinator -->|"queue and crew plan"| tools
+  api --> state
+  tools --> state
+  api --> logic
+  tools --> logic
+  logic --> cache
+  logic --> providers
+  providers --> deepfire
+  providers --> ors
+  providers --> overpass
+  providers --> dgt
+  providers --> vonage
+  dash -.->|"live audio and video"| slng
+```
+
+Everything on the demo path reads `data/`. `providers/` is the only code that talks to the network, and
+`config.py` the only code that reads the environment — so a provider that is slow, rate-limited or down
+changes one module, not the demo.
+
 ```
 frontend/src/
   domain/      Types and pure functions. No React, no fetch, no styling
@@ -87,7 +162,7 @@ The UI is independent of the logic: redesigning the dashboard means touching `ui
 
 ### Agent tool contract
 
-The voice agent talks to the rest of the system through five HTTP tools under `/tools`:
+The voice agents talk to the rest of the system through six HTTP tools under `/tools`:
 
 | Tool | Purpose |
 |---|---|
@@ -95,9 +170,123 @@ The voice agent talks to the rest of the system through five HTTP tools under `/
 | `get_evacuation_route(address, mode)` | Walking or driving route that avoids the predicted fire |
 | `report_status(neighbor_id, status, people, mobility, observation)` | Record what the resident said; updates triage |
 | `get_rescue_queue()` | Rescues ranked by priority |
+| `get_crew_plan()` | Which crew goes to which rescue, and whether each arrives in time |
 | `get_rescue_route(rescue_id)` | Route for the fire crew |
 
 Interactive docs are served at `http://localhost:8000/docs`.
+
+What the tools move around, and what the dashboard draws:
+
+```mermaid
+classDiagram
+  class Neighbor {
+    id · name · address
+    zone · lat · lon
+    status: pending|evacuating|no_answer|needs_rescue
+    people · mobility · observation
+    phone — never serialised
+  }
+  class EvacuationOrder {
+    zone · zone_name · residents
+    minutes_to_impact
+    proposed_action / action: leave|stay
+    destination_id · message
+    approved — by a person
+  }
+  class Route {
+    mode: car|walking
+    distance_m · duration_s
+    spoken_directions · brief
+    geometry: GeoJSON LineString
+  }
+  class Rescue {
+    rescue_id · priority
+    minutes_to_impact
+  }
+  class CrewAlert {
+    rescue_id · message
+    link — opens the crew's route
+  }
+  class SafePoint {
+    id · name · lat · lon
+  }
+  EvacuationOrder "1" --> "*" Neighbor : covers a zone of
+  EvacuationOrder --> SafePoint : sends them to
+  Neighbor --> Route : is told one
+  Neighbor "1" --> "0..1" Rescue : becomes, if they cannot leave
+  Rescue --> CrewAlert : raises
+  Rescue --> Route : crew route in
+```
+
+A resident's status is set only by `report_status`, from what they actually said. Nothing else writes it,
+so the queue the coordinator sees and the queue the crew agent reads are the same object.
+
+## The data pipelines
+
+Everything slow or external is fetched **once, before the demo**, and committed under `data/` as a static
+file. The live demo reads files; it does not wait on anyone's API. Each pipeline is a command, each command
+writes one file, and `--check` rebuilds in memory and compares instead of writing.
+
+```mermaid
+flowchart TD
+  deepfire[("Deepfire")] -->|"pnpm data:hotspots"| hotspots["hotspots_2026-07-22_24.geojson<br/>7,068 satellite hotspots"]
+  overpass[("OpenStreetMap<br/>Overpass")] -->|"pnpm data:zones"| zones["zones.geojson<br/>towns, care homes, schools, roads"]
+  overpass -->|"pnpm data:registry"| registry["neighbors.sample.json<br/>10 households on real streets"]
+  hotspots -->|"pnpm data:spread"| spread["spread_2026-07-23.geojson<br/>hour-by-hour cone"]
+  spread --> lead["lead_time_la-atalaya.json"]
+  zones --> lead
+  hotspots -->|"pnpm data:lead-time"| lead
+  registry -->|"pnpm data:routes"| routes["routes_cache.json<br/>165 routes"]
+  ors[("openrouteservice")] --> routes
+  places["places.json<br/>safe points, hand-checked"] --> routes
+  routes -->|"pnpm check:routes"| proof{{"every route cached:<br/>the stage needs no network"}}
+```
+
+| Command | Reads | Writes | Network | When to run |
+|---|---|---|---|---|
+| `pnpm data:hotspots` | the scenario's box and dates | `hotspots_*.geojson` | Deepfire | once per scenario |
+| `pnpm data:zones` | the scenario's box | `zones.geojson` | Overpass | once per scenario |
+| `pnpm data:registry` | `zones.geojson` | `neighbors.sample.json` | Overpass | when the registry changes |
+| `pnpm data:spread` | the cached hotspots | `spread_*.geojson` | — | after new hotspots |
+| `pnpm data:lead-time` | hotspots, spread, zones | `lead_time_*.json` | — | after either changes |
+| `pnpm data:routes` | registry, places, spread | `routes_cache.json` | openrouteservice | after the registry or safe points change |
+| `pnpm check:routes` | registry, places, routes | — | none (or one URL) | before every demo |
+
+Two rules keep this honest. **No scenario in code:** the box, the dates, the scenario time and the file names
+live in `data/scenarios/<id>.json` and are read through `app/scenario.py`, so another fire is another file
+([new scenario](docs/setup/new-scenario.md)). And **the network is never on the demo path:** `pnpm check:routes`
+fails if a single route would need openrouteservice on the day. Live mode is the exception by design — it calls
+Deepfire and the DGT for fires burning right now, and falls back to the last good answer when they are slow.
+
+## Scalability and current limitations
+
+This is a hackathon demo, and the honest picture has three layers.
+
+**What already works on any fire.** Live mode takes any active fire in Spain from Deepfire, with its ELMFIRE
+simulation (terrain, fuel, weather), and derives the places in its path from OpenStreetMap with a time to
+impact, a draft CAP 1.2 alert per place and the roads to close, cross-checked against the DGT's live incidents.
+No demo data is involved. The replay workflow is scenario-driven end to end, and a synthetic fire exercises the
+whole chain in the tests.
+
+**What is bound to this demo.**
+
+| Limitation | Where | What it would take |
+|---|---|---|
+| **Only registered residents can be called.** `get_evacuation_route` answers `404 Address not in the registry`; there is no inbound number and no way to create a resident mid-call | `main.py`, `state.py` | A SIP trunk, plus geocoding the address the caller says (Nominatim) and creating the household there and then |
+| **Triage state lives in memory**, one process, and a redeploy resets it | `state.py` | Postgres or Supabase behind the same interface; the tool contract does not change |
+| **Safe points are five hand-checked places** around the demo box, and `safest_point()` picks the nearest one that is ≥3 km clear of the fire and outside the 6-hour forecast | `data/places.json`, `evacuation.py` | The same Overpass query that finds places at risk, inverted: shelters, sports halls and schools outside the cone |
+| **Routes are pre-planned**; live mode lists the roads to close but plans no exit for anyone | `routes_cache.json`, `live_operations.py` | Routing per zone rather than per household, and a self-hosted router |
+| **openrouteservice's free plan**: 2,000 directions a day and 40 a minute per key (three keys, rotated on a spent quota) | `providers/routing.py` | Self-host openrouteservice or Valhalla; the ceiling is the plan, not the algorithm |
+| **`avoid_polygons` caps at 200 km² / 20 km**, so the fire is clipped to a 14 km square around each route | `evacuation.py`, [finding](docs/findings/2026-09-19-ors-avoid-polygon-limit.md) | A router that takes a set of closed roads instead of a polygon — a 50 km front does not fit in one |
+| **No phone line.** Calls happen in the browser; the agent never dials a real number in the demo | `voice/`, SLNG | A SIP trunk. Concurrency is then a contract, not code |
+
+**What the routing is, and is not.** It is an algorithm, not an evacuation plan: it avoids what has already
+burned plus the next hour of predicted spread, and sends people to the nearest safe point the forecast does not
+reach — crews get the opposite, avoiding only what has burned, because they have to get close. It knows nothing
+about road capacity, contraflow, how many people were already sent that way, or the assembly points a civil
+protection plan defines. That plan belongs to the authority; what HackFire adds is the call, the answer, and the
+coordinator knowing who cannot leave on their own. The rest of the gap — whose registry, on what legal basis,
+who approves an order — is written down in [what works for a real fire](docs/demo/real-life.md).
 
 ## Running it locally
 
