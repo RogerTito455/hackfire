@@ -68,8 +68,9 @@ export function Icon({ name, size = 20, className }: IconProps) {
       className={className ? `icon ${className}` : 'icon'}
       aria-hidden="true"
       style={{ width: size, height: size }}
-      // Safe: the markup is one of our own static files in ./icons, bundled at build time and
-      // validated by scripts/check-icons.mjs. No user or network data ever reaches it.
+      // Norma rct-dangerous-inner-html: the markup is one of our own static files in ./icons,
+      // bundled at build time and validated by scripts/check-icons.mjs. No user or network data
+      // ever reaches it, so sanitising would only add a dependency the project rules out.
       dangerouslySetInnerHTML={{ __html: iconMarkup(name) }}
     />
   )

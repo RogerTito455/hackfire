@@ -645,6 +645,8 @@ export function TriageMap({
           .setDOMContent(livePopupContent(lines))
           .addTo(instance)
       })
+      // Norma rct-prf-setstate-in-useeffect: this is MapLibre's 'load' callback, not the effect
+      // body; the style is ready when the map says so, which no render can derive.
       setStyleReady(true)
     })
     map.current = instance
@@ -762,6 +764,10 @@ export function TriageMap({
       const coordinates = route!.geometry!.coordinates
       const element = document.createElement('div')
       element.className = 'place-marker'
+      // Norma js-inner-html-assignment: every innerHTML in this file takes a hand-written SVG
+      // string from ui/markers.ts — fixed markup, a colour from theme.ts and an icon name from a
+      // closed union. No user or network data reaches it, and a MapLibre Marker needs a real DOM
+      // node, so JSX is not an option here.
       element.innerHTML = placeMarkerSvg(routeKind === 'rescue' ? 'fire-truck' : 'flag')
       endpoint.current = new Marker({ element })
         .setLngLat(routeKind === 'rescue' ? coordinates[0] : coordinates[coordinates.length - 1])
@@ -792,6 +798,7 @@ export function TriageMap({
       const element = document.createElement('div')
       element.className = 'place-marker closure-marker'
       element.setAttribute('aria-label', t('closures.marker'))
+      // Norma js-inner-html-assignment: our own SVG from ui/markers.ts, as above.
       element.innerHTML = placeMarkerSvg('road-closed')
       return new Marker({ element }).setLngLat([closure.lon, closure.lat]).addTo(instance)
     })
@@ -816,11 +823,17 @@ export function TriageMap({
         element.className = 'status-marker'
         element.setAttribute('role', 'button')
         element.setAttribute('aria-label', label)
+        // Norma js-inner-html-assignment: our own SVG from ui/markers.ts, as above. The one value
+        // that comes from the registry, the resident's name, goes through setAttribute and
+        // Popup.setText, which escape it.
         element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
         marker = new Marker({ element, anchor: 'bottom' })
           .setLngLat([neighbor.lon, neighbor.lat])
           .setPopup(new Popup({ offset: [0, -STATUS_MARKER_HEIGHT + 2], closeButton: false, focusAfterOpen: false }).setText(label))
           .addTo(map.current)
+        // Norma js-function-in-loop: one handler per resident is the point — each closes over its
+        // own neighbour's id. It is created only when that marker is (re)built, not on every pass,
+        // and it reads `onSelect.current` so the closure never goes stale.
         marker.getElement().addEventListener('click', () => onSelect.current(neighbor.id))
         markers.current.set(neighbor.id, marker)
         drawn.current.set(neighbor.id, look)
@@ -855,6 +868,8 @@ export function TriageMap({
     }
   }, [videoElement, videoLon, videoLat])
 
+  // Norma js-nested-ternary: no video, waiting for the resident, or their caption. Parenthesised,
+  // one line, and the only alternative is an early return this render cannot take.
   const videoText = liveVideo ? (liveVideo.waiting ? t('video.waiting') : liveVideo.caption) : ''
   useEffect(() => {
     if (videoCaption.current) videoCaption.current.textContent = videoText

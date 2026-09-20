@@ -7,6 +7,10 @@ export interface VideoCall {
   end: () => void
 }
 
+// Norma js-no-error-handling-async: every await in this file propagates on purpose. The four
+// entry points are called from useResidentCamera, useRescueVideo and useCrewRoom, each of which
+// awaits inside a try/catch and moves its own state to 'error'. Catching twice would swallow the
+// transition those hooks exist to report.
 async function sdk() {
   return (await import('@vonage/client-sdk-video')).default
 }

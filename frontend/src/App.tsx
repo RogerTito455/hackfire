@@ -49,6 +49,9 @@ function App() {
 
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
+  // Norma js-no-error-handling-async: neither await can reject. triage.reset() reports a failed
+  // reset through the connection pill and autopilot.refresh() keeps the last script it knew; both
+  // handle their own errors, which is why this composition root has none.
   const resetDemo = async () => {
     await triage.reset()
     await autopilot.refresh()

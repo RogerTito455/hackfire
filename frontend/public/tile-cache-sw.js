@@ -3,6 +3,11 @@
 // are served from this cache from then on. Only tile requests are touched; the API, the app and
 // everything else go straight to the network.
 
+// Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+// A venue network that accepts the connection and then stalls used to leave the tile request
+// hanging for as long as the browser allowed. The cache is consulted first, so anything already
+// shown keeps working; this only bounds the trip to the tile host for one that is not cached yet.
+const TILE_TIMEOUT_MS = 8000
 const CACHE = 'hackfire-osm-tiles-v1'
 const MAX_TILES = 4000
 const TILE_HOST = 'tile.openstreetmap.org'
@@ -22,10 +27,17 @@ self.addEventListener('fetch', (event) => {
     caches.open(CACHE).then(async (cache) => {
       const hit = await cache.match(event.request)
       if (hit) return hit
-      const response = await fetch(event.request)
+      const response = await fetch(event.request, { signal: AbortSignal.timeout(TILE_TIMEOUT_MS) })
       if (response.ok) {
-        await cache.put(event.request, response.clone())
-        trim(cache)
+        // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+        // Storing a tile is best effort: a full or blocked cache (quota, private mode) must never
+        // keep the tile itself from reaching the map, and trim() runs detached, so both are caught.
+        try {
+          await cache.put(event.request, response.clone())
+        } catch (error) {
+          console.warn('tile cache: could not store', url.pathname, error)
+        }
+        trim(cache).catch((error) => console.warn('tile cache: could not trim', error))
       }
       return response
     }),

@@ -60,6 +60,9 @@ export function RescueQueue({ rescues, video }: RescueQueueProps) {
             {link && video?.watching === rescue.neighbor.id && (
               <span className="video-link">
                 {link.sms_sent ? t('video.texted') : t('video.openOnPhone')}{' '}
+                {/* Norma rct-unsafe-href-binding: link.link is written by our backend
+                    (rescue_video.py: `{public_url}/v/{link id}`), from the deployment's own
+                    HACKFIRE_PUBLIC_URL and an id it generated. No resident input reaches it. */}
                 <a href={link.link} target="_blank" rel="noreferrer">
                   {link.link}
                 </a>

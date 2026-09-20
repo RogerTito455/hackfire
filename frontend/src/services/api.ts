@@ -21,6 +21,8 @@ import type { Scenario } from '../domain/scenario'
 
 // Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
 // points a local dashboard at another backend.
+// Norma js-mng-loopback-url: the loopback address is a development default only. It is behind
+// import.meta.env.DEV, so no build can carry it, and VITE_API_URL is the override the rule asks for.
 const DEFAULT_API_URL = import.meta.env.DEV ? 'http://localhost:8000' : ''
 const API_URL = (import.meta.env.VITE_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, '')
 
@@ -32,8 +34,27 @@ function inDashboardLanguage(init?: RequestInit): RequestInit {
   return { ...init, headers }
 }
 
+// Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+// A backend that accepts the connection and then never answers used to hang the panel that asked,
+// with nothing on screen: the hooks only show their unavailable state when a call *fails*. Every
+// call now gives up after this, and the timeout arrives as the same Error a non-2xx does, so the
+// handling the hooks already have covers it. Ten seconds is twice the slowest endpoint we have —
+// /api/status/providers, which is itself bounded at four seconds a provider.
+const REQUEST_TIMEOUT_MS = 10_000
+
+async function fetchApi(path: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(`${API_URL}${path}`, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new Error(`${path} did not answer in ${REQUEST_TIMEOUT_MS} ms`)
+    }
+    throw error
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, inDashboardLanguage(init))
+  const response = await fetchApi(path, inDashboardLanguage(init))
   if (!response.ok) throw new Error(`${path} returned ${response.status}`)
   return response.json() as Promise<T>
 }
@@ -115,8 +136,10 @@ export const watchRescueVideo = (neighborId: string) =>
   request<RescueVideo>(`/api/rescues/${encodeURIComponent(neighborId)}/video`)
 
 /** The resident's camera access, once per link: 'used' when it was opened before, 'unknown' when it never existed. */
+// Norma js-no-error-handling-async: the rejection is the contract. useResidentCamera awaits this
+// inside a try/catch and shows its 'error' screen; catching here would hide the failure it reports.
 export async function joinVideo(linkId: string): Promise<VideoAccess | 'used' | 'unknown'> {
-  const response = await fetch(`${API_URL}/api/video/${encodeURIComponent(linkId)}`)
+  const response = await fetchApi(`/api/video/${encodeURIComponent(linkId)}`)
   if (response.status === 410) return 'used'
   if (response.status === 404) return 'unknown'
   if (!response.ok) throw new Error(`/api/video returned ${response.status}`)
@@ -134,8 +157,10 @@ export const closeRoad = (lon: number, lat: number) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ lon, lat }),
   })
+// Norma js-no-error-handling-async: as with every call in this file, the rejection is the
+// contract — useClosures.reopen catches it and sets its `error` state.
 export async function reopenRoad(closureId: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
+  const response = await fetchApi(`/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
   if (!response.ok) throw new Error(`/api/closures/${closureId} returned ${response.status}`)
 }
 

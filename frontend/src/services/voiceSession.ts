@@ -9,6 +9,10 @@ export interface Conversation {
   setMicrophone: (on: boolean) => Promise<void>
 }
 
+// Norma js-no-error-handling-async: the awaits here propagate on purpose. useConversation.start
+// calls this inside a try/catch and moves the call to 'error', which is what the dashboard shows.
+// The one failure that needs more than propagating — a refused microphone — is caught below, so
+// the room is left before the error goes up.
 /** Join the agent's room with the microphone on. `onEnded` runs once, whoever hangs up. */
 export async function joinConversation(session: WebSession, onEnded: () => void): Promise<Conversation> {
   // Loaded on the first call only: LiveKit is half a megabyte the dashboard rarely needs.

@@ -146,6 +146,9 @@ const SFX: Record<string, [string, number]> = {
   scan: ['futuristic scanning sweep, soft digital shimmer rising', 1.4],
 }
 
+// Norma js-no-error-handling-async: `call` throws on any non-2xx from ElevenLabs and every
+// generator here lets it through, so one failed sound stops the run instead of writing a truncated
+// file. The single handler at the bottom of this script turns it into one line and exit code 1.
 async function sfx(): Promise<void> {
   mkdirSync(join(PUBLIC, 'audio/sfx'), { recursive: true })
   for (const [name, [prompt, seconds]] of Object.entries(SFX)) {
@@ -205,4 +208,12 @@ if (!command) {
   console.error(`Usage: node scripts/audio.ts ${Object.keys(commands).join('|')}`)
   process.exit(1)
 }
-await command()
+// Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+// A failed run (no key, an error from ElevenLabs, ffmpeg missing) ends with one line and a
+// non-zero exit code, instead of an unhandled rejection's stack trace.
+try {
+  await command()
+} catch (error) {
+  console.error(`scripts/audio.ts ${process.argv[2]}: ${error instanceof Error ? error.message : String(error)}`)
+  process.exit(1)
+}

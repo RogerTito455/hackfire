@@ -25,8 +25,12 @@ export function useAutopilot(onChange?: () => void): AutopilotControl {
   const refresh = useCallback(async () => {
     try {
       setScript(await fetchAutopilot())
-    } catch {
+    } catch (error) {
       // Offline: keep what we last knew; the connection pill already says so.
+      // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+      // Logged at debug level so the swallow is visible in the console, without turning an
+      // expected offline poll into an error.
+      console.debug('autopilot state unavailable', error)
     }
   }, [])
 

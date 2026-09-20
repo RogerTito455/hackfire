@@ -41,6 +41,9 @@ export function BottomSheet({ header, children, wake }: BottomSheetProps) {
   const [peek, setPeek] = useState(PEEK_FALLBACK)
 
   // The header's height changes with the language, the mode and the screen width.
+  // Norma rct-prf-setstate-in-useeffect: setPeek runs inside the ResizeObserver callback, not in
+  // the effect body — a height is only known after layout. The one state change that does belong
+  // in render is already done during render, just below.
   useEffect(() => {
     if (!headerBox.current || !grab.current) return
     const measure = () => setPeek(Math.ceil((grab.current?.offsetHeight ?? 0) + (headerBox.current?.offsetHeight ?? 0)))

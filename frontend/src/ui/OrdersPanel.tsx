@@ -77,6 +77,10 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls,
                 {safePoints
                   .filter((point) => point.name !== order.zone_name)
                   .map((point) => (
+                    // Norma js-nested-ternary: the tag after a safe point's name is one value with
+                    // three cases, written in the order a reader needs them — proposed, plain, not
+                    // safe. A lookup table or a helper would move it away from the option it labels
+                    // without making it shorter.
                     <option key={point.id} value={point.id}>
                       {t('orders.leaveFor', { place: point.name })}
                       {point.id === proposedChoice(order) ? t('orders.proposedTag') : point.safe ? '' : t('orders.unsafeTag')}
@@ -103,6 +107,8 @@ export function OrdersPanel({ orders, safePoints, saving, onApprove, phoneCalls,
                 }}
               >
                 <Icon name={choice === SHELTER ? 'home' : 'flag'} size={16} />
+                {/* Norma js-nested-ternary: the button's three states in the order they happen —
+                    saving, already approved, not approved yet. It is the label, on the button. */}
                 {saving === order.zone ? t('orders.saving') : order.approved ? t('orders.change') : t('orders.approve')}
               </button>
             )}

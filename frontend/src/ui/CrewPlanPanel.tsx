@@ -1,4 +1,4 @@
-import { byCrew, type CrewPlan, type Verdict } from '../domain/crewPlan'
+import { byCrew, type CrewAssignment, type CrewPlan, type Verdict } from '../domain/crewPlan'
 import { useI18n } from './i18n'
 import { formatMinutes } from './theme'
 
@@ -20,6 +20,17 @@ const VERDICT_CLASS: Record<Verdict, string> = {
 // Which crew goes where, in what order, and who they reach before the fire.
 export function CrewPlanPanel({ plan, crews, onCrewsChange, onShowRoute }: CrewPlanPanelProps) {
   const { t } = useI18n()
+
+  // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+  // The verdict line for one stop, as four cases read in order: no route at all, no forecast to
+  // compare against, in time by that margin, or late by it. It was one four-deep ternary.
+  const verdictText = (step: CrewAssignment) => {
+    if (step.verdict === 'no_route') return t('crewPlan.noRoute')
+    if (step.margin_min === null) return t('crewPlan.noForecast')
+    if (step.margin_min >= 0) return t(`crewPlan.${step.verdict}`, { time: formatMinutes(step.margin_min) })
+    return t('crewPlan.late', { time: formatMinutes(-step.margin_min) })
+  }
+
   return (
     <div className="crew-plan">
       <label className="crew-count">
@@ -52,15 +63,7 @@ export function CrewPlanPanel({ plan, crews, onCrewsChange, onShowRoute }: CrewP
                           : t('crewPlan.leavesIn', { time: formatMinutes(step.depart_min) })}
                         {step.eta_min !== null && ` · ${t('crewPlan.arrivesIn', { time: formatMinutes(step.eta_min) })}`}
                       </span>
-                      <span className={VERDICT_CLASS[step.verdict]}>
-                        {step.verdict === 'no_route'
-                          ? t('crewPlan.noRoute')
-                          : step.margin_min === null
-                            ? t('crewPlan.noForecast')
-                            : step.margin_min >= 0
-                              ? t(`crewPlan.${step.verdict}`, { time: formatMinutes(step.margin_min) })
-                              : t('crewPlan.late', { time: formatMinutes(-step.margin_min) })}
-                      </span>
+                      <span className={VERDICT_CLASS[step.verdict]}>{verdictText(step)}</span>
                     </button>
                   </li>
                 ))}

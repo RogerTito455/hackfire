@@ -112,4 +112,6 @@ if (problems.length > 0) {
   console.error(`Locale check failed:\n  ${problems.join('\n  ')}`)
   process.exit(1)
 }
+// Norma js-maint-no-console: this is a `pnpm check` command whose output *is* its interface —
+// the verdict a developer and CI read. A logger would make it quieter, not more observable.
 console.log(`Locales OK: ${Object.keys(catalogue).sort().join(', ')}, ${reference.size} texts each.`)

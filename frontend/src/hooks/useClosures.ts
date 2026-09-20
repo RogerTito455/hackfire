@@ -29,8 +29,12 @@ export function useClosures(): Closures {
   const refresh = useCallback(async () => {
     try {
       setClosures(await fetchClosures())
-    } catch {
+    } catch (error) {
       // Keep the last list; the next poll tries again.
+      // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+      // Logged at debug level on purpose: this polls every POLL_MS, so an offline backend must
+      // not fill the console with errors while the connection pill already says so.
+      console.debug('closures poll failed', error)
     }
   }, [])
 

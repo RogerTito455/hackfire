@@ -57,6 +57,9 @@ export function useCrewRoomMember(roomId: string): CrewRoomMember {
   const joined = useRef(false)
   const call = useRef<VideoCall | null>(null)
 
+  // Norma rct-prf-setstate-in-useeffect: neither setState is in the effect body. Both are the
+  // continuation of an async IIFE (and its catch), because joining a room is a network round trip
+  // whose outcome cannot be derived during render. `joined` keeps the effect to one run per room.
   useEffect(() => {
     if (joined.current) return
     joined.current = true

@@ -18,6 +18,9 @@ export function useResidentCamera(linkId: string): ResidentCamera {
   const opened = useRef(false)
   const call = useRef<VideoCall | null>(null)
 
+  // Norma rct-prf-setstate-in-useeffect: every setState here is the continuation of an async IIFE
+  // or its catch — opening the single-use link is a network round trip, so the outcome cannot be
+  // derived during render. `opened` keeps it to one run.
   useEffect(() => {
     if (opened.current) return
     opened.current = true

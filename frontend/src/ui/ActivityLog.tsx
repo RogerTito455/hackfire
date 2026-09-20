@@ -36,6 +36,9 @@ export function ActivityLog({ events, loaded, failed, downloadUrl }: ActivityLog
           })}
         </ol>
       )}
+      {/* Norma rct-unsafe-href-binding: downloadUrl is auditDownloadUrl() in services/api.ts — our
+          own same-origin /api/audit/export path with the locale encodeURIComponent'd. It carries no
+          user or third-party value, and the component takes it as a prop rather than building it. */}
       <a className="activity-download" href={downloadUrl} download>
         {t('audit.download')}
       </a>
