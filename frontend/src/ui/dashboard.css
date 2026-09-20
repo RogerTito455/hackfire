@@ -2815,3 +2815,39 @@ button:active {
     font-size: 14px;
   }
 }
+
+/* The pitch's one press: approve the zone's order if needed, then ring the first resident. */
+.start-demo {
+  margin: 10px 0 0;
+}
+
+.start-demo-button {
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--route);
+  color: var(--route-ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.start-demo-button:active {
+  transform: scale(0.98);
+}
+
+.start-demo-button:disabled {
+  background: var(--line);
+  color: var(--ink-2);
+}
+
+.start-demo-note {
+  margin: 6px 2px 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.35;
+}

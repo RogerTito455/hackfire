@@ -152,6 +152,13 @@
     "phonePlaced": "The agent is calling {name} now.",
     "phoneFailed": "The call could not be placed. Try again, or take it in the browser."
   },
+  "demo": {
+    "start": "Start the demo",
+    "starting": "Calling…",
+    "willCall": "The agent rings {name}. What they answer lands on the map, and a rescue rings and texts the crew.",
+    "willApprove": "Approves the zone's order, then the agent rings {name}. A rescue rings and texts the crew.",
+    "simulationOn": "Turn off the call simulation first: real phones never ring for a simulated run."
+  },
   "ask": {
     "connecting": "Connecting to the agent…",
     "onTheLine": "You are talking to the coordinator agent. Ask: “¿Qué rescates tengo y en qué orden?”, then “Dame la ruta al más urgente”.",

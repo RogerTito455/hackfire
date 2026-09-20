@@ -50,6 +50,7 @@ import { ServiceStatus } from './ServiceStatus'
 import { TalkPanel } from './TalkPanel'
 import { AskAgentPanel } from './AskAgentPanel'
 import { SpreadLegend } from './SpreadLegend'
+import { StartDemo } from './StartDemo'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
 import { consoleState, useConsoleLayout } from './useConsoleLayout'
@@ -143,6 +144,21 @@ export function Dashboard({
         }
       : null
 
+  // One press starts the run-through: the first resident in the registry is the one who is called,
+  // and their zone's order is approved on the way if the coordinator has not done it yet.
+  const first = neighbors[0] ?? null
+  const firstOrder = first === null ? undefined : orders.orders.find((order) => order.zone === first.zone)
+  const startDemo = async () => {
+    if (first === null) return
+    if (firstOrder && !firstOrder.approved) {
+      await orders.approve(first.zone, {
+        action: firstOrder.proposed_action,
+        destination_id: firstOrder.proposed_destination_id,
+      })
+    }
+    await campaign.callOne(first.id)
+  }
+
   // The replay's scrubber or the live status, then what the numbers below are: always in view.
   const header =
     mode === 'replay' ? (
@@ -162,6 +178,15 @@ export function Dashboard({
           onToggle={() => autopilot.toggle(replay.time)}
         />
         <StatusCounts counts={counts} />
+        {voice.phone_calls && (
+          <StartDemo
+            name={first?.name ?? null}
+            needsApproval={firstOrder ? !firstOrder.approved : false}
+            busy={campaign.ringing !== null || orders.saving !== null}
+            blockedBySimulation={autopilot.enabled}
+            onStart={() => void startDemo()}
+          />
+        )}
         <DataNote mode={mode} />
       </>
     ) : (

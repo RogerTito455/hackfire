@@ -152,6 +152,13 @@
     "phonePlaced": "El agente está llamando a {name}.",
     "phoneFailed": "No se pudo lanzar la llamada. Inténtalo otra vez o atiéndela en el navegador."
   },
+  "demo": {
+    "start": "Iniciar la demo",
+    "starting": "Llamando…",
+    "willCall": "El agente llama a {name}. Lo que conteste sale en el mapa, y un rescate llama y escribe a los bomberos.",
+    "willApprove": "Aprueba la orden de la zona y el agente llama a {name}. Un rescate llama y escribe a los bomberos.",
+    "simulationOn": "Apaga antes la simulación de llamadas: con ella encendida no suena ningún teléfono real."
+  },
   "ask": {
     "connecting": "Conectando con el agente…",
     "onTheLine": "Estás hablando con el agente coordinador. Pregunta: «¿Qué rescates tengo y en qué orden?» y luego «Dame la ruta al más urgente».",
