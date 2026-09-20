@@ -269,6 +269,9 @@ state. Catching here as well would hide the failures the hooks are built to repo
 
 ### `js-fetch-no-timeout` (MEDIUM ×3) — `frontend/src/services/api.ts`
 
+**Superseded: done in the portal pass below**, once there was time to exercise the whole run after
+it. The reasoning for leaving it that morning stands as written:
+
 A real gap, and the most tempting thing on this list to fix: an `AbortSignal.timeout()` in the
 shared helper is four lines. It was left alone because those four lines sit in front of *every*
 backend call the demo makes, including the route requests, and there was no time to exercise the
@@ -278,23 +281,209 @@ the moment it is meant to protect. First thing to pick up after the submission.
 ## What remains
 
 - `vite-missing-csp` — as a response header from `serve_dashboard`, report-only first.
-- `js-fetch-no-timeout` — `AbortSignal.timeout()` in `request`, with the route calls given a longer
-  deadline than the polling ones.
+- ~~`js-fetch-no-timeout`~~ — **done** in the portal pass below. One deadline for every call in the
+  end, not two: the slowest endpoint we have is bounded well inside it.
 - `fa-mng-dict-response` — worth doing for the live endpoints once Deepfire's shapes settle.
-- **The reset button swallows a failure** (`js-no-error-handling-async`, `App.tsx` and
+- ~~**The reset button swallows a failure**~~ — **done** in the portal pass below, through the
+  connection pill rather than new UI. As it read that morning:
+  (`js-no-error-handling-async`, `App.tsx` and
   `hooks/useTriage.ts`). `resetDemo()` is awaited with nothing catching it and is wired straight to
   `onClick`. If the backend is down during a rehearsal reset the click silently does nothing and
   logs an unhandled rejection. Worth a `try/catch` that puts the failure on screen — left alone
   today because showing it properly is a UI change, not a lint fix.
-- `js-empty-catch-block` ×3 (`ui/i18n.tsx`, `hooks/useClosures.ts`) — the intent is right and
-  commented (keep the last list; `localStorage` is blocked in private mode), but a `console.debug`
-  would make the swallow visible on stage and satisfy the rule.
+- ~~`js-empty-catch-block` ×3~~ — **done** in the portal pass below, with exactly the `console.debug`
+  this bullet proposed.
 - The frontend sweep ran with `coverage.reduced: true` throughout, and `backend/tests/` and the
   `voice/` packages were not scanned at all.
 - `register_applied_actions` could not write the audit trail: it fails with
   `{"status": "failed", "reason": "unlinked"}` for the same reason as the full scan. The fixes are
   recorded here and in the commit on `norma-pass` instead. Importing the repository in the Norma
   portal would unlock both the full scan and the audit trail.
+
+## Full-scan batches 1–20 and 21–40 from the portal
+
+The repository was later imported into the QualityClouds portal by hand, and the full scan that
+`link_repository` could not start from the MCP server ran there: **148 findings**. This section
+covers the first two batches handed back to us, 1–40, judged one by one against the code rather
+than by rule name. The line numbers below are the scan's; several had already moved.
+
+Each fix carries the comment `Recommended by Norma — fixed with Claude Opus 5 via Claude Code`
+next to the change, and each accepted finding carries `Norma <rule>: <why it is safe here>` where
+the rule fires, so the reasoning is in the code and not only here.
+
+Two findings in these batches are handled elsewhere and were not touched:
+
+- `backend/app/providers/dgt.py:127` (`py-sec-xml-xxe`) — **already fixed on main** by #74, the
+  `defusedxml` change written up above. Nothing to do.
+- `frontend/index.html:3` (`vite-missing-csp`) — **left alone on purpose.** It is being added as a
+  response header from the backend, which is where the section *What was accepted* argues it
+  belongs. Editing the entry point would collide with that work.
+
+### Fixed (6)
+
+| Finding | Rule | What was wrong |
+|---|---|---|
+| `frontend/src/hooks/useTriage.ts:55` + `App.tsx:53` | `js-no-error-handling-async` | The reset button. |
+| `frontend/src/ui/i18n.tsx:42` | `js-empty-catch-block` | A refused `localStorage` write vanished. |
+| `frontend/src/hooks/useClosures.ts:30` | `js-empty-catch-block` | A failed closures poll vanished. |
+| `frontend/src/hooks/useAutopilot.ts:26` | `js-empty-catch-block` | A failed autopilot read vanished. |
+| `frontend/public/tile-cache-sw.js:15`, `:27` | `js-no-error-handling-async` | A full tile cache broke the map. |
+| `video/scripts/audio.ts:154`, `:208` | `js-no-error-handling-async` | An unhandled rejection at the top level. |
+
+**The reset button** was the one real user-visible gap, and yesterday's pass had already listed it
+under *What remains*. `resetDemo()` was awaited in `useTriage.reset` with nothing catching it, and
+`App.tsx` awaited that in turn straight from `onClick`: with the backend down, a rehearsal reset
+silently did nothing and logged an unhandled rejection. `reset` now catches, logs with
+`console.error` and sets `online` to false — the error state the hook already owns and the
+connection pill already shows — then refreshes, which clears it as soon as the backend answers
+again. No new UI, and `App.tsx`'s `resetDemo` can no longer reject, which is what the `App.tsx:53`
+finding was about.
+
+**The three empty catches** each hid a failure that the operator had no way to see: the language
+that was not remembered (`localStorage` refused in private mode), a closures poll that did not
+answer, and the autopilot state that could not be read. All three keep exactly the behaviour they
+had — the intent was right — and now log the error at **debug** level. Debug rather than error on
+purpose: the closures catch runs every `POLL_MS` and the autopilot one on every refresh, so error
+level would fill the console during any offline moment on stage while the connection pill is
+already saying it. The swallow is now visible to anyone who looks.
+
+**The tile cache service worker** (#13) had the one latent bug in the batch. `cache.put` was
+awaited inside the promise handed to `event.respondWith`, so a `QuotaExceededError` — a full or
+blocked cache, which is exactly what a venue laptop in private mode gives you — rejected the whole
+response and the tile never reached the map, although the fetch had succeeded. Storing is now best
+effort inside its own `try/catch`, and the detached `trim(cache)` has a `.catch`, so neither can
+take a tile down with it. The tile still comes back on a failed write; only the caching is lost.
+
+**`video/scripts/audio.ts`** is the ElevenLabs generator behind `pnpm video:voice`, `video:sfx` and
+`video:music`. Its top-level `await command()` had no handler, so any failure — no key, a 4xx from
+ElevenLabs, ffmpeg missing — came out as an unhandled rejection's stack trace. It now prints one
+line and exits 1. The `:154` finding inside `sfx()` is *accepted*: `call()` throwing is how one bad
+sound stops the run instead of writing a truncated mp3, and the new handler at the bottom is where
+it lands.
+
+### Accepted (the rest)
+
+Every one of these was traced to where its value comes from. Several were already analysed in
+yesterday's `live_check` pass; the reasoning now also sits in the code.
+
+**`rct-unsafe-href-binding` (HIGH ×5)** — `Landing.tsx` ×3, `ActivityLog.tsx:39`,
+`RescueQueue.tsx:63`. None of the three sources is user input:
+
+- `Landing.tsx`'s `demoUrl` is the literal `'/'` declared in `src/landing.tsx`, the only place the
+  component is mounted.
+- `ActivityLog.tsx`'s `downloadUrl` is `auditDownloadUrl()` in `services/api.ts`: our own
+  same-origin `/api/audit/export` path with the locale `encodeURIComponent`'d.
+- `RescueQueue.tsx`'s `link.link` is written by the backend in `rescue_video.py` as
+  `{public_url}/v/{link id}` — the deployment's own `HACKFIRE_PUBLIC_URL` and an id it generated.
+  A resident can neither choose nor influence it.
+
+**`js-inner-html-assignment` (HIGH ×3) and `rct-dangerous-inner-html` (HIGH ×1)** —
+`TriageMap.tsx:765`, `:795`, `:819` and `Icon.tsx:66`. All four take **our own hand-written SVG**:
+the map markers come from `ui/markers.ts`, which concatenates fixed markup with a colour from
+`theme.ts` and an icon name from a closed union, and `Icon.tsx` renders a file from `ui/icons/`,
+bundled at build time and validated by `scripts/check-icons.mjs`. No user or network content
+reaches either. The one registry value on a marker, the resident's name, goes through
+`setAttribute` and `Popup.setText`, which escape. MapLibre markers need real DOM nodes, so JSX is
+not an option, and DOMPurify for static markup would add the dependency CLAUDE.md rules out.
+
+**`rct-prf-setstate-in-useeffect` (HIGH ×10)** — `TriageMap.tsx:648`, `useCrewRoom.ts:68` and
+`:70`, `BottomSheet.tsx:46`, `usePlayhead.ts:17`, `:20` and `:46`, `useResidentCamera.ts:28` and
+`:35`. The rule's own semgrep pattern excludes `.then`, `.catch`, `setTimeout`, `addEventListener`
+and a few others, but not the four shapes this codebase uses, which is why they all match:
+
+- MapLibre's `load` callback (`TriageMap.tsx`) — the style is ready when the map says so.
+- an async IIFE's continuation and its `catch` (`useCrewRoom.ts`, `useResidentCamera.ts`) — joining
+  a room or opening a single-use link is a network round trip; the outcome cannot be derived during
+  render, and a `useRef` guard keeps each to one run.
+- a `ResizeObserver` callback (`BottomSheet.tsx`) — a height is only known after layout. This
+  component is the one that genuinely needed the adjust-during-render pattern, and it already uses
+  it, a few lines below the flagged effect.
+- an `IntersectionObserver` and a `requestAnimationFrame` callback (`usePlayhead.ts`).
+
+The single call that really is in an effect body is `usePlayhead.ts:17`, the fallback for a browser
+with no `IntersectionObserver` or a ref that never attached. Both deps are stable, so it runs at
+most once: there is no second render pass per change to remove, and it cannot be derived during
+render because it depends on `ref.current`.
+
+**`js-no-error-handling-async` (HIGH ×10)** — `services/api.ts:119` and `:138`,
+`services/videoCall.ts:11`, `:20`, `:42`, `:75`, `:85`, `:102`, `services/voiceSession.ts:15` and
+`:34`. This is the deliberate boundary described above: `services/` throws, `hooks/` catches.
+`joinVideo` and `reopenRoad` reject into `useResidentCamera` and `useClosures.reopen`; every entry
+point in `videoCall.ts` rejects into `useResidentCamera`, `useRescueVideo` or `useCrewRoom`; and
+`joinConversation` rejects into `useConversation.start`. Each of those hooks awaits inside a
+`try/catch` and moves its own state to `'error'`, which is what the dashboard renders. Catching in
+`services/` as well would swallow the transition the hooks exist to report. `voiceSession.ts` shows
+where a handler *is* right: a refused microphone is caught so the room is left before the error
+goes up.
+
+**`js-mng-loopback-url` (HIGH)** — `services/api.ts:24`, unchanged and now commented in place: the
+loopback address is behind `import.meta.env.DEV`, so no build can carry it, and `VITE_API_URL` is
+the override the rule asks for.
+
+### Checked after the change
+
+`pnpm check` passes (backend tests, icons, locales, frontend build). The backend was then run with
+the built dashboard on one port and driven in a browser: replay mode draws the five resident pins,
+the autopilot switch turns on and off and the triage state follows it, live mode loads the fires,
+and the console stays clean.
+
+### The later batches: what else landed in these files
+
+More of the 148 came back while the pass was open (batches 61–148, mostly backend and video, taken
+by someone else). These are the ones in the files above.
+
+**Fixed — a timeout on every backend call** (`js-fetch-no-timeout`, MEDIUM, `services/api.ts:36`,
+`:119`, `:138`). Yesterday's pass left this one and said why; with the whole run exercisable
+afterwards, it is now done. A backend that accepts the connection and then never answers used to
+hang the panel that asked, showing nothing: the hooks only reach their unavailable state when a
+call *fails*. A single `fetchApi` helper now carries `AbortSignal.timeout(REQUEST_TIMEOUT_MS)` —
+one named constant, **10 s** — and converts the `TimeoutError` into the same kind of `Error` a
+non-2xx already throws, so every hook's existing `catch` covers it with no new UI. The three
+entry points that bypassed `request()` (`joinVideo`, `reopenRoad`) go through it too.
+
+Ten seconds was measured, not guessed. The slowest endpoint in the dashboard is
+`/api/status/providers` at ~4.3 s, and it is itself bounded — `provider_status.TIMEOUT_S` is 4 s per
+provider with an overall wait. `/api/live/spread` is 1.7 s, `/api/live/fires` 0.55 s, everything
+else milliseconds. The demo's routes are all cached (`pnpm check:routes`), so no route lookup goes
+to openrouteservice during the demo. That leaves better than twice the margin on the worst case,
+which is why one deadline was enough and the two-tier scheme the earlier note imagined was not
+needed.
+
+Proved in the browser rather than argued: holding `/api/closures` open for 30 s, the call gives up
+at exactly 10 s with `/api/closures did not answer in 10000 ms`, `useClosures` catches it, the rest
+of the dashboard keeps drawing, and there is no unhandled rejection.
+
+**Fixed — a timeout on a tile fetch** (`js-fetch-no-timeout`, MEDIUM, `tile-cache-sw.js:25`).
+`TILE_TIMEOUT_MS`, 8 s, on the one request the worker makes to the tile host. The cache is
+consulted first, so everything already shown keeps working on a stalled network; this only bounds
+the trip for a tile that is not cached yet. The service worker still filled its cache normally in
+the browser check (138 tiles).
+
+**Fixed — one nested ternary** (`js-nested-ternary`, MEDIUM, `ui/CrewPlanPanel.tsx:56`, `:58`). The
+verdict line for a crew's stop was a four-deep ternary inside JSX. It is now a `verdictText(step)`
+with four early returns, in the order a reader needs them: no route, no forecast, in time by that
+margin, late by it. Identical output — the panel still renders *“Sale ya · llega en 10 min / 3 h
+41 min antes que el fuego”* in the browser check.
+
+**Accepted — the other six nested ternaries.** `OrdersPanel.tsx:82` and `:106`, `LiveStatus.tsx:19`,
+`TriageMap.tsx:858` and `main.tsx:20` are each one value with three cases, on one line, next to what
+they label: a safe point's tag, a button's label, a locale key, a caption, and the route table.
+Hoisting any of them into a helper moves the decision away from the thing it decides without making
+it shorter, and these five render the demo. Each carries its reasoning.
+
+**Accepted — `js-function-in-loop`** (MEDIUM, `TriageMap.tsx:824`). One click handler per resident
+is the point: each closes over its own neighbour's id. It is created only when that marker is
+rebuilt, not on every pass, and it reads `onSelect.current`, so the closure never goes stale.
+
+**Accepted — `js-maint-no-console`** (`scripts/check-locales.mjs:115`, `check-icons.mjs:361`). Both
+are `pnpm check` commands whose output *is* their interface — the verdict a developer and CI read,
+the same argument as `py-maint-no-print` in `backend/app/pipelines/` above.
+
+**Already fixed on main:** `frontend/index.html:2` (missing Referrer-Policy) by #74, written up
+under *What was fixed*. Nothing to do.
+
+**`Landing.tsx:64`** is the third `href={demoUrl}` on that page and got the same comment as the
+other two in this pass.
 
 ## Sources
 

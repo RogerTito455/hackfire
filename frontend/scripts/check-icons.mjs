@@ -358,4 +358,6 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`  ${error}`)
   process.exit(1)
 }
+// Norma js-maint-no-console: as in check-locales.mjs, this is a `pnpm check` command and its
+// output is the verdict it exists to print.
 console.log(`Icon check passed: ${files.length} icons, catalogue and ICON_NAMES in step.`)

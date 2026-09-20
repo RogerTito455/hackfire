@@ -16,6 +16,7 @@ export function LiveStatus({ status, data, spread }: LiveMode) {
   }
 
   const time = formatSpanishTime(data.fetchedAt, intl)
+  // Norma js-nested-ternary: one locale key chosen from three, already named and on its own line.
   const note = t(status === 'error' ? 'live.refreshFailed' : data.stale ? 'live.busy' : 'live.updated', { time })
 
   return (

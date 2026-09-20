@@ -11,6 +11,10 @@ export function prefersReducedMotion(): boolean {
 /** True while `ref`'s element has at least `threshold` of itself on screen. */
 export function useInView(ref: RefObject<Element | null>, threshold = 0.3): boolean {
   const [inView, setInView] = useState(false)
+  // Norma rct-prf-setstate-in-useeffect: the first setInView is the fallback for a browser with no
+  // IntersectionObserver (or a ref that never attached) — it runs at most once, since both deps are
+  // stable, so there is no render cascade to remove. The second is the observer's own callback,
+  // which is the only place an intersection can be known.
   useEffect(() => {
     const element = ref.current
     if (!element || typeof IntersectionObserver === 'undefined') {
@@ -32,6 +36,8 @@ export function usePlayhead(duration: number, playing: boolean, initial = 0) {
   const [time, setTime] = useState(initial)
   const timeRef = useRef(initial)
 
+  // Norma rct-prf-setstate-in-useeffect: setTime runs inside the requestAnimationFrame callback —
+  // that is the clock, and it is already throttled to ~30 updates a second.
   useEffect(() => {
     if (!playing) return
     let frame = 0

@@ -41,8 +41,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLocaleState(code)
     try {
       window.localStorage.setItem(STORAGE_KEY, code)
-    } catch {
-      // Not remembered this time; nothing else depends on it.
+    } catch (error) {
+      // Not remembered this time; nothing else depends on it (localStorage is blocked in private
+      // mode).
+      // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+      // Logged at debug level: it is an expected refusal, not a fault, but it should be visible.
+      console.debug('language not remembered', error)
     }
   }, [])
 

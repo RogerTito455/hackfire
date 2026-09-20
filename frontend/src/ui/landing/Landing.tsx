@@ -47,6 +47,8 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
             <Icon name="logo" size={24} />
             <span>HackFire</span>
           </a>
+          {/* Norma rct-unsafe-href-binding: demoUrl is the literal '/' declared in src/landing.tsx,
+              the only place this component is mounted. No user or network value reaches it. */}
           <a className="button primary small" href={demoUrl}>
             {t('landing.nav.demo')}
           </a>
@@ -61,6 +63,7 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
               <h1 id="hero-title">{t('landing.hero.title')}</h1>
               <p className="hero-lead">{t('landing.hero.lead')}</p>
               <div className="hero-actions">
+                {/* Norma rct-unsafe-href-binding: demoUrl is the literal '/' from src/landing.tsx, as above. */}
                 <a className="button primary" href={demoUrl}>
                   {t('landing.hero.cta')}
                 </a>
@@ -148,6 +151,7 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
             <div>
               <h2 id="demo">{t('landing.demo.title')}</h2>
               <p className="demo-line">{t('landing.demo.line')}</p>
+              {/* Norma rct-unsafe-href-binding: demoUrl is the literal '/' from src/landing.tsx, as above. */}
               <a className="button primary" href={demoUrl}>
                 {t('landing.hero.cta')}
               </a>

@@ -17,6 +17,9 @@ const crewRoom = /^\/crew\/([^/]+)/.exec(window.location.pathname)?.[1]
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
+      {/* Norma js-nested-ternary: this is the route table — the resident's link, a crew's link, or
+          the dashboard — and the two comments above say where each path comes from. Splitting the
+          entry point into a component to avoid a ternary would hide the routing, not show it. */}
       {videoLink ? <ResidentApp linkId={videoLink} /> : crewRoom ? <CrewApp roomId={crewRoom} /> : <App />}
     </I18nProvider>
   </StrictMode>,

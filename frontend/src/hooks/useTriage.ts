@@ -52,7 +52,16 @@ export function useTriage(): Triage {
   }, [refresh])
 
   const reset = useCallback(async () => {
-    await resetDemo()
+    // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+    // A reset against a backend that is down used to be an unhandled rejection behind a click that
+    // did nothing. `online` is the error state this hook already owns and the connection pill
+    // already shows, so the failure lands there; the refresh below clears it once it answers again.
+    try {
+      await resetDemo()
+    } catch (error) {
+      console.error('demo reset failed', error)
+      setOnline(false)
+    }
     await refresh()
   }, [refresh])
 
