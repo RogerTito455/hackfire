@@ -650,7 +650,6 @@ export function TriageMap({
       setStyleReady(true)
     })
     map.current = instance
-    // TODO(map): predicted spread cone, reading the same replay time.
     return () => {
       instance.remove()
       map.current = null
