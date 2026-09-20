@@ -389,6 +389,8 @@ interface TriageMapProps {
   zones: ZoneImpact[]
   /** A resident's live video (#18), drawn next to their pin with the last caption under it. */
   liveVideo?: { lon: number; lat: number; element: HTMLElement; caption: string; waiting: boolean } | null
+  /** The console's width: when the divider moves it, MapLibre is told to measure its box again. */
+  resizeKey?: number
   /** Roads marked as cut, drawn as no-entry signs over the stretch they close. */
   closures?: RoadClosure[]
   /** While true, a tap on the map reports where, to close the road there. */
@@ -417,6 +419,7 @@ export function TriageMap({
   spread,
   zones,
   liveVideo = null,
+  resizeKey = 0,
   closures = [],
   closing = false,
   onMapClick,
@@ -801,6 +804,12 @@ export function TriageMap({
     }
     // startBounds goes from null to a box once, and never changes after the map is built.
   }, [startBounds])
+
+  // The divider gave the map more or less room: MapLibre sizes its canvas from the container and
+  // only redraws it when asked.
+  useEffect(() => {
+    map.current?.resize()
+  }, [resizeKey])
 
   useEffect(() => {
     if (!styleReady || !window.matchMedia) return
