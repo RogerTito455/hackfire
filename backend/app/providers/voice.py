@@ -55,7 +55,27 @@ def _request(method: str, agent_id: str, path: str = "", body: dict | None = Non
 
 def call_resident(phone: str, arguments: dict[str, str]) -> str:
     """Dial one resident. Returns SLNG's call id. `arguments` fill the agent's call variables."""
-    call = _request("POST", settings.slng_resident_agent_id, "/calls", {"phone_number": phone, "arguments": arguments})
+    return _dial(settings.slng_resident_agent_id, phone, arguments)
+
+
+def crew_calls_configured() -> bool:
+    return bool(settings.crew_calls and settings.slng_api_key and settings.slng_crew_agent_id)
+
+
+def call_crew(phone: str) -> str:
+    """Ring the crew with the agent that reads the rescue queue, the plan and the routes.
+
+    It takes no call variables: the agent asks its tools while it talks, so what it says is what the
+    coordinator sees at that moment.
+    """
+    return _dial(settings.slng_crew_agent_id, phone, None)
+
+
+def _dial(agent_id: str, phone: str, arguments: dict[str, str] | None) -> str:
+    body: dict = {"phone_number": phone}
+    if arguments is not None:
+        body["arguments"] = arguments
+    call = _request("POST", agent_id, "/calls", body)
     call_id = call.get("call_id") or call.get("id")
     if not call_id:
         raise VoiceUnavailable("the dispatch answer carries no call id")

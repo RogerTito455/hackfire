@@ -130,7 +130,9 @@
       "createdSms": "Aviso a la dotación por {name}, enviándose por SMS.",
       "createdDashboard": "Aviso a la dotación por {name}, solo en el panel.",
       "smsSent": "Aviso por {name} enviado a la dotación por SMS.",
-      "smsFailed": "Falló el SMS a la dotación por {name}: el aviso queda en el panel."
+      "smsFailed": "Falló el SMS a la dotación por {name}: el aviso queda en el panel.",
+      "crewCalled": "Se ha llamado a los bomberos por {name}: el agente les lee la cola y la ruta.",
+      "crewCallFailed": "La llamada a los bomberos por {name} ha fallado: el aviso se queda en el panel."
     },
     "closure": {
       "added": {

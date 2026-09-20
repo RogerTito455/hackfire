@@ -55,6 +55,9 @@ class Settings:
     # The crews' room id, which is the last part of the link they are texted (app/crew_room.py).
     # Set it to a hard-to-guess word so the link survives a deploy; unset, a deploy changes it.
     crew_room: str = field(default_factory=lambda: _env("HACKFIRE_CREW_ROOM"))
+    # Ring the crew phone on every new rescue, with the crew-caller agent (docs/setup/phone-calls.md).
+    # Off by default: it dials a real phone. Needs SLNG_CREW_AGENT_ID and HACKFIRE_CREW_PHONE.
+    crew_calls: bool = field(default_factory=lambda: _env("HACKFIRE_CREW_CALLS") == "1")
     # How many fire crews the plan shares the rescues between; the dashboard can change it.
     crews: int = field(default_factory=lambda: int(_env("HACKFIRE_CREWS", "2") or 2))
     # Twilio, for the crew SMS (providers/sms.py). All three or none.
@@ -96,6 +99,9 @@ class Settings:
         default_factory=lambda: _env("SLNG_RESIDENT_AGENT_ID", "0f035ccc-10d8-4de8-8142-abf4dc484fd8")
     )
     # The deployed coordinator agent (voice/coordinator/), which the dashboard's "Ask the agent" talks to.
+    # The agent that phones the crew when a rescue comes in: the coordinator agent in the region of
+    # the outbound connection, so it can dial out (voice/README.md).
+    slng_crew_agent_id: str = field(default_factory=lambda: _env("SLNG_CREW_AGENT_ID"))
     slng_coordinator_agent_id: str = field(
         default_factory=lambda: _env("SLNG_COORDINATOR_AGENT_ID", "6d1a743a-4a0e-42b2-aa3f-5052c247137c")
     )

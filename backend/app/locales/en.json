@@ -130,7 +130,9 @@
       "createdSms": "Crew alert for {name}, being texted to the crew.",
       "createdDashboard": "Crew alert for {name}, on the dashboard only.",
       "smsSent": "Crew alert for {name} texted to the crew.",
-      "smsFailed": "The crew SMS for {name} failed: the alert stays on the dashboard."
+      "smsFailed": "The crew SMS for {name} failed: the alert stays on the dashboard.",
+      "crewCalled": "The crew was rung about {name}: the agent is reading them the queue and the route.",
+      "crewCallFailed": "The crew call about {name} failed: the alert stays on the dashboard."
     },
     "closure": {
       "added": {

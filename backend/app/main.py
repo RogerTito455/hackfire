@@ -744,6 +744,22 @@ def _crew_sms_works() -> bool:
     return bool(settings.crew_phone) and (sms.configured() or vonage.sms_configured())
 
 
+def _call_the_crew(rescue_id: str) -> None:
+    """Ring the crew about a new rescue, after the answer: the voice agent never waits on a call.
+
+    The crew-caller agent reads the queue, the plan and each route with its own tools, so the crew
+    hears what the coordinator sees; asking for a route also moves the shared map to it (#10).
+    """
+    neighbor_id = rescue_id.removeprefix("rescue-")
+    try:
+        voice.call_crew(settings.crew_phone)
+    except voice.VoiceUnavailable:
+        logger.exception("crew call for %s failed", rescue_id)
+        audit.record("alert.crewCallFailed", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
+        return
+    audit.record("alert.crewCalled", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
+
+
 def _text_the_crew(rescue_id: str, message: str) -> None:
     """Runs after the response, so the voice agent never waits on the carrier. A failure is logged
     and the alert stays on the dashboard, marked as not sent."""
@@ -789,6 +805,8 @@ def _record_report(request: ReportStatusRequest, background: BackgroundTasks, so
         )
         if texting:
             background.add_task(_text_the_crew, alert.rescue_id, alert.message)
+        if voice.crew_calls_configured() and settings.crew_phone:
+            background.add_task(_call_the_crew, alert.rescue_id)
     return neighbor
 
 
