@@ -5,6 +5,7 @@ import { Icon } from './Icon'
 import { useI18n } from './i18n'
 import { useWideScreen } from './useWideScreen'
 import {
+  DGT_CLOSURE_COLOR,
   HOTSPOT_AGE_COLORS,
   LIVE_RECENCY_COLORS,
   ROAD_CLOSED_COLOR,
@@ -114,6 +115,24 @@ export function MapLegend({ mode }: { mode: MapMode }) {
               to={t('fire.legendAhead')}
             />
             <Row swatch={<span className="legend-triangle" aria-hidden="true" />} name={t('legend.dgt')} />
+            <Row
+              swatch={
+                <span
+                  className="legend-line dashed"
+                  style={{ background: `repeating-linear-gradient(to right, ${DGT_CLOSURE_COLOR} 0 5px, transparent 5px 9px)` }}
+                />
+              }
+              name={t('legend.dgtClosed')}
+            />
+            <Row
+              swatch={
+                <span
+                  className="legend-line dashed"
+                  style={{ background: `repeating-linear-gradient(to right, ${ROAD_CLOSED_COLOR} 0 5px, transparent 5px 9px)` }}
+                />
+              }
+              name={t('legend.predictedClosed')}
+            />
           </>
         )}
       </ul>

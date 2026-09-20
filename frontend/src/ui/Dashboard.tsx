@@ -421,6 +421,8 @@ export function Dashboard({
           dgt={live.dgt}
           liveOperations={liveOperations.data}
           onSelectLiveFire={liveOperations.select}
+          closureFocus={liveOperations.focus}
+          onFocusClosure={liveOperations.focusClosure}
           selectedNeighborId={selection.neighborId}
           route={selection.route}
           routeKind={selection.mode}
