@@ -83,3 +83,23 @@ def test_twilio_gets_the_right_request(monkeypatch: pytest.MonkeyPatch) -> None:
     assert seen["url"] == "https://api.twilio.com/2010-04-01/Accounts/AC1/Messages.json"
     assert seen["auth"] == ("AC1", "tok")
     assert seen["data"] == {"To": "+34000000099", "From": "+100", "Body": "Rescue needed"}
+
+
+def test_the_crew_is_texted_through_vonage_when_twilio_is_not_set_up(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The project has Vonage, not Twilio. A rescue that only reaches the dashboard is a rescue the
+    crew may not hear about."""
+    sent: list[tuple[str, str]] = []
+    monkeypatch.setattr(sms, "configured", lambda: False)
+    monkeypatch.setattr(sms, "send", lambda *_: pytest.fail("Twilio is not set up"))
+    monkeypatch.setattr(main.vonage, "sms_configured", lambda: True)
+    monkeypatch.setattr(main.vonage, "send_sms", lambda to, text: sent.append((to, text)))
+    monkeypatch.setattr(main, "settings", type(settings)(**{**settings.__dict__, "crew_phone": "+34000000099"}))
+
+    rescue(first_id())
+
+    # The crew's SMS is in their own language (HACKFIRE_CREW_LOCALE), not the dashboard's.
+    assert len(sent) == 1
+    number, text = sent[0]
+    assert number == "+34000000099"
+    assert "Avenida del Ebro" in text and "?rescue=" in text
+    assert client.get("/api/alerts").json()[0]["sent_by_sms"] is True

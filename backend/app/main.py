@@ -739,13 +739,21 @@ def get_evacuation_route(request: EvacuationRouteRequest) -> Route:
 logger = logging.getLogger("hackfire")
 
 
+def _crew_sms_works() -> bool:
+    """Whichever carrier is set up: Twilio if it is, otherwise Vonage, which the video already uses."""
+    return bool(settings.crew_phone) and (sms.configured() or vonage.sms_configured())
+
+
 def _text_the_crew(rescue_id: str, message: str) -> None:
-    """Runs after the response, so the voice agent never waits on Twilio. A failure is logged and
-    the alert stays on the dashboard, marked as not sent."""
+    """Runs after the response, so the voice agent never waits on the carrier. A failure is logged
+    and the alert stays on the dashboard, marked as not sent."""
     neighbor_id = rescue_id.removeprefix("rescue-")
     try:
-        sms.send(settings.crew_phone, message)
-    except httpx.HTTPError:
+        if sms.configured():
+            sms.send(settings.crew_phone, message)
+        else:
+            vonage.send_sms(settings.crew_phone, message)
+    except (httpx.HTTPError, vonage.VonageUnavailable):
         logger.exception("crew SMS for %s failed", rescue_id)
         audit.record("alert.smsFailed", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
         return
@@ -768,10 +776,10 @@ def _record_report(request: ReportStatusRequest, background: BackgroundTasks, so
     if neighbor is None:
         raise HTTPException(status_code=404, detail=f"Unknown neighbor {request.neighbor_id}")
     audit.status_reported(neighbor, source=source, actor="agent" if source == "agent_tool" else "coordinator")
-    # A new rescue became a crew alert (state.py): text it to the crew when Twilio is set up.
+    # A new rescue became a crew alert (state.py): text it to the crew when a carrier is set up.
     if len(state.alerts()) > alerts_before:
         alert = state.alerts()[0]
-        texting = sms.configured() and bool(settings.crew_phone)
+        texting = _crew_sms_works()
         audit.record(
             "alert.createdSms" if texting else "alert.createdDashboard",
             actor="system",
