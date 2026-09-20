@@ -82,6 +82,7 @@ Run `pnpm check` before every commit.
 - **No scenario in code.** The fire's box, dates, scenario time, lead-time zone and data file names live in `data/scenarios/<id>.json` and are read through `app/scenario.py`; files read from them are cached with `scenario.cached`. See `docs/setup/new-scenario.md`.
 - **Demo mode comes first.** Everything slow or external (Deepfire, the spread simulation, Overpass) is fetched once and cached as static files under `data/`. The live demo must not depend on a third-party API answering in time. Deepfire runs on shared capacity and returns 503 under load.
 - **Routing limits.** openrouteservice rejects `avoid_polygons` larger than 200 km² or 20 km in height or width. The demo box `-4.85,40.30,-4.40,40.50` is ~38 × 22 km, so clipping to it is not enough: clip the fire to a square of at most 14 km around the route (see `docs/findings/2026-09-19-ors-avoid-polygon-limit.md`).
+- **The demo phone is Chrome 101.** `frontend/vite.config.ts` sets `build.cssTarget: 'chrome101'`, or the minifier rewrites every media query into range syntax (`(width>=900px)`) that Chrome 101 drops, taking the whole phone layout with it (`docs/findings/2026-09-20-css-range-syntax.md`). No `dvh`, `color-mix()` or `AbortSignal.timeout` without a plain fallback right before them.
 - **MapLibre GL v6 has no default export.** Use named imports (`import { Map as MapLibreMap, Marker } from 'maplibre-gl'`).
 
 ## Working with Claude Code

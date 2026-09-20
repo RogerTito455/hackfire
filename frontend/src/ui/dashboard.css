@@ -831,33 +831,27 @@ body,
     padding: 10px;
   }
 
-  .topbar .conn-label {
+  /* A phone's top bar is one row over the map: every word that can go, goes, and what is left is
+     a 44 px target. The names stay in the markup for the screen reader and as a tooltip. */
+  .topbar .conn-label,
+  .topbar .mode-toggle .mode-label {
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+
+  .topbar .mode-toggle button {
+    padding: 0;
+    width: 48px;
   }
 }
 
 @media (max-width: 479px) {
   .topbar .brand-name {
     display: none;
-  }
-
-  /* Segmented control: the chosen mode keeps its name, the other shrinks to its icon. */
-  .topbar .mode-toggle button:not(.active) {
-    padding: 0 12px;
-  }
-
-  .topbar .mode-toggle button:not(.active) .mode-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   .topbar .brand {
@@ -882,9 +876,11 @@ body,
   transition: height 280ms var(--ease-out);
 }
 
+/* Half opens on to something: the header can be tall (a scrubber, four counters, a live note), so
+   half is whatever leaves SHEET_BODY of panel under it, and never less than the old 52%. */
 .sheet[data-snap='half'] {
-  height: 52vh;
-  height: 52dvh;
+  height: min(90vh, max(52vh, calc(var(--sheet-peek, 196px) + 240px)));
+  height: min(90dvh, max(52dvh, calc(var(--sheet-peek, 196px) + 240px)));
 }
 
 .sheet[data-snap='full'] {
@@ -896,12 +892,15 @@ body,
   display: flex;
   flex: none;
   justify-content: center;
-  padding: 8px 0 4px;
+  padding: 10px 0 6px;
   cursor: grab;
   touch-action: none;
 }
 
+/* The thumb lands on the button, and touch-action does not inherit: without this the browser
+   takes the swipe for a scroll, cancels the pointer and the sheet answers the wrong gesture. */
 .sheet-handle {
+  touch-action: none;
   width: 44px;
   height: 20px;
   padding: 0;
@@ -2513,6 +2512,13 @@ button:active {
 .legend-ramp {
   height: 8px;
   border-radius: 999px;
+}
+
+/* Live mode draws each place at risk as a translucent purple circle, shaded by how soon the fire
+   reaches it: the key carries the same ink and the same softness. */
+.legend-ramp.round {
+  height: 12px;
+  opacity: 0.6;
 }
 
 .legend-line {

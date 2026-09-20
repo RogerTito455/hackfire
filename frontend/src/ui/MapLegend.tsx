@@ -72,8 +72,10 @@ export function MapLegend({ mode, room = true }: { mode: MapMode; room?: boolean
               to={t('fire.legendAhead')}
             />
             <Row
-              swatch={<span className="legend-zone" style={{ background: ZONE_URGENCY_COLORS[1][1] }} />}
+              swatch={<span className="legend-ramp" style={{ background: ramp(ZONE_URGENCY_COLORS) }} />}
               name={t('legend.zone')}
+              from={t('fire.legendNow')}
+              to={t('legend.zoneLate')}
             />
             <Row swatch={<span className="legend-line" style={{ background: ROUTE_COLOR }} />} name={t('section.wayOut')} />
             <Row
@@ -115,6 +117,12 @@ export function MapLegend({ mode, room = true }: { mode: MapMode; room?: boolean
               name={t('legend.forecast')}
               from={t('fire.legendNow')}
               to={t('fire.legendAhead')}
+            />
+            <Row
+              swatch={<span className="legend-ramp round" style={{ background: ramp(ZONE_URGENCY_COLORS) }} />}
+              name={t('legend.places')}
+              from={t('fire.legendNow')}
+              to={t('legend.zoneLate')}
             />
             <Row swatch={<span className="legend-triangle" aria-hidden="true" />} name={t('legend.dgt')} />
             <Row

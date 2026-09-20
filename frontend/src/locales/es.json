@@ -26,17 +26,19 @@
     "showPanel": "Mostrar el panel"
   },
   "legend": {
-    "title": "Qué hay en el mapa",
-    "hotspots": "Focos del satélite",
-    "forecast": "Por dónde se prevé que avance",
-    "zone": "Pueblo o edificio en su camino",
-    "fireRoad": "Carretera alcanzada por el fuego",
     "closed": "Carretera que has cortado",
-    "residents": "Vecinos, según lo que contestaron",
-    "fires": "Incendios activos",
     "dgt": "Incidencia oficial de la DGT",
     "dgtClosed": "Carretera cortada por la DGT (oficial)",
-    "predictedClosed": "Carretera a cortar: la previsión la alcanza (predicción)"
+    "fireRoad": "Carretera alcanzada por el fuego",
+    "fires": "Incendios activos",
+    "forecast": "Por dónde se prevé que avance",
+    "hotspots": "Focos del satélite",
+    "places": "Lugares a los que llega el fuego, y cuándo",
+    "predictedClosed": "Carretera a cortar: la previsión la alcanza (predicción)",
+    "residents": "Vecinos, según lo que contestaron",
+    "title": "Qué hay en el mapa",
+    "zone": "Pueblo o edificio en su camino",
+    "zoneLate": "6 h o más"
   },
   "mode": {
     "label": "Modo del mapa",

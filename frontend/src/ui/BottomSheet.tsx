@@ -12,10 +12,16 @@ const ORDER: readonly SheetSnap[] = ['peek', 'half', 'full']
 /** Before the header is measured, and the least a peek can be. */
 const PEEK_FALLBACK = 196
 
+/** The panel half opens on to; the CSS rule for [data-snap='half'] says the same in vh. */
+const HALF_BODY = 240
+
 /** Visible height of each snap, in pixels: peek shows the whole header, whatever the language. */
 function heights(peek: number): Record<SheetSnap, number> {
   const viewport = window.innerHeight
-  return { peek, half: Math.max(peek, Math.round(viewport * 0.52)), full: Math.round(viewport * 0.9) }
+  const full = Math.round(viewport * 0.9)
+  // A header with a scrubber, four counters and a live note can be 290 px on a phone: half has to
+  // clear it, or opening the sheet shows a strip of panel and looks like it did not open at all.
+  return { peek, half: Math.min(full, Math.max(peek + HALF_BODY, Math.round(viewport * 0.52))), full }
 }
 
 function nearest(px: number, peek: number): SheetSnap {
@@ -74,14 +80,20 @@ export function BottomSheet({ header, children, wake }: BottomSheetProps) {
     }
   }
 
-  const onPointerUp = () => {
+  const settle = (tapped: boolean) => {
     if (!drag.current) return
     const { moved } = drag.current
     drag.current = null
     if (moved && dragPx !== null) setSnap(nearest(dragPx, peek))
-    else setSnap((current) => ORDER[(ORDER.indexOf(current) + 1) % ORDER.length])
+    else if (tapped) setSnap((current) => ORDER[(ORDER.indexOf(current) + 1) % ORDER.length])
     setDragPx(null)
   }
+
+  const onPointerUp = () => settle(true)
+
+  // The browser can take the gesture back (it decides the swipe was a scroll). That is not a tap on
+  // the handle: settle where the drag reached, and leave the sheet where it is if it never moved.
+  const onPointerCancel = () => settle(false)
 
   const style = {
     '--sheet-peek': `${peek}px`,
@@ -96,7 +108,7 @@ export function BottomSheet({ header, children, wake }: BottomSheetProps) {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
       >
         <button
           type="button"
