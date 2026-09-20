@@ -41,6 +41,10 @@ class Provider:
     name: str  # a brand name: not translated
     probe: Callable[[httpx.Client], Check]
     ttl_s: float = TTL_S
+    # An optional service disappears from the panel while it is not configured: a coordinator needs
+    # to see what the demo runs on, not a list of what nobody set up. The SMS providers are the
+    # optional ones; the fallback is on screen anyway ("crew alerts stay on the dashboard").
+    optional: bool = False
 
 
 def _client() -> httpx.Client:
@@ -155,8 +159,8 @@ PROVIDERS: list[Provider] = [
     Provider("openrouteservice", "openrouteservice", check_routing, ORS_TTL_S),
     Provider("overpass", "Overpass (OpenStreetMap)", check_overpass),
     Provider("slng", "SLNG", check_slng),
-    Provider("twilio", "Twilio SMS", check_twilio),
-    Provider("vonage", "Vonage SMS", check_vonage),
+    Provider("twilio", "Twilio SMS", check_twilio, optional=True),
+    Provider("vonage", "Vonage SMS", check_vonage, optional=True),
     Provider("dgt", "DGT", check_dgt),
 ]
 
@@ -215,6 +219,8 @@ def statuses(providers: list[Provider] | None = None, wait_s: float = WAIT_S) ->
     with _lock:
         for provider in providers:
             result = _results.get(provider.id)
+            if provider.optional and result is not None and result.check.state == ProviderState.NOT_CONFIGURED:
+                continue
             if result is None:
                 check, checked_at = Check(ProviderState.DEGRADED, "checking", {"seconds": int(wait_s)}), None
             else:
