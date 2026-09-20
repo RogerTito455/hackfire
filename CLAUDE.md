@@ -78,6 +78,14 @@ Run `pnpm check` before every commit.
 - **Routing limits.** openrouteservice rejects `avoid_polygons` larger than 200 km² or 20 km in height or width. The demo box `-4.85,40.30,-4.40,40.50` is ~38 × 22 km, so clipping to it is not enough: clip the fire to a square of at most 14 km around the route (see `docs/findings/2026-09-19-ors-avoid-polygon-limit.md`).
 - **MapLibre GL v6 has no default export.** Use named imports (`import { Map as MapLibreMap, Marker } from 'maplibre-gl'`).
 
+## Working with Claude Code
+
+- **At most two subagents at a time, and only when the work is genuinely parallel and separable.** Anything smaller than that is faster done in the main conversation. A fourth or fifth agent costs more tokens than it saves, and their edits collide in the same files.
+- **Brief an agent with the files and the constraints, not with the whole story**, and give it a time box. Ask it to report in a few lines: what it changed, what it verified, what it did not.
+- **Spend tokens like they are the budget they are.** Read the part of a file you need rather than the whole file, keep command output short (`head`, `grep`, a count instead of a dump), and do not re-read what is already in the conversation.
+- **Do not leave log files behind.** Send throwaway output to the scratchpad directory, never into the repo, and prefer one line on screen to a file. `data/` holds the demo's cached data, not run logs.
+- **One change, one branch, one pull request**, with `pnpm check` green before the commit.
+
 ## Secrets and personal data
 
 - Keys live in `.env` (git-ignored). Never commit them; add new ones to `.env.example` with an empty value.
