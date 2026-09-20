@@ -44,6 +44,8 @@ class _Snapshot:
     stale: bool = False
 
 
+# Norma global keyword used inside a function: Deepfire's last completed run per fire, rebound under
+# `_lock` by `predicted_spread` and cleared by `reset_cache`. A module-level cache.
 _snapshot: _Snapshot | None = None
 # A completed run never changes: its hourly polygons and burned area, by simulation id. Seeded from
 # CACHE_FILE after a restart, so only runs that are new since then are fetched.

@@ -19,7 +19,9 @@ import sys
 from .. import impact
 from ..lead_time import lead_time
 from ..scenario import current
-from .common import read_hotspots, write_or_compare
+from .common import OutputDiffers, read_hotspots, write_or_compare
+
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
 
 
 def definition(zone_name: str, zone_kind: str, radius_km: float) -> str:
@@ -72,4 +74,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except OutputDiffers:
+        # Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+        # write_or_compare printed the difference; the entry point owns the exit code.
+        raise SystemExit(1) from None

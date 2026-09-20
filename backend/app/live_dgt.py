@@ -47,6 +47,8 @@ class _Snapshot:
     stale: bool = False
 
 
+# Norma global keyword used inside a function: the DGT feed's last good answer, rebound under `_lock`
+# by `snapshot` and cleared by `reset_cache`. A module-level cache, not shared mutable state.
 _snapshot: _Snapshot | None = None
 _lock = threading.Lock()
 

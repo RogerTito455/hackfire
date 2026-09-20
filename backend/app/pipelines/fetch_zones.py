@@ -28,7 +28,12 @@ POINT_PADDING_DEG = 0.0015
 # Roads are simplified to about 20 m: enough to say which road is cut, small enough to ship.
 ROAD_TOLERANCE_DEG = 0.0002
 COORDINATE_GRID_DEG = 0.00001  # about 1 m
+# Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+# Overpass answers a whole-box query slowly under load; this is the wait the download is given.
+OVERPASS_TIMEOUT_SECONDS = 120
 
+# Norma print() in production code: a command's stdout is its interface, not a log
+# (app/pipelines/__init__.py).
 
 
 def overpass_bbox(bbox: tuple[float, float, float, float]) -> str:
@@ -180,7 +185,7 @@ def road_features(client: httpx.Client) -> list[dict]:
 
 
 def main() -> None:
-    with httpx.Client(timeout=120) as client:
+    with httpx.Client(timeout=OVERPASS_TIMEOUT_SECONDS) as client:  # Recommended by Norma — fixed with Claude Opus 5 via Claude Code
         features = place_features(client) + facility_features(client) + road_features(client)
 
     # Stable order so the file diffs cleanly: named places first, then by kind and id.

@@ -16,7 +16,12 @@ import httpx
 from ..providers import deepfire
 from ..scenario import current
 
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
+
 WINDOW = timedelta(hours=3)
+# Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+# Deepfire runs on shared capacity and a window of 3 hours can be thousands of features.
+DEEPFIRE_TIMEOUT_SECONDS = 40
 
 # What the replay needs from each hotspot; the rest of Deepfire's properties are dropped.
 KEEP = ("observed_at", "fire_radiative_power", "confidence", "source", "cluster_id")
@@ -45,7 +50,7 @@ def main() -> None:
     scenario = current()
     bbox, end, output = bbox_parameter(scenario.bbox), scenario.replay_end, scenario.files.hotspots
     features: list[dict] = []
-    with httpx.Client(timeout=40) as client:
+    with httpx.Client(timeout=DEEPFIRE_TIMEOUT_SECONDS) as client:  # Recommended by Norma — fixed with Claude Opus 5 via Claude Code
         token = deepfire.get_token(client)
         cursor = scenario.replay_start
         while cursor < end:

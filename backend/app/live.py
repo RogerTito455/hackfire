@@ -25,6 +25,9 @@ class _Snapshot:
     monotonic: float
 
 
+# Norma global keyword used inside a function: this is a process-lifetime cache of Deepfire's last good
+# answer, rebound by `active_fires` and cleared by `reset_cache`. Rebinding a module variable is
+# what `global` is for; wrapping it in a class would add an object whose only job is to hold it.
 _snapshot: _Snapshot | None = None
 
 
