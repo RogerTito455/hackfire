@@ -56,7 +56,8 @@ Say this before anyone asks. The dashboard and the landing page say it too.
 2. **The voice agent.** The prompt fixes found by Galtea take effect only after `pnpm voice:deploy`. Check on a real browser call that the reasoning (`</think>`) is not read aloud. If the call misbehaves, use the typed answer.
 3. **Two lines in the pitch script do not match the demo yet:**
    - "A phone rings in the room": there is no phone line. The agent calls the laptop, and a teammate answers in the browser.
-   - "With Twilio, an SMS reaches the crew phone": Twilio is not set up. The crew alert shows on the dashboard.
+   - "With Twilio, an SMS reaches the crew phone": Twilio was never set up and is gone from the panel. The
+     crew SMS goes through Vonage when `HACKFIRE_CREW_PHONE` is set; without it the alert shows on the dashboard.
 
    Change them unless a SIP trunk and SMS are configured before the demo.
 4. **State in memory.** A redeploy resets it. Press Reset before the demo and never deploy during it.
