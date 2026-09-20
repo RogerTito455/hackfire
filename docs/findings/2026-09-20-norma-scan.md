@@ -491,3 +491,105 @@ other two in this pass.
   `register_applied_actions`
 - https://github.com/qualityclouds/norma-mcp
 - `docs/services/norma.md`
+
+## Full-scan batches 61–148: backend and video
+
+A teammate imported the repository in the Norma portal and ran the full scan the MCP server could
+not: **148 findings**. This section covers the backend and video slice of it (the frontend,
+`backend/app/main.py` and `video/scripts/audio.ts` were taken by other passes at the same time).
+
+Everything here is a comment, a constant or a rename. The demo runs on this code an hour before the
+submission, so nothing that changes behaviour was in scope, and nothing below changes any output.
+Every fix carries `Recommended by Norma — fixed with Claude Opus 5 via Claude Code` next to it;
+every rule left alone carries `Norma <rule name>: <why>` where it fires.
+
+### Fixed
+
+**`sys.exit() outside __main__` (MEDIUM, manageability) — `pipelines/common.py:26`**
+
+It fired on a helper, not on an entry point: `write_or_compare` is what `pnpm data:spread --check`
+and `pnpm data:lead-time --check` call to compare a rebuilt file with the one on disk, and it ended
+the process itself. It now raises `OutputDiffers`, and each pipeline's `__main__` block turns that
+into exit code 1. The print that says which file differs stays where it was, so the command's output
+is byte for byte what it was; only the decision to stop the process moved to the entry point.
+`import sys` left `common.py` with it.
+
+**`Magic-number timeout` (LOW, manageability) ×4**
+
+| File | Was | Now |
+| --- | --- | --- |
+| `pipelines/fetch_hotspots.py` | `httpx.Client(timeout=40)` | `DEEPFIRE_TIMEOUT_SECONDS = 40` |
+| `pipelines/fetch_zones.py` | `httpx.Client(timeout=120)` | `OVERPASS_TIMEOUT_SECONDS = 120` |
+| `pipelines/check_routes.py` | `httpx.Client(timeout=60)` | `SERVICE_TIMEOUT_SECONDS = 60` |
+| `providers/galtea.py` | `time.sleep(3)` | `DATASET_POLL_SECONDS = 3` |
+
+Each constant sits next to the other timings its module already names (`WINDOW`,
+`DATASET_READY_SECONDS`) and carries the one line that says why that number and not another.
+
+**`open() without explicit encoding` (LOW, manageability) ×6 — `video/scripts/export_map.py`**
+
+All six are `Path.read_text()` on the cached JSON the video draws from; they now pass
+`encoding="utf-8"`, matching the `write_text(..., encoding="utf-8")` at the end of the same file.
+There is no binary read in this file, so nothing was left as it was on those grounds.
+
+**Nested ternaries (MEDIUM) ×3 — `video/src/Scenes.tsx:190,604,605`**
+
+Two were index-to-colour chains, one per node of a diagram; they are now `PIPELINE_ICON_COLOR` and
+`LOOP_ICON_COLOR`, a flat array in the order of the `PIPELINE` and `LOOP` tables right above them,
+so the colour of a node is read off the same row as its icon and label. The third,
+`lit ? (i === 3 ? C.agent : C.line) : C.line`, flattens to `lit && i === 3 ? C.agent : C.line`.
+Every colour is the one that rendered before — the arrays were written out from the old chains index
+by index — and `pnpm --filter video typecheck` passes.
+
+### Accepted
+
+**`print() in production code` (MEDIUM, maintainability) ×16 — every module in `app/pipelines/`**
+
+Kept as `print`, and the reasoning is written once in the package docstring
+(`app/pipelines/__init__.py`), with a one-line `Norma print() in production code:` pointer in each
+module. Nothing in this package is imported by the API or the dashboard: each module is a command a
+person runs in a terminal (`pnpm data:hotspots`, `pnpm check:routes`, `pnpm voice:goodbye`), and its
+stdout *is* the interface — the progress of a download, the counts written, the OK/NOT OK a
+`--check` run is asked for. Routing that through a logger would add levels, a logger name and a
+configuration step to text that is already the program's only output. The rule stands everywhere
+else in the backend, which is why the justification names the package rather than the repository.
+The commands print exactly what they printed before this pass.
+
+**`global keyword used inside a function` (LOW, architecture) ×12 — `live.py`, `live_dgt.py`,
+`live_spread.py`, `scenario.py`, `autopilot.py`, `providers/deepfire.py`**
+
+Every one is a module-level cache rebound by the function that owns it and cleared by a
+`reset_cache`/`turn_off` next to it: Deepfire's last good answer, the DGT feed's last good answer,
+the last completed spread run, the active scenario, the OAuth token, and the state the demo
+autopilot restores when it is turned off. The three live modules already guard theirs with a
+`threading.Lock`. Memoising a module-level scalar is what `global` is for; the alternative is a
+class whose only job is to hold one variable, or a scenario argument threaded through most of the
+backend. Each file carries the justification at the declaration the `global` statements rebind.
+`autopilot.py` drives the demo and was deliberately not restructured.
+
+`sys.exit()` inside a pipeline's own `main()` (`check_routes.py`, `cache_routes.py`,
+`fetch_zones.py`) did not fire and was left alone: there it is the entry point choosing its exit
+code, which is the shape the `common.py` fix moved towards.
+
+### Proof
+
+`pnpm check` green — 258 backend tests, the icon and locale checks, the frontend build — plus
+`pnpm --filter video typecheck`. The two pipelines that need no network still read as they did:
+
+```
+$ pnpm data:lead-time --check
+OK: …/data/lead_time_la-atalaya.json is unchanged (La Atalaya's lead time)
+flagged 2026-07-23T13:30:00Z, reached 2026-07-23T19:38:34Z: 368 minutes
+reached by MTG_I1 (MEDIUM) at 2.42 km
+
+$ pnpm check:routes
+scenario el-tiemblo-2026-07-23: 5 residents, 5 places to order a zone to, scenario time 2026-07-23T16:00:00+00:00
+OK: every route is cached; nothing needs openrouteservice.
+```
+
+`pnpm data:spread --check` exercises the other half of the `OutputDiffers` change and still prints
+its `DIFFERENT:` line and exits 1. It reports a difference against the committed
+`data/spread_2026-07-23.geojson` on this machine, and that predates this pass: the same command run
+with `pipelines/common.py` and `pipelines/build_spread.py` checked out at `origin/main` prints the
+same line and the same exit code. Worth looking at after the submission; nothing in this pass
+touches `app/spread.py` or any geometry.

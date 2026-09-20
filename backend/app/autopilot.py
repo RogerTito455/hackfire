@@ -247,6 +247,8 @@ def used_transcripts() -> dict[str, AutopilotTranscript]:
 
 
 # The state and agent focus from before the autopilot was turned on; None while it is off.
+# Norma global keyword used inside a function: the state the demo autopilot has to put back when it is
+# turned off, rebound under `_lock`. This module drives the demo and is deliberately left as it is.
 _saved: tuple | None = None
 _lock = threading.Lock()
 

@@ -19,6 +19,8 @@ from app import evacuation, geo, scenario
 from app.config import DATA_DIR
 from app.models import Neighbor, TravelMode
 
+# Recommended by Norma — fixed with Claude Opus 5 via Claude Code: every read below passes
+# encoding="utf-8", so a machine whose locale is not UTF-8 reads the cached files the same way.
 OUT = Path(__file__).resolve().parents[1] / "src" / "data" / "map.json"
 # The replay starts here; every time in the file is minutes after it.
 EPOCH = datetime(2026, 7, 22, 0, 0, tzinfo=UTC)
@@ -71,7 +73,7 @@ def inside(lon: float, lat: float) -> bool:
 
 def hotspots() -> list:
     first: dict[tuple[int, int], tuple[int, float, float]] = {}
-    for feature in json.loads((DATA_DIR / "hotspots_2026-07-22_24.geojson").read_text())["features"]:
+    for feature in json.loads((DATA_DIR / "hotspots_2026-07-22_24.geojson").read_text(encoding="utf-8"))["features"]:
         lon, lat = feature["geometry"]["coordinates"]
         at = parse(feature["properties"]["observed_at"])
         if not inside(lon, lat) or at >= UNTIL:
@@ -97,12 +99,12 @@ def closed_stretches(zones: list[dict]) -> list:
 
 
 def main() -> None:
-    lead = json.loads((DATA_DIR / "lead_time_la-atalaya.json").read_text())
+    lead = json.loads((DATA_DIR / "lead_time_la-atalaya.json").read_text(encoding="utf-8"))
     flagged = parse(lead["flagged_at"])
-    zones = json.loads((DATA_DIR / "zones.geojson").read_text())["features"]
-    spread = json.loads((DATA_DIR / f"spread_2026-07-23.geojson").read_text())["features"]
-    places = json.loads((DATA_DIR / "places.json").read_text())
-    residents = [Neighbor(**n) for n in json.loads((DATA_DIR / "neighbors.sample.json").read_text())]
+    zones = json.loads((DATA_DIR / "zones.geojson").read_text(encoding="utf-8"))["features"]
+    spread = json.loads((DATA_DIR / f"spread_2026-07-23.geojson").read_text(encoding="utf-8"))["features"]
+    places = json.loads((DATA_DIR / "places.json").read_text(encoding="utf-8"))
+    residents = [Neighbor(**n) for n in json.loads((DATA_DIR / "neighbors.sample.json").read_text(encoding="utf-8"))]
 
     # The resident whose call the video shows needs rescue: the crew's way in goes to them. The way out
     # to the safe point the approved order names is a neighbour's, who leaves on their own.

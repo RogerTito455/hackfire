@@ -1,7 +1,6 @@
 """Helpers shared by the pipelines: the cached hotspots and the routes the API must be able to serve."""
 
 import json
-import sys
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
@@ -11,10 +10,23 @@ from ..models import Neighbor, Route, TravelMode
 from ..scenario import current
 from ..spread import Hotspot
 
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
+
+
+# Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+class OutputDiffers(Exception):
+    """A `--check` run rebuilt a scenario's cached file and found it different from the one on disk.
+
+    Raised instead of exiting from here: this is a helper two pipelines call, and only an entry point
+    decides a process's exit code. `write_or_compare` has already printed which file and why, so the
+    `__main__` block that catches this turns it into exit code 1 and says nothing more.
+    """
+
 
 def write_or_compare(path: Path, body: str, what: str, check: bool) -> None:
-    """Write a pipeline's output or, with `check`, compare it with the file and exit 1 if they differ:
-    the proof that a change to the code left a scenario's cached data as it was, without writing."""
+    """Write a pipeline's output or, with `check`, compare it with the file and raise `OutputDiffers`
+    if they differ: the proof that a change to the code left a scenario's cached data as it was,
+    without writing."""
     if not check:
         path.write_text(body, encoding="utf-8")
         print(f"wrote {what} to {path}")
@@ -23,7 +35,7 @@ def write_or_compare(path: Path, body: str, what: str, check: bool) -> None:
         print(f"OK: {path} is unchanged ({what})")
         return
     print(f"DIFFERENT: rebuilding {path} would change it ({what})")
-    sys.exit(1)
+    raise OutputDiffers(str(path))
 
 
 def read_hotspots() -> list[Hotspot]:

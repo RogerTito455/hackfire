@@ -24,6 +24,9 @@ PLATFORM_URL = "https://platform.galtea.ai"
 TIMEOUT_SECONDS = 30
 # Galtea turns an uploaded dataset file into test cases in the background.
 DATASET_READY_SECONDS = 180
+# Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+# How often that background work is asked about while waiting for DATASET_READY_SECONDS.
+DATASET_POLL_SECONDS = 3
 
 
 class GalteaUnavailable(Exception):
@@ -113,7 +116,7 @@ def ensure_behavior_dataset(client, product_id: str, name: str, csv_text: str, *
             raise GalteaUnavailable(
                 f"Galtea dataset {name!r} ({dataset.id}) has {len(cases)} of {expected} test cases, status {status or 'unknown'}."
             )
-        time.sleep(3)
+        time.sleep(DATASET_POLL_SECONDS)  # Recommended by Norma — fixed with Claude Opus 5 via Claude Code
 
 
 def simulate(client, version_id: str, test_case_id: str, respond: Callable[[str | None], str], *, max_turns: int) -> Simulation:

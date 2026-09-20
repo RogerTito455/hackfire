@@ -31,6 +31,13 @@ from ..scenario import current
 from ..state import state
 from .common import required_routes
 
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
+
+
+# Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+# A deployment answers a route request from its cache, but a cold Railway container wakes first.
+SERVICE_TIMEOUT_SECONDS = 60
+
 
 def _offline(*_args, **_kwargs):
     raise httpx.ConnectError("openrouteservice is cut off for this check")
@@ -64,7 +71,7 @@ def check_remote(base: str) -> tuple[dict[str, list[str]], list[str]]:
     missing: dict[str, list[str]] = {}
     empty: list[str] = []
     try:
-        with httpx.Client(timeout=60) as client:
+        with httpx.Client(timeout=SERVICE_TIMEOUT_SECONDS) as client:  # Recommended by Norma — fixed with Claude Opus 5 via Claude Code
             health = client.get(f"{base}/health")
             print(f"{base}/health -> {health.status_code}")
             listing = client.get(f"{base}/api/neighbors")

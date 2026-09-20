@@ -30,6 +30,8 @@ def get_token(client: httpx.Client) -> str:
     return response.json()["access_token"]
 
 
+# Norma global keyword used inside a function: one OAuth token reused for the life of the process (they
+# last 180 days). The memoisation is the point; `global` is how a module memoises a scalar.
 _token: str | None = None
 
 

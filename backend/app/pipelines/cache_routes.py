@@ -37,6 +37,8 @@ from ..scenario import current
 from ..state import state
 from .common import required_routes
 
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
+
 # openrouteservice's free plan allows 40 directions a minute.
 PAUSE_SECONDS = 1.6
 RATE_LIMIT_WAIT_SECONDS = 65

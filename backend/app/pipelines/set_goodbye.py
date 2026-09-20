@@ -7,6 +7,8 @@ Goodbye!", because unmute 0.5.5 cannot set end_call's goodbye (providers/voice.s
 from ..config import settings
 from ..providers import voice
 
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
+
 GOODBYE = "Hasta luego."
 
 

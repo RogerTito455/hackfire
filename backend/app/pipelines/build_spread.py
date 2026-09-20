@@ -20,7 +20,9 @@ from shapely.geometry import mapping
 from ..impact import HORIZON_HOURS
 from ..scenario import current
 from ..spread import forecast
-from .common import read_hotspots, write_or_compare
+from .common import OutputDiffers, read_hotspots, write_or_compare
+
+# Norma print() in production code: a command's stdout is its interface, not a log (app/pipelines/__init__.py).
 
 # Polygons are clipped to the scenario's box, simplified to about 30 m and snapped to a ~1 m grid: the
 # model is not that precise.
@@ -62,4 +64,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except OutputDiffers:
+        # Recommended by Norma — fixed with Claude Opus 5 via Claude Code
+        # write_or_compare printed the difference; the entry point owns the exit code.
+        raise SystemExit(1) from None

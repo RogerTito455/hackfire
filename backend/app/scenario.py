@@ -150,6 +150,9 @@ def load(path: Path, scenario_time: datetime | None = None) -> Scenario:
     return parse(json.loads(path.read_text(encoding="utf-8")), path.parent, scenario_time)
 
 
+# Norma global keyword used inside a function: the active scenario, read once on first use and replaced by
+# `activate` (which tells every `on_change` listener to forget what it read from the old one).
+# Threading it through every caller instead would put a scenario argument on most of the backend.
 _active: Scenario | None = None
 _on_change: list[Callable[[], None]] = []
 

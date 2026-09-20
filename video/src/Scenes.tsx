@@ -109,6 +109,9 @@ const PIPELINE: [string, string, string][] = [
   ['lifebuoy', 'Triage', "who can't leave"],
   ['fire-truck', 'Crews', 'plan and live map'],
 ]
+// Recommended by Norma — fixed with Claude Opus 5 via Claude Code: one colour per node, in PIPELINE's order,
+// instead of a chain of ternaries on the index. The same colours the scene rendered before.
+const PIPELINE_ICON_COLOR = [C.fire[1], C.fire[1], C.route, C.agent, C.status.needs_rescue, C.route]
 const NODE_W = 250
 const NODE_X = (i: number) => 110 + i * 292
 const NODE_Y = 600
@@ -187,7 +190,7 @@ function Pipeline({ g }: { g: number }) {
       {PIPELINE.map(([icon, title, sub], i) => (
         <div key={title} style={{ position: 'absolute', left: NODE_X(i), top: NODE_Y, width: NODE_W, height: 150, ...pop(g - appear(i)) }}>
           <div style={{ height: '100%', boxSizing: 'border-box', borderRadius: 18, border: `2px solid ${i === 3 ? C.agent : C.line}`, background: 'rgba(20,30,66,0.95)', padding: '18px 20px' }}>
-            <Icon name={icon} size={38} color={i < 2 ? C.fire[1] : i === 3 ? C.agent : i === 4 ? C.status.needs_rescue : C.route} />
+            <Icon name={icon} size={38} color={PIPELINE_ICON_COLOR[i]} />
             <div style={{ ...text(30, 700), marginTop: 10 }}>{title}</div>
             <div style={text(19, 500, C.ink2)}>{sub}</div>
           </div>
@@ -565,6 +568,9 @@ const LOOP: [string, string, string, string][] = [
   ['check', 'Tested on unseen fires', 'ships only if it beats today', 'nothing'],
 ]
 
+// Recommended by Norma — fixed with Claude Opus 5 via Claude Code: one colour per node, in LOOP's order.
+const LOOP_ICON_COLOR = [C.fire[1], C.fire[0], C.agent, C.agent, C.status.evacuating]
+
 export function Devin({ f }: { f: number }) {
   const s = scene('devin')
   const cx = 960
@@ -601,8 +607,8 @@ export function Devin({ f }: { f: number }) {
         const lit = f >= beats[i]
         return (
           <div key={title} style={{ position: 'absolute', left: x - 170, top: y - 62, width: 340, ...pop(f - beats[i]) }}>
-            <div style={{ borderRadius: 18, border: `2px solid ${lit ? (i === 3 ? C.agent : C.line) : C.line}`, background: i === 3 ? 'rgba(15,40,70,0.97)' : 'rgba(20,30,66,0.97)', padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center', boxShadow: i === 3 ? '0 0 40px rgba(95,227,255,0.25)' : 'none' }}>
-              <Icon name={icon} size={36} color={i === 0 ? C.fire[1] : i === 1 ? C.fire[0] : i === 4 ? C.status.evacuating : C.agent} />
+            <div style={{ borderRadius: 18, border: `2px solid ${lit && i === 3 ? C.agent : C.line}`, background: i === 3 ? 'rgba(15,40,70,0.97)' : 'rgba(20,30,66,0.97)', padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center', boxShadow: i === 3 ? '0 0 40px rgba(95,227,255,0.25)' : 'none' }}>
+              <Icon name={icon} size={36} color={LOOP_ICON_COLOR[i]} />
               <div>
                 <div style={text(27, 700)}>{title}</div>
                 <div style={text(18, 500, C.ink2)}>{sub}</div>
