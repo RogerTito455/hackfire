@@ -21,8 +21,9 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
           aria-pressed={mode === option}
           className={mode === option ? 'icon-button active' : 'icon-button'}
           onClick={() => onChange(option)}
+          title={t(`mode.${option}`)}
         >
-          <Icon name={MAP_MODE_ICON[option]} size={16} />
+          <Icon name={MAP_MODE_ICON[option]} size={18} />
           <span className="mode-label">{t(`mode.${option}`)}</span>
         </button>
       ))}

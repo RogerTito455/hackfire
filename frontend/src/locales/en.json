@@ -26,17 +26,19 @@
     "showPanel": "Show the panel"
   },
   "legend": {
-    "title": "What's on the map",
-    "hotspots": "Satellite hotspots",
-    "forecast": "Where the fire is forecast to go",
-    "zone": "Town or building in its path",
-    "fireRoad": "Road the fire has reached",
     "closed": "Road you closed",
-    "residents": "Residents, by what they answered",
-    "fires": "Fires burning now",
     "dgt": "Official DGT incident",
     "dgtClosed": "Road the DGT has closed (official)",
-    "predictedClosed": "Road to close: the forecast reaches it (prediction)"
+    "fireRoad": "Road the fire has reached",
+    "fires": "Fires burning now",
+    "forecast": "Where the fire is forecast to go",
+    "hotspots": "Satellite hotspots",
+    "places": "Places the fire reaches, by when",
+    "predictedClosed": "Road to close: the forecast reaches it (prediction)",
+    "residents": "Residents, by what they answered",
+    "title": "What's on the map",
+    "zone": "Town or building in its path",
+    "zoneLate": "6 h or later"
   },
   "mode": {
     "label": "Map mode",
