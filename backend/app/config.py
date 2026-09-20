@@ -52,6 +52,9 @@ class Settings:
     # The built dashboard (frontend/dist). Set in the Dockerfile; empty locally, where Vite serves it.
     dashboard_dir: str = field(default_factory=lambda: _env("HACKFIRE_DASHBOARD_DIR"))
     crew_phone: str = field(default_factory=lambda: _env("HACKFIRE_CREW_PHONE"))
+    # The crews' room id, which is the last part of the link they are texted (app/crew_room.py).
+    # Set it to a hard-to-guess word so the link survives a deploy; unset, a deploy changes it.
+    crew_room: str = field(default_factory=lambda: _env("HACKFIRE_CREW_ROOM"))
     # How many fire crews the plan shares the rescues between; the dashboard can change it.
     crews: int = field(default_factory=lambda: int(_env("HACKFIRE_CREWS", "2") or 2))
     # Twilio, for the crew SMS (providers/sms.py). All three or none.

@@ -90,3 +90,22 @@ def test_a_reset_closes_the_room(fake: FakeVonage) -> None:
     client.post("/api/reset")
 
     assert client.get(f"/api/crew-room/{room_id(link)}").status_code == 404
+
+
+def test_a_crew_joins_with_the_same_link_after_the_backend_restarts(fake: FakeVonage, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every deploy empties the process. The link a crew was texted has to keep working, or the
+    room is lost for the rest of the operation."""
+    link = client.post("/api/crew-room").json()["link"]
+    room_id = link.rsplit("/", 1)[-1]
+
+    # What a redeploy does: the process loses its session, but nobody closed the room.
+    monkeypatch.setattr(crew_room, "_session", None)
+    joined = client.get(f"/api/crew-room/{room_id}")
+
+    assert joined.status_code == 200
+    assert joined.json()["token"]
+    assert client.post("/api/crew-room").json()["link"] == link, "the link must not change either"
+
+
+def test_a_link_that_was_never_opened_is_unknown(fake: FakeVonage) -> None:
+    assert client.get("/api/crew-room/not-a-room").status_code == 404
