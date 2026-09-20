@@ -1,7 +1,8 @@
 # Norma (QualityClouds)
 
 **Used for:** extension 1 (#17): one scan, at least one fix, one rescan, and the before/after delta for the "defend your code" talk. Covers "validate for production".
-**Status:** extension, not started. Planned for Saturday 22:00, only if the core works end to end
+**Status:** done (#17). Scanned on 2026-09-20 with `live_check`, three findings fixed, the delta and the
+reasoning in [docs/findings/2026-09-20-norma-scan.md](../findings/2026-09-20-norma-scan.md)
 **Owner:** Bryan
 
 ## Access
@@ -16,10 +17,10 @@ It covers Python, FastAPI, TypeScript, React and Vite, so both halves of the rep
 
 | Tool | What it does |
 |---|---|
-| `link_repository` | Links this repo. Call it first |
+| `link_repository` | Links this repo. Refuses this one: `auto_import_not_available` (see below) |
 | `get_rulesets`, `get_rules_for_ruleset` | Which rules apply |
 | `live_check` | Checks one file |
-| `get_open_issues` | Results of the last full scan |
+| `get_open_issues` | Results of the last full scan. Needs the repo imported in the portal; unavailable here |
 | `register_applied_actions` | Records the fixes we made, for the delta |
 
 ## The 45-minute run
@@ -37,7 +38,12 @@ It covers Python, FastAPI, TypeScript, React and Vite, so both halves of the rep
 3. `register_applied_actions`, then rescan and save the "after".
 4. Write the delta and the reasoning in a finding: `docs/findings/YYYY-MM-DD-norma-scan.md`.
 
-**Open question:** the README does not say how to trigger a full repository scan (as opposed to `live_check` on one file). Check the Norma dashboard or ask the QualityClouds mentors before 22:00.
+**Answered (2026-09-20):** a full repository scan needs the repository imported in the Norma portal first. There is
+no way to trigger the import from the MCP server for a private repo: `link_repository` returns
+`{"outcome": "failed", "reason": "auto_import_not_available"}`, and until that is done `get_open_issues` and
+`register_applied_actions` both refuse with `unlinked`. `live_check` works without a link and is deterministic, so
+the pass was run file by file with it. Import the repository in the portal to unlock the full scan and the
+compliance audit trail.
 
 ## Sources
 

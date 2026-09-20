@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -64,7 +65,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.middleware("http")
-async def request_locale(request: Request, call_next):
+async def request_locale(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     """The language of the sentences this request gets back (app/i18n.py).
 
     The agents' tools answer in HACKFIRE_AGENT_LOCALE; the dashboard gets ?lang= or its Accept-Language.
