@@ -17,6 +17,12 @@ logger = logging.getLogger(__name__)
 
 _DIRECTIONS = "https://api.openrouteservice.org/v2/directions/{profile}/geojson"
 _GET_DIRECTIONS = "https://api.openrouteservice.org/v2/directions/driving-car"
+# Two points 40 m apart on the same road out of El Tiemblo, taken from a route ORS itself planned.
+# The check used to ask for a route between two points in the middle of a field, and ORS answered
+# 404 "Could not find routable point": the status panel then said openrouteservice was down while
+# routing worked. A point ORS has already snapped to cannot give that answer.
+_PING_FROM = "-4.453165,40.381927"
+_PING_TO = "-4.453632,40.382094"
 _PROFILE = {TravelMode.CAR: "driving-car", TravelMode.WALKING: "foot-walking"}
 
 # ORS error code for "no route between these points" (for example, every road is avoided).
@@ -114,6 +120,6 @@ def ping(client: httpx.Client) -> tuple[int, str]:
     response = client.get(
         _GET_DIRECTIONS,
         headers={"Authorization": keys()[0][1]},
-        params={"start": "-4.6,40.4", "end": "-4.601,40.401"},
+        params={"start": _PING_FROM, "end": _PING_TO},
     )
     return response.status_code, response.text[:300]
