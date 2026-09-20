@@ -1,6 +1,6 @@
 # Defending HackFire in front of the jury
 
-A companion to the [pitch script](pitch.md). The pitch has the three minutes and the short answers; this page has the hard questions, the honest answers, and what to check before going on stage. Every answer here matches what the code does tonight, 19 September 2026. If the product changes, change the answer.
+A companion to the [pitch script](pitch.md); the questions and answers to say aloud are in [qa.md](qa.md). The pitch has the three minutes and the short answers; this page has the hard questions, the honest answers, and what to check before going on stage. Every answer here matches what the code does tonight, 19 September 2026. If the product changes, change the answer.
 
 ## The claim, in one breath
 
