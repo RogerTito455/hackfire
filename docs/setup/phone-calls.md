@@ -1,6 +1,6 @@
 # Phone calls through a Vonage SIP trunk
 
-**Status:** not yet run. Written on 2026-09-19 from the SLNG and Vonage docs, before any call went through the trunk. Anything marked *not documented* is a gap in the vendors' docs: the first test call settles it, so update this page afterwards.
+**Status:** calls go through. On 2026-09-20 SLNG's call reports show completed outbound calls through the trunk: 60 to 100 seconds with `hackfire-resident-phone-test`, and `hackfire-crew-caller` ringing the crew; both agents carry the `sip_outbound_trunk_id`, and the deployed service answers `phone_calls: true` on `/api/voice`. `hackfire-resident-slng`, the agent `pnpm voice:deploy` pushes to, has no trunk attached, so `SLNG_RESIDENT_AGENT_ID` must name an agent that does for **Call residents** to ring. The steps below were written on 2026-09-19 from the SLNG and Vonage docs, before any call went through the trunk, and have not been rewritten from what was actually done. Anything marked *not documented* is a gap in the vendors' docs: the first test call settles it, so update this page afterwards.
 **Issue:** #8
 
 SLNG supplies no phone numbers ([finding](../findings/2026-09-19-slng-bring-your-own-number.md)). The team has a US Vonage number with voice. This page connects it to the resident agent over SIP so the agent can ring real phones: first one team phone from SLNG's test panel, then a call campaign from the dashboard. Everything is set by hand in two dashboards; the repo only gets a switch.

@@ -73,10 +73,10 @@ Hackathon build, deployed at **https://frontend-production-ae2c.up.railway.app**
 - Evacuation orders per zone: the system proposes a destination (or staying indoors) for each zone with residents, the coordinator approves or changes it, and the agent reads that order to everyone in the zone, then gives each resident their own route to it.
 - Demo mode: a typed answer (classified by the LLM) or three buttons replace a failed call, map tiles are cached for a flaky network, and Reset restores everything between rehearsals. See [docs/demo/runbook.md](docs/demo/runbook.md).
 - Voice agents (Unmute packages in `voice/`), both deployed on SLNG with Nemotron Super 3 and Deepgram voices: the resident agent opens with the zone's order and route, asks the three questions and records the answer; the coordinator agent reads the rescue queue and gives the crew's route while the dashboard draws it (**Ask the coordinator agent**). Deploy both with `pnpm voice:deploy`, which also sets their Spanish goodbye.
-- Calls (#8): once a zone's order is approved, **Call residents** phones every pending resident through SLNG and turns unanswered calls into *no answer*. There is no SIP trunk yet, so this stays off (`HACKFIRE_PHONE_CALLS`), and the coordinator takes a resident's call in the browser instead: select the resident → **Call … (answer here)**.
-- Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard, and texted to the crew by SMS once Twilio credentials are set.
+- Calls (#8): once a zone's order is approved, **Call residents** phones every pending resident through SLNG and turns unanswered calls into *no answer*. Real phones ring: an outbound SIP trunk is attached to the phone agents in SLNG, and on 2026-09-20 SLNG's call reports show completed outbound calls of 60 to 100 seconds with the resident agent, and the crew-caller agent ringing the crew ([how](docs/setup/phone-calls.md)). It needs `HACKFIRE_PHONE_CALLS=1` and an agent with the trunk attached; without them the coordinator takes a resident's call in the browser instead: select the resident → **Call … (answer here)**.
+- Crew alerts: every new *needs rescue* creates an alert with the address, people, mobility and a link that opens the dashboard on the crew's route from the El Tiemblo fire station. Shown on the dashboard, and texted to the crew by SMS (Vonage, or Twilio when its credentials are set) once `HACKFIRE_CREW_PHONE` is set, with a Google Maps link that drives the planned route.
 
-Still to build: outbound phone calls, which need a phone number (#8). See [PLAN.md](PLAN.md) and the issues.
+Still to build: handing a call over to a person at the control post, and the forecast that learns with Devin (#19). See [PLAN.md](PLAN.md) and the issues.
 
 ## Architecture
 
@@ -278,7 +278,7 @@ whole chain in the tests.
 | **Routes are pre-planned**; live mode lists the roads to close but plans no exit for anyone | `routes_cache.json`, `live_operations.py` | Routing per zone rather than per household, and a self-hosted router |
 | **openrouteservice's free plan**: 2,000 directions a day and 40 a minute per key (three keys, rotated on a spent quota) | `providers/routing.py` | Self-host openrouteservice or Valhalla; the ceiling is the plan, not the algorithm |
 | **`avoid_polygons` caps at 200 km² / 20 km**, so the fire is clipped to a 14 km square around each route | `evacuation.py`, [finding](docs/findings/2026-09-19-ors-avoid-polygon-limit.md) | A router that takes a set of closed roads instead of a polygon — a 50 km front does not fit in one |
-| **No phone line.** Calls happen in the browser; the agent never dials a real number in the demo | `voice/`, SLNG | A SIP trunk. Concurrency is then a contract, not code |
+| **One phone line, by hand.** Real phones ring through one SIP trunk attached by hand to the phone agents in SLNG ([how](docs/setup/phone-calls.md)); without it a call happens in the browser. Nothing in the repo provisions the trunk | `voice/`, SLNG | A carrier contract. Concurrency is then a contract, not code |
 
 **What the routing is, and is not.** It is an algorithm, not an evacuation plan: it avoids what has already
 burned plus the next hour of predicted spread, and sends people to the nearest safe point the forecast does not
