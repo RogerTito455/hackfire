@@ -43,13 +43,22 @@ function inDashboardLanguage(init?: RequestInit): RequestInit {
 const REQUEST_TIMEOUT_MS = 10_000
 
 async function fetchApi(path: string, init?: RequestInit): Promise<Response> {
+  // AbortController, not AbortSignal.timeout: the demo phone is a Galaxy S9+ on Chrome 101, and
+  // AbortSignal.timeout needs Chrome 103. Without this the dashboard could not reach the backend
+  // at all there.
+  const controller = new AbortController()
+  let timedOut = false
+  const timer = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, REQUEST_TIMEOUT_MS)
   try {
-    return await fetch(`${API_URL}${path}`, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
+    return await fetch(`${API_URL}${path}`, { ...init, signal: controller.signal })
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'TimeoutError') {
-      throw new Error(`${path} did not answer in ${REQUEST_TIMEOUT_MS} ms`)
-    }
+    if (timedOut) throw new Error(`${path} did not answer in ${REQUEST_TIMEOUT_MS} ms`)
     throw error
+  } finally {
+    clearTimeout(timer)
   }
 }
 

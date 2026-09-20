@@ -27,7 +27,10 @@ self.addEventListener('fetch', (event) => {
     caches.open(CACHE).then(async (cache) => {
       const hit = await cache.match(event.request)
       if (hit) return hit
-      const response = await fetch(event.request, { signal: AbortSignal.timeout(TILE_TIMEOUT_MS) })
+      // AbortController, not AbortSignal.timeout: Chrome 101 on the demo phone lacks it.
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), TILE_TIMEOUT_MS)
+      const response = await fetch(event.request, { signal: controller.signal }).finally(() => clearTimeout(timer))
       if (response.ok) {
         // Recommended by Norma — fixed with Claude Opus 5 via Claude Code
         // Storing a tile is best effort: a full or blocked cache (quota, private mode) must never
