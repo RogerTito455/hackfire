@@ -5,7 +5,7 @@ Hackathon project (HackBarna 2026). A voice agent calls residents ahead of a wil
 ## Hard deadlines
 
 - Saturday 21:00 — feature freeze.
-- Sunday 11:00 — code submission. Sunday morning is for rehearsal and bug fixes only.
+- Sunday 14:00 — code submission (the owner confirmed the new time on Sunday morning; it was 11:00). Sunday is for rehearsal and bug fixes only.
 
 ## Scope guardrail
 

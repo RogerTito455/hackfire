@@ -117,8 +117,8 @@ This is the interface between voice and everything else. Fix it in the first hou
 
 | Time | What |
 |---|---|
-| 9:00–11:00 | Rehearse the demo at least five times, with a stopwatch. Bug fixes only; nothing new |
-| **11:00** | **Code submission** (confirmed by the team) |
+| 9:00–14:00 | Rehearse the demo at least five times, with a stopwatch. Bug fixes only; nothing new |
+| **14:00** | **Code submission** (the owner confirmed the new time on Sunday morning; it was 11:00) |
 | 14:00 | Demos |
 
 ## 8. Demo script (about 3 minutes)
@@ -159,7 +159,7 @@ This is the interface between voice and everything else. Fix it in the first hou
 - The Deepfire simulation works over Spain. (The team also understood it could replay 23 July; the API docs contradict that, so it is listed under Open until the mentors settle it.)
 - One project can enter several challenges at once.
 - Crew notification for every new rescue, and a live mode in addition to the replay.
-- Code submission is Sunday at 11:00.
+- Code submission is Sunday at 14:00 (moved from 11:00, confirmed by the owner on Sunday morning).
 - Nebius is out of the stack (19 September, afternoon). The agents and the backend use the LLM SLNG serves.
 - **Checkpoint 2 (19 September, 19:31): the four steps work end to end.** Vonage starts (Bryan, #18, cut-off 21:00); Devin stays a pitch mention (#19). The demo video is made with ElevenLabs narration and Remotion, over footage of a Playwright simulation with real agent calls.
 - All project documentation is written in English.
