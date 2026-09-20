@@ -157,7 +157,11 @@
     "starting": "Llamando…",
     "willCall": "El agente llama a {name}. Lo que conteste sale en el mapa, y un rescate llama y escribe a los bomberos.",
     "willApprove": "Aprueba la orden de la zona y el agente llama a {name}. Un rescate llama y escribe a los bomberos.",
-    "simulationOn": "Apaga antes la simulación de llamadas: con ella encendida no suena ningún teléfono real."
+    "simulationOn": "Apaga antes la simulación de llamadas: con ella encendida no suena ningún teléfono real.",
+    "placed": "Llamando a {name}. Que conteste y deje terminar al agente antes de colgar.",
+    "busy": "El teléfono de {name} ya está en una llamada. Espera a que acabe o pulsa Reiniciar la demo.",
+    "noline": "Este servidor no tiene línea telefónica configurada.",
+    "failed": "No se pudo lanzar la llamada. Inténtalo otra vez."
   },
   "ask": {
     "connecting": "Conectando con el agente…",

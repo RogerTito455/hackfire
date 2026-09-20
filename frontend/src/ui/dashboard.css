@@ -2851,3 +2851,13 @@ button:active {
   font-size: 12.5px;
   line-height: 1.35;
 }
+
+.start-demo-note.warning {
+  color: var(--fire-3);
+  font-weight: 600;
+}
+
+.start-demo-note.placed {
+  color: var(--route);
+  font-weight: 600;
+}

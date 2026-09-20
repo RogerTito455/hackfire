@@ -10,13 +10,15 @@ interface StartDemoProps {
   busy: boolean
   /** Real phones cannot ring while the scripted simulation is running. */
   blockedBySimulation: boolean
+  /** How the last press went, so the button is never silent. */
+  result: 'placed' | 'busy' | 'noline' | 'failed' | null
   onStart: () => void
 }
 
 // One press for the pitch: approve the zone's order if it is not approved yet, then ring the first
 // resident in the registry. Everything after that happens on its own — what they answer becomes
 // their triage state, and a rescue rings and texts the crew.
-export function StartDemo({ name, needsApproval, busy, blockedBySimulation, onStart }: StartDemoProps) {
+export function StartDemo({ name, needsApproval, busy, blockedBySimulation, result, onStart }: StartDemoProps) {
   const { t } = useI18n()
   if (name === null) return null
   return (
@@ -25,13 +27,19 @@ export function StartDemo({ name, needsApproval, busy, blockedBySimulation, onSt
         <Icon name="phone" size={20} />
         {busy ? t('demo.starting') : t('demo.start')}
       </button>
-      <p className="start-demo-note">
-        {blockedBySimulation
-          ? t('demo.simulationOn')
-          : needsApproval
-            ? t('demo.willApprove', { name })
-            : t('demo.willCall', { name })}
-      </p>
+      {result === null ? (
+        <p className="start-demo-note">
+          {blockedBySimulation
+            ? t('demo.simulationOn')
+            : needsApproval
+              ? t('demo.willApprove', { name })
+              : t('demo.willCall', { name })}
+        </p>
+      ) : (
+        <p className={result === 'placed' ? 'start-demo-note placed' : 'start-demo-note warning'}>
+          {t(`demo.${result}`, { name })}
+        </p>
+      )}
     </div>
   )
 }

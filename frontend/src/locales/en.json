@@ -157,7 +157,11 @@
     "starting": "Calling…",
     "willCall": "The agent rings {name}. What they answer lands on the map, and a rescue rings and texts the crew.",
     "willApprove": "Approves the zone's order, then the agent rings {name}. A rescue rings and texts the crew.",
-    "simulationOn": "Turn off the call simulation first: real phones never ring for a simulated run."
+    "simulationOn": "Turn off the call simulation first: real phones never ring for a simulated run.",
+    "placed": "Calling {name} now. Answer, and let the agent finish before hanging up.",
+    "busy": "{name}'s phone is already on a call. Wait for it to end, or press Reset demo.",
+    "noline": "No phone line is set up on this server.",
+    "failed": "The call could not be started. Try again."
   },
   "ask": {
     "connecting": "Connecting to the agent…",

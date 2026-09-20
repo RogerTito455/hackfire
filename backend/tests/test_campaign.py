@@ -217,3 +217,15 @@ def test_a_resident_who_already_answered_can_be_rung_again(line: FakeLine) -> No
 
     assert client.post(f"/api/calls/{resident['id']}").status_code == 200
     assert [arguments["neighbor_id"] for _, arguments in line.dialled][-1] == resident["id"]
+
+
+def test_a_call_that_already_ended_does_not_block_the_next_one(line: FakeLine) -> None:
+    approve("la-atalaya")
+    resident = residents_of("la-atalaya")[0]
+    assert client.post(f"/api/calls/{resident['id']}").status_code == 200
+
+    # The watcher has not run yet, but SLNG says the call is over: ring again rather than refuse.
+    second = client.post(f"/api/calls/{resident['id']}")
+
+    assert second.status_code == 200
+    assert len([1 for _, arguments in line.dialled if arguments["neighbor_id"] == resident["id"]]) == 2

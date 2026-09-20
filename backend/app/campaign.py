@@ -87,8 +87,20 @@ def call_one(neighbor_id: str) -> CampaignCall:
     if orders.approved_order(resident.zone) is None:
         raise NotApproved
     with _active_lock:
-        if neighbor_id in _active:
+        active = _active.get(neighbor_id)
+    if active is not None:
+        # The last call may be over without the watcher having noticed yet: a poll that failed, a
+        # redeploy, a watch that timed out. Ask SLNG before refusing, so the button is never stuck
+        # for fifteen minutes on stage. If SLNG cannot say, dial: a second ring beats a dead button.
+        try:
+            still_up = not voice.call_ended(active)
+        except voice.VoiceUnavailable:
+            still_up = False
+        if still_up:
             raise AlreadyCalling
+        with _active_lock:
+            if _active.get(neighbor_id) == active:
+                del _active[neighbor_id]
     try:
         call_id = voice.call_resident(resident.phone, briefing.call_variables(resident))
     except voice.VoiceUnavailable as error:

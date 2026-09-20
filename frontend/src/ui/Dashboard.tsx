@@ -159,6 +159,18 @@ export function Dashboard({
     await campaign.callOne(first.id)
   }
 
+  // What the last press did, so the button always answers: placed, or why not.
+  const lastCall = campaign.rang?.neighborId === first?.id ? campaign.rang : null
+  const demoResult = lastCall === null
+    ? null
+    : lastCall.placed
+      ? ('placed' as const)
+      : lastCall.status === 409
+        ? ('busy' as const)
+        : lastCall.status === 503
+          ? ('noline' as const)
+          : ('failed' as const)
+
   // The replay's scrubber or the live status, then what the numbers below are: always in view.
   const header =
     mode === 'replay' ? (
@@ -184,6 +196,7 @@ export function Dashboard({
             needsApproval={firstOrder ? !firstOrder.approved : false}
             busy={campaign.ringing !== null || orders.saving !== null}
             blockedBySimulation={autopilot.enabled}
+            result={demoResult}
             onStart={() => void startDemo()}
           />
         )}
