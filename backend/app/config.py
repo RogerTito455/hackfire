@@ -80,6 +80,9 @@ class Settings:
     # The crews and the residents are reached in their own language: Spanish for a fire in Spain.
     crew_locale: str = field(default_factory=lambda: _env("HACKFIRE_CREW_LOCALE", "es"))
     resident_locale: str = field(default_factory=lambda: _env("HACKFIRE_RESIDENT_LOCALE", "es"))
+    # Text a resident who is leaving their way out (app/maps.py). Off by default: it texts a real
+    # phone from the registry. Needs Vonage SMS configured.
+    resident_sms: bool = field(default_factory=lambda: _env("HACKFIRE_RESIDENT_SMS") == "1")
     # The active scenario (app/scenario.py): which fire is replayed, where and when, from which files.
     # An id of data/scenarios/<id>.json, or a path to a scenario file. See docs/setup/new-scenario.md.
     scenario: str = field(default_factory=lambda: _env("HACKFIRE_SCENARIO", "el-tiemblo-2026-07-23"))

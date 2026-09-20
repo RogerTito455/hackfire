@@ -73,7 +73,8 @@
   },
   "sms": {
     "videoLink": "Wildfire emergency: open this link to show the coordination your situation on video: {link}",
-    "crewRoom": "HackFire: the coordination is sharing its map with the crews. Join here: {link}"
+    "crewRoom": "HackFire: the coordination is sharing its map with the crews. Join here: {link}",
+    "route": "Fire coordination: this is your way out. Follow the directions: {link}"
   },
   "liveOps": {
     "alert": {
@@ -152,6 +153,10 @@
     },
     "demo": {
       "reset": "Demo reset: registry reloaded, orders, closures and calls cleared."
+    },
+    "resident": {
+      "smsSent": "The route was texted to {name}.",
+      "smsFailed": "The route SMS for {name} failed."
     }
   },
   "providers": {

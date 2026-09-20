@@ -73,7 +73,8 @@
   },
   "sms": {
     "videoLink": "Emergencia incendio: abra este enlace para mostrar su situación en vídeo a la coordinación: {link}",
-    "crewRoom": "HackFire: la coordinación comparte el mapa con los equipos. Entre aquí: {link}"
+    "crewRoom": "HackFire: la coordinación comparte el mapa con los equipos. Entre aquí: {link}",
+    "route": "Coordinación del incendio: esta es su ruta de salida. Siga las indicaciones: {link}"
   },
   "liveOps": {
     "alert": {
@@ -152,6 +153,10 @@
     },
     "demo": {
       "reset": "Demo reiniciada: registro recargado; órdenes, cortes y llamadas borrados."
+    },
+    "resident": {
+      "smsSent": "Ruta enviada por SMS a {name}.",
+      "smsFailed": "El SMS con la ruta para {name} ha fallado."
     }
   },
   "providers": {
