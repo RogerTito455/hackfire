@@ -96,6 +96,10 @@ def check_routing(client: httpx.Client) -> Check:
         return Check(ProviderState.DEGRADED, "orsRate")
     if code == 403 or code == 401:
         return Check(ProviderState.DOWN, "rejected", {"code": code})
+    # 2010 is "no routable point near here": openrouteservice answered and took the key, which is
+    # what this check is for. It must never read as an outage on the status panel.
+    if code == 404 and '"code":2010' in body.replace(" ", ""):
+        return Check(ProviderState.UP, "ok")
     return _by_code(code)
 
 

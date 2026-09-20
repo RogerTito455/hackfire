@@ -47,6 +47,16 @@ def test_ors_403_quota_exceeded_is_quota_spent_using_the_cached_routes(monkeypat
     assert spanish["reason"] == "Cuota agotada: se usan las rutas guardadas."
 
 
+def test_ors_no_routable_point_is_not_an_outage(monkeypatch: pytest.MonkeyPatch) -> None:
+    """404 code 2010 means openrouteservice answered and took the key: the panel must not say down."""
+    configured(monkeypatch, ors_api_keys=["key"])
+    body = {"error": {"code": 2010, "message": "Could not find routable point within a radius of 350.0 meters"}}
+    check = provider_status.check_routing(answering(lambda _r: httpx.Response(404, json=body)))
+    assert check.state == ProviderState.UP
+    missing = provider_status.check_routing(answering(lambda _r: httpx.Response(404, text="Not Found")))
+    assert missing.state == ProviderState.DOWN
+
+
 def test_ors_other_answers(monkeypatch: pytest.MonkeyPatch) -> None:
     configured(monkeypatch, ors_api_keys=["key"])
     assert provider_status.check_routing(answering(lambda _r: httpx.Response(200, json={}))).state == ProviderState.UP
