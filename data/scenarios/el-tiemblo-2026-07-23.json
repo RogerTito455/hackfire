@@ -10,10 +10,10 @@
   "scenario_time": "2026-07-23T16:00:00Z",
   "lead_time_note": "A hotspot within 3 km of the estate's outline counts as the fire reaching La Atalaya: 3 km is the pixel size of MTG, the sensor behind 62% of the hotspots. See docs/findings/2026-09-19-lead-time.md.",
   "lead_time": { "zone": "la-atalaya", "radius_km": 3 },
-  "places_note": "The zones the registry's residents belong to, drawn by pnpm data:zones from the residential land use within radius_m of each OSM node. La Atalaya: hamlet node 1433078707. El Tiemblo: village node 64835850.",
+  "places_note": "The zones the registry's residents belong to, drawn by pnpm data:zones from the residential land use within radius_m of each OSM node. `address` is how an address in the place ends, after the street (pnpm data:registry). La Atalaya: hamlet node 1433078707. El Tiemblo: village node 64835850.",
   "places": [
-    { "id": "la-atalaya", "name": "La Atalaya", "kind": "estate", "lon": -4.46095, "lat": 40.3821, "radius_m": 1000 },
-    { "id": "el-tiemblo", "name": "El Tiemblo", "kind": "town", "lon": -4.499, "lat": 40.413, "radius_m": 1500 }
+    { "id": "la-atalaya", "name": "La Atalaya", "kind": "estate", "lon": -4.46095, "lat": 40.3821, "radius_m": 1000, "address": "La Atalaya, El Tiemblo (Ávila)" },
+    { "id": "el-tiemblo", "name": "El Tiemblo", "kind": "town", "lon": -4.499, "lat": 40.413, "radius_m": 1500, "address": "El Tiemblo (Ávila)" }
   ],
   "files": {
     "hotspots": "../hotspots_2026-07-22_24.geojson",

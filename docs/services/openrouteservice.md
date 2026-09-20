@@ -1,19 +1,19 @@
 # openrouteservice
 
 **Used for:** step 3 (resident's route out) and step 4 (crew's route to a rescue). Slice 5 (#6), reused by #9 and #10.
-**Status:** working. Both routing tools are real; 110 demo routes cached in `data/routes_cache.json` for the 10-resident registry (the 5 sample residents are the first 5): every resident, by car and on foot, to every place an order can go to (El Tiemblo and Cebreros, marked "not safe now", included), and the crew's route. `pnpm check:routes` proves it with openrouteservice cut off, so the demo needs no `ORS_API_KEY`
+**Status:** working. Both routing tools are real; 165 demo routes cached in `data/routes_cache.json`, covering the sample registry's 10 residents and the local registry's 10: every resident, by car and on foot, to every place an order can go to (El Tiemblo and Cebreros, marked "not safe now", included), and the crew's route. `pnpm check:routes` proves it with openrouteservice cut off, so the demo needs no `ORS_API_KEY`
 **Owner:** Bryan
 
 ## Access
 
-Sign up at https://openrouteservice.org/dev/#/signup and create a token. Set `ORS_API_KEY` in `.env`. The free plan's dashboard shows **2,000 directions a day and 40 a minute** (checked 2026-09-19). The demo needs about 30 (each resident by car and on foot, plus rescue routes), and they are cached, so the quota is not a concern.
+Sign up at https://openrouteservice.org/dev/#/signup and create a token. Set `ORS_API_KEY` in `.env`, and `ORS_API_KEY2` and `ORS_API_KEY3` if the team has more accounts. The free plan's dashboard shows **2,000 directions a day and 40 a minute, per key** (checked 2026-09-19). The demo needs about 30 (each resident by car and on foot, plus rescue routes), and they are cached, so the quota is not a concern.
 
 ## In the app
 
 `backend/app/providers/routing.py` → `route_avoiding(client, start, end, mode, avoid)`:
 
 - `POST https://api.openrouteservice.org/v2/directions/{profile}/geojson`
-- Header `Authorization: <ORS_API_KEY>` (the key itself, no `Bearer`)
+- Header `Authorization: <key>` (the key itself, no `Bearer`): the first of `ORS_API_KEY`, `ORS_API_KEY2`, `ORS_API_KEY3` that still has quota
 - Body `{"coordinates": [[lon, lat], [lon, lat]], "options": {"avoid_polygons": <GeoJSON Polygon or MultiPolygon>}}`
 - Profiles: `driving-car` for `mode=car`, `foot-walking` for `mode=walking`
 
@@ -40,7 +40,9 @@ No MCP server. The API reference is enough.
 
 ## The quota, and why the demo must not touch it
 
-The free plan is **2,000 directions a day and 40 a minute** (`403 {"error": "Quota exceeded"}` when the day's quota is gone, resetting at midnight UTC, 02:00 in Spain). A key shared by the team is spent by everyone: on 2026-09-19 it ran out while replanning the 10-resident registry, and even a trivial route was refused.
+The free plan is **2,000 directions a day and 40 a minute, per key** (`403 {"error": "Quota exceeded"}` when the day's quota is gone, resetting at midnight UTC, 02:00 in Spain). A key shared by the team is spent by everyone: on 2026-09-19 it ran out while replanning the 10-resident registry, and even a trivial route was refused.
+
+**Several keys.** `settings.ors_api_keys` holds `ORS_API_KEY`, `ORS_API_KEY2` and `ORS_API_KEY3` in that order, empty ones skipped. `providers/routing.py` asks with the first one and moves to the next on a 403 whose body mentions the quota, or on a 429; a key whose quota is gone is remembered as spent for the life of the process and not asked again (a 429 is only a pause, so that key keeps its turn). The log line says which key it moved to, never the key. When the last key is spent, the request is still made with it — that costs no quota and gives openrouteservice's own 403, which `evacuation.plan` turns into the `RoutingUnavailable` the caller has always seen. On 2026-09-20 `pnpm data:routes` spent 0 requests on key 1 (already out of quota, one 403) and 55 on key 2 to plan the five new residents.
 
 A route that is not in `data/routes_cache.json` costs a live request, so **a cache miss during the demo is a request that can fail**. The rule is that the demo never makes one:
 

@@ -36,7 +36,7 @@ def configured(monkeypatch: pytest.MonkeyPatch, **values) -> None:
 
 
 def test_ors_403_quota_exceeded_is_quota_spent_using_the_cached_routes(monkeypatch: pytest.MonkeyPatch) -> None:
-    configured(monkeypatch, ors_api_key="key")
+    configured(monkeypatch, ors_api_keys=["key"])
     check = provider_status.check_routing(answering(lambda _r: httpx.Response(403, json={"error": "Quota exceeded"})))
     assert check.state == ProviderState.DEGRADED and check.reason == "orsQuota"
     monkeypatch.setattr(provider_status, "PROVIDERS", [Provider("openrouteservice", "openrouteservice", lambda _c: check)])
@@ -48,14 +48,14 @@ def test_ors_403_quota_exceeded_is_quota_spent_using_the_cached_routes(monkeypat
 
 
 def test_ors_other_answers(monkeypatch: pytest.MonkeyPatch) -> None:
-    configured(monkeypatch, ors_api_key="key")
+    configured(monkeypatch, ors_api_keys=["key"])
     assert provider_status.check_routing(answering(lambda _r: httpx.Response(200, json={}))).state == ProviderState.UP
     denied = provider_status.check_routing(
         answering(lambda _r: httpx.Response(403, json={"error": "Access to this API has been disallowed"}))
     )
     assert (denied.state, denied.reason) == (ProviderState.DOWN, "rejected")
     assert provider_status.check_routing(answering(lambda _r: httpx.Response(429))).reason == "orsRate"
-    configured(monkeypatch, ors_api_key="")
+    configured(monkeypatch, ors_api_keys=[])
     assert provider_status.check_routing(answering(lambda _r: httpx.Response(200))).state == ProviderState.NOT_CONFIGURED
 
 
