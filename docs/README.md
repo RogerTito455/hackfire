@@ -27,6 +27,7 @@ Everything the team learns while building HackFire. [PLAN.md](../PLAN.md) stays 
 | **Demo** | [Runbook](demo/runbook.md) | Before the demo, and what to do when something fails on stage |
 | | [Presentation script](demo/presentation.md) | The three minutes on stage, second by second: the project explained and the live product, with fallbacks |
 | | [Pitch script](demo/pitch.md) | The earlier draft: the checked figures, the comparison table, questions to prepare |
+| | [Defence Q&A](demo/qa.md) | The questions the jury may ask, with answers to say aloud, the figures with their source and what to say when you do not know |
 | | [Defending it](demo/defense.md) | The hard questions and honest answers, what not to say, and what to check before going on stage |
 | | [Workflow review](demo/workflow-review.md) | The demo end to end: what is real, what is simulated, weak points, how to make it stronger |
 | | [What works for a real fire](demo/real-life.md) | Live mode on any fire burning in Spain today, what is missing for real use, and the roadmap |
