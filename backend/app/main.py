@@ -744,10 +744,11 @@ def _crew_sms_works() -> bool:
     return bool(settings.crew_phone) and (sms.configured() or vonage.sms_configured())
 
 
-def _text_the_resident(neighbor_id: str) -> None:
-    """Text a resident who is leaving the route they were just told, as a link they can drive.
+def _text_the_resident(neighbor_id: str, waiting_for_a_crew: bool = False) -> None:
+    """Text a resident the route they were just told, as a link they can drive.
 
     After the answer, like the crew's: the route may need planning, and the person is on the phone.
+    Someone waiting for a crew is told it is the way out if they end up having to leave alone.
     """
     neighbor = state.get(neighbor_id)
     if neighbor is None or not neighbor.phone:
@@ -757,7 +758,8 @@ def _text_the_resident(neighbor_id: str) -> None:
         if route.geometry is None:
             return
         link = maps.navigate(route.geometry["coordinates"])
-        vonage.send_sms(neighbor.phone, i18n.t("sms.route", settings.resident_locale, link=link))
+        key = "sms.routeWhileWaiting" if waiting_for_a_crew else "sms.route"
+        vonage.send_sms(neighbor.phone, i18n.t(key, settings.resident_locale, link=link))
     except (evacuation.RoutingUnavailable, vonage.VonageUnavailable):
         logger.exception("the route SMS for %s failed", neighbor_id)
         audit.record("resident.smsFailed", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
@@ -849,8 +851,10 @@ def _record_report(request: ReportStatusRequest, background: BackgroundTasks, so
             background.add_task(_text_the_crew, alert.rescue_id, alert.message)
         if voice.crew_calls_configured() and settings.crew_phone:
             background.add_task(_call_the_crew, alert.rescue_id)
-    if neighbor.status == "evacuating" and settings.resident_sms and vonage.sms_configured():
-        background.add_task(_text_the_resident, neighbor.id)
+    # Anyone who answered gets their way out, the ones waiting for a crew included: help may not
+    # arrive before the fire, and then they have to be able to move.
+    if neighbor.status in ("evacuating", "needs_rescue") and settings.resident_sms and vonage.sms_configured():
+        background.add_task(_text_the_resident, neighbor.id, neighbor.status == "needs_rescue")
     return neighbor
 
 

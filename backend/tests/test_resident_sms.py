@@ -1,7 +1,7 @@
 """A resident who is leaving gets their way out by SMS: a link that drives the route we planned.
 
-Sent only where it is turned on (HACKFIRE_RESIDENT_SMS), and never to a resident who cannot leave:
-those are a rescue, and the crew is the one who needs the route then.
+Sent only where it is turned on (HACKFIRE_RESIDENT_SMS), to anyone who answered: someone waiting
+for a crew still has to be able to move if the fire arrives first.
 """
 
 import pytest
@@ -45,8 +45,16 @@ def test_a_resident_who_is_leaving_gets_the_route_by_sms(texted: list[tuple[str,
     assert "https://www.google.com/maps/dir/?api=1" in text
 
 
-def test_a_resident_who_needs_rescue_is_not_texted_a_route(texted: list[tuple[str, str]]) -> None:
+def test_a_resident_who_needs_rescue_gets_the_way_out_too(texted: list[tuple[str, str]]) -> None:
+    """Help is coming, but the fire may get there first: they have to be able to move anyway."""
     report(first()["id"], "needs_rescue")
+
+    assert len(texted) == 1
+    assert "https://www.google.com/maps/dir/?api=1" in texted[0][1]
+
+
+def test_a_resident_who_never_answered_is_not_texted(texted: list[tuple[str, str]]) -> None:
+    report(first()["id"], "no_answer")
 
     assert texted == []
 
