@@ -1,5 +1,7 @@
 # Pitch script (draft)
 
+> **To rehearse the talk with the video, use [presentation.md](presentation.md)**: its timings, cues and fallbacks replace this page's. This one stays for the checked figures, the comparison table and the questions.
+
 Three minutes, following PLAN.md section 8, updated to what the product does now. **Draft for the team:** the presenter is still to be chosen (#15, before Saturday 21:00), and the wording should be theirs. Every figure here is checked ([press figures](../findings/2026-09-19-press-figures.md), [lead time](../findings/2026-09-19-lead-time.md)).
 
 **Tone.** A real fire, two months ago; people lost their homes. No "we would have saved…", no "N hours before 112", no comparison with what the authorities did. The one headline number is the lead time, and we say how it is computed.
