@@ -106,7 +106,8 @@ The alert reads "Dashboard only, SMS not set up": do not say the crew gets a tex
 - Say the household is **fictional**, the agent is **real**, and the call runs **in the browser**. Never "a real resident" or "real calls".
 - Say the forecast is **our model from satellite data**, not "validated" ([defense](defense.md)).
 - The only headline number is the lead time. No "would have saved", no "N hours before 112".
-- Do not claim SMS to the crew or a phone ringing in the room: there is no phone line and Twilio is not set up.
+- Do not claim a phone ringing in the room: there is no SIP trunk, so the agent calls the laptop. The crew
+  SMS does go out through Vonage when `HACKFIRE_CREW_PHONE` is set — check the service panel before saying it.
 
 ## Questions
 

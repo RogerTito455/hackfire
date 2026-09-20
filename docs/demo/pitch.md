@@ -35,7 +35,7 @@ Three minutes, following PLAN.md section 8, updated to what the product does now
 > **Agente:** Hola, buenas. ¿Hablo con…? … La orden para La Atalaya es salir ahora hacia San Martín de Valdeiglesias…
 > **Vecina:** Mi madre no puede andar.
 
-*The pin turns red, the resident appears in the rescue queue, the crew alert appears (and, with Twilio, an SMS reaches the crew phone).*
+*The pin turns red, the resident appears in the rescue queue, the crew alert appears (and, when a crew phone is set, Vonage texts it the route).*
 
 > She can't leave on her own. The agent understood that from what she said, not from a keyword. The coordinator now knows, and so does the fire crew, with the route from the El Tiemblo fire station.
 

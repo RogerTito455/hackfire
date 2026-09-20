@@ -13,7 +13,7 @@
    - **Phone campaign:** exists but is off (`HACKFIRE_PHONE_CALLS`); it needs a SIP trunk on SLNG.
 6. **Triage.** The outcome sets the resident's pin: evacuating, no answer or needs rescue.
    - **Rescues** are ranked by time to impact, then by the number of people.
-   - **Crew alert:** each new rescue creates one, with a link to the crew route. It goes by SMS when Twilio is configured, and is dashboard-only otherwise.
+   - **Crew alert:** each new rescue creates one, with a link to the crew route. It goes by SMS through Vonage (or Twilio, if that is ever set up) when a crew phone is configured, and is dashboard-only otherwise. The audit log says which: `alert.createdSms` or `alert.createdDashboard`.
    - **Crew plan:** assigns crews to rescues in order, and says whether each is in time.
 7. **Routes.** Residents' routes avoid the burned area plus the next hour of predicted spread; crews' routes avoid only what has burned (openrouteservice, [finding](../findings/2026-09-19-evacuation-destinations.md)). They are cached for the scenario time.
 8. **The coordinator's side.**
@@ -33,7 +33,8 @@
 | Routes | **Real** openrouteservice routes, cached for 18:00 CEST |
 | Residents | **Sample** registry of 5 (the deployed one has what `HACKFIRE_NEIGHBORS_JSON` holds) |
 | The voice agents | **Real** SLNG agents and model; the resident is played by a person in the browser |
-| Phone calls, crew SMS | **Not live:** no SIP trunk; Twilio is a trial account with no number yet |
+| Phone calls | **Not live:** no SIP trunk, so the agent calls the browser |
+| Crew SMS | **Live through Vonage** when `HACKFIRE_CREW_PHONE` is set; the dashboard alert is the fallback |
 | Autopilot outcomes | **Scripted**, and labelled as such |
 | Live mode | **Real** active fires; no residents, no calls |
 
@@ -73,13 +74,9 @@ Everything here is configuration, data or rehearsal:
   4. Take one resident's call live in the browser, answering "mi madre no puede andar".
   5. Show the pin turning red, the rescue queue, the crew alert and the crew route.
   6. Ask the coordinator agent for the plan.
-- **Crew SMS for real:**
-  1. Get a Twilio trial number.
-  2. Verify one team phone as "the crew" (`HACKFIRE_CREW_PHONE`).
-  3. Enable Spain in Twilio's geo permissions.
-  4. Set the same variables on Railway.
-
-  Trial texts start with "Sent from your Twilio trial account".
+- **Crew SMS:** already works through Vonage, which the live video also uses. Set `HACKFIRE_CREW_PHONE`
+  to one team phone on Railway, and the next rescue texts it the crew route. Twilio was never set up
+  and no longer appears on the service panel.
 - **Deploy the agent fixes** (Roger: `pnpm voice:deploy`), then rerun `pnpm eval:galtea`.
 - **Fill the registry** to 8–10 residents with the team's phones, and cache their routes.
 - **Measure latency** on three browser calls and write the numbers in the pitch.
