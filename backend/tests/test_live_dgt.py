@@ -82,6 +82,18 @@ def test_anything_but_datex_ii_is_refused() -> None:
         dgt.parse(b"not xml at all")
 
 
+def test_a_feed_that_declares_entities_is_refused() -> None:
+    """XXE and entity-expansion bombs: the feed comes from outside, so it is not trusted to be plain XML."""
+    external = b'<?xml version="1.0"?><!DOCTYPE payload [<!ENTITY leak SYSTEM "file:///etc/passwd">]><payload>&leak;</payload>'
+    bomb = (
+        b'<?xml version="1.0"?><!DOCTYPE payload [<!ENTITY a "aaaaaaaaaa"><!ENTITY b "&a;&a;&a;&a;&a;">]>'
+        b"<payload>&b;&b;&b;</payload>"
+    )
+    for body in (external, bomb):
+        with pytest.raises(ValueError, match="not safe XML"):
+            dgt.parse(body)
+
+
 # --- Near a fire ---------------------------------------------------------------------------------
 
 
