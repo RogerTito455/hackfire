@@ -61,7 +61,8 @@
       "one": "{count} persona",
       "other": "{count} personas"
     },
-    "peopleUnknown": "Número de personas desconocido"
+    "peopleUnknown": "Número de personas desconocido",
+    "navigate": "Ir: {link}"
   },
   "demo": {
     "wheelchair": "una persona va en silla de ruedas",

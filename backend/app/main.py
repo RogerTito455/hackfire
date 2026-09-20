@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import audit, autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_operations, live_spread, orders, provider_status, replay, rescue_video, scenario, text_triage
+from . import audit, autopilot, briefing, campaign, closures, crew_plan, crew_room, evacuation, i18n, impact, live, live_operations, live_spread, maps, orders, provider_status, replay, rescue_video, scenario, text_triage
 from .config import settings
 # Live mode's official DGT road data and CAP alert drafts.
 from . import cap, live_dgt
@@ -744,6 +744,26 @@ def _crew_sms_works() -> bool:
     return bool(settings.crew_phone) and (sms.configured() or vonage.sms_configured())
 
 
+def _with_navigation(message: str, neighbor_id: str) -> str:
+    """The alert plus a link that drives our route (app/maps.py), when the route is there.
+
+    Runs in the background task, not in the agent's answer: an uncached route waits on
+    openrouteservice, and the crew's SMS can wait, the resident on the phone cannot.
+    """
+    neighbor = state.get(neighbor_id)
+    if neighbor is None:
+        return message
+    try:
+        route = evacuation.rescue_route(neighbor)
+    except evacuation.RoutingUnavailable:
+        logger.exception("no crew route to navigate for %s", neighbor_id)
+        return message
+    if route.geometry is None:
+        return message
+    link = maps.navigate(route.geometry["coordinates"])
+    return f"{message} {i18n.t('crew.navigate', settings.crew_locale, link=link)}"
+
+
 def _call_the_crew(rescue_id: str) -> None:
     """Ring the crew about a new rescue, after the answer: the voice agent never waits on a call.
 
@@ -764,11 +784,12 @@ def _text_the_crew(rescue_id: str, message: str) -> None:
     """Runs after the response, so the voice agent never waits on the carrier. A failure is logged
     and the alert stays on the dashboard, marked as not sent."""
     neighbor_id = rescue_id.removeprefix("rescue-")
+    text = _with_navigation(message, neighbor_id)
     try:
         if sms.configured():
-            sms.send(settings.crew_phone, message)
+            sms.send(settings.crew_phone, text)
         else:
-            vonage.send_sms(settings.crew_phone, message)
+            vonage.send_sms(settings.crew_phone, text)
     except (httpx.HTTPError, vonage.VonageUnavailable):
         logger.exception("crew SMS for %s failed", rescue_id)
         audit.record("alert.smsFailed", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))

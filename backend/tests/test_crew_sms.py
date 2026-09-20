@@ -37,7 +37,10 @@ def test_a_new_rescue_is_texted_to_the_crew(twilio) -> None:
     # The SMS goes in the crew's language (HACKFIRE_CREW_LOCALE, Spanish by default); the dashboard
     # reads the same alert in its own.
     alert = client.get("/api/alerts", headers={"Accept-Language": settings.crew_locale}).json()[0]
-    assert twilio == [("+34000000099", alert["message"])]
+    number, text = twilio[0]
+    assert number == "+34000000099"
+    # The dashboard's alert, plus the link that drives our route (app/maps.py).
+    assert text.startswith(alert["message"]) and "maps/dir" in text
     assert alert["sent_by_sms"] is True
 
 
@@ -103,3 +106,17 @@ def test_the_crew_is_texted_through_vonage_when_twilio_is_not_set_up(monkeypatch
     assert number == "+34000000099"
     assert "Avenida del Ebro" in text and "?rescue=" in text
     assert client.get("/api/alerts").json()[0]["sent_by_sms"] is True
+
+
+def test_the_crew_sms_carries_a_navigation_link_for_our_route(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A crew reads the SMS in a moving truck: one tap has to start the drive we planned."""
+    sent: list[tuple[str, str]] = []
+    monkeypatch.setattr(sms, "configured", lambda: False)
+    monkeypatch.setattr(main.vonage, "sms_configured", lambda: True)
+    monkeypatch.setattr(main.vonage, "send_sms", lambda to, text: sent.append((to, text)))
+    monkeypatch.setattr(main, "settings", type(settings)(**{**settings.__dict__, "crew_phone": "+34000000099"}))
+
+    rescue(first_id())
+
+    assert "https://www.google.com/maps/dir/?api=1" in sent[0][1]
+    assert "travelmode=driving" in sent[0][1]

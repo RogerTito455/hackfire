@@ -61,7 +61,8 @@
       "one": "{count} person",
       "other": "{count} people"
     },
-    "peopleUnknown": "Number of people unknown"
+    "peopleUnknown": "Number of people unknown",
+    "navigate": "Navigate: {link}"
   },
   "demo": {
     "wheelchair": "one person uses a wheelchair",
