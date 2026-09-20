@@ -182,29 +182,34 @@ def counts() -> dict[str, int]:
     return result
 
 
+def residents() -> int:
+    """However many the registry holds: the script names them by position, not by id."""
+    return len(client.get("/api/neighbors").json())
+
+
 def test_it_is_off_by_default_and_moving_the_clock_changes_nothing() -> None:
     assert client.get("/api/autopilot").json() == {"enabled": False, "calls": [], "transcripts": {}}
     move_clock("18:00")
-    assert counts() == {"pending": 5}
+    assert counts() == {"pending": residents()}
 
 
 def test_on_it_follows_the_clock_and_scrubbing_back_undoes() -> None:
     assert client.post("/api/autopilot", json={"enabled": True, "at": at("13:00").isoformat()}).json()["enabled"] is True
-    assert counts() == {"pending": 5}
+    assert counts() == {"pending": residents()}
 
     move_clock("14:40")
-    assert counts() == {"evacuating": 1, "no_answer": 1, "needs_rescue": 1, "pending": 2}
+    assert counts() == {"evacuating": 1, "no_answer": 1, "needs_rescue": 1, "pending": residents() - 3}
     rescues = client.get("/api/rescues").json()
     assert [r["neighbor"]["mobility"] for r in rescues] == ["one person uses a wheelchair"]
     assert len(client.get("/api/alerts").json()) == 1
     assert any(o["approved"] for o in client.get("/api/orders").json())
 
     move_clock("20:00")
-    assert counts() == {"evacuating": 4, "needs_rescue": 1}
+    assert counts() == {"evacuating": residents() - 1, "needs_rescue": 1}
     assert len(client.get("/api/alerts").json()) == 1  # one alert per rescue, however often the clock moves
 
     move_clock("13:00")
-    assert counts() == {"pending": 5}
+    assert counts() == {"pending": residents()}
     assert client.get("/api/rescues").json() == []
     assert client.get("/api/alerts").json() == []
     assert not any(o["approved"] for o in client.get("/api/orders").json())
@@ -233,19 +238,19 @@ def test_turning_it_off_puts_back_the_state_from_before() -> None:
     first = client.get("/api/neighbors").json()[0]["id"]
     client.post("/tools/report_status", json={"neighbor_id": first, "status": "needs_rescue", "people": 1})
     client.post("/api/autopilot", json={"enabled": True, "at": at("20:00").isoformat()})
-    assert counts() == {"evacuating": 4, "needs_rescue": 1}
+    assert counts() == {"evacuating": residents() - 1, "needs_rescue": 1}
     assert client.post("/api/autopilot", json={"enabled": False}).json()["enabled"] is False
-    assert counts() == {"needs_rescue": 1, "pending": 4}
+    assert counts() == {"needs_rescue": 1, "pending": residents() - 1}
     assert [a["neighbor_id"] for a in client.get("/api/alerts").json()] == [first]
     move_clock("16:00")
-    assert counts() == {"needs_rescue": 1, "pending": 4}
+    assert counts() == {"needs_rescue": 1, "pending": residents() - 1}
 
 
 def test_reset_turns_it_off_and_restores_everything() -> None:
     client.post("/api/autopilot", json={"enabled": True, "at": at("20:00").isoformat()})
     client.post("/api/reset")
     assert client.get("/api/autopilot").json() == {"enabled": False, "calls": [], "transcripts": {}}
-    assert counts() == {"pending": 5}
+    assert counts() == {"pending": residents()}
     assert client.get("/api/alerts").json() == []
     assert not any(o["approved"] for o in client.get("/api/orders").json())
 
@@ -253,7 +258,7 @@ def test_reset_turns_it_off_and_restores_everything() -> None:
 def test_on_it_lists_the_scripted_calls_with_the_transcripts_they_name() -> None:
     body = client.post("/api/autopilot", json={"enabled": True, "at": at("13:00").isoformat()}).json()
     assert [c["at"] for c in body["calls"]] == sorted(c["at"] for c in body["calls"])
-    assert len(body["calls"]) == 6  # the sample's five residents, one of them called twice
+    assert len(body["calls"]) == residents() + 1  # every resident, one of them called twice
     named = {c["transcript"] for c in body["calls"] if c["transcript"]}
     assert named == set(body["transcripts"])
     for call in body["calls"]:

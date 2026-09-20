@@ -23,7 +23,8 @@
     "video:sfx": "cd video && node scripts/audio.ts sfx",
     "video:music": "cd video && node scripts/audio.ts music",
     "video:data": "cd backend && PYTHONPATH=. uv run python ../video/scripts/export_map.py",
-    "voice:latency": "cd backend && uv run python -m app.pipelines.voice_latency"
+    "voice:latency": "cd backend && uv run python -m app.pipelines.voice_latency",
+    "data:registry": "cd backend && uv run python -m app.pipelines.build_registry"
   },
   "packageManager": "pnpm@10.33.3",
   "private": true

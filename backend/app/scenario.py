@@ -37,6 +37,9 @@ class NamedPlace:
     lon: float
     lat: float
     radius_m: int
+    # How an address inside this place ends, after the street: "La Atalaya, El Tiemblo (Ávila)".
+    # `pnpm data:registry` writes it after each resident's street. Defaults to the place's name.
+    address: str = ""
 
 
 @dataclass(frozen=True)
@@ -118,7 +121,15 @@ def parse(raw: dict, base: Path, scenario_time: datetime | None = None) -> Scena
         lead_time_zone=lead_time["zone"],
         lead_time_radius_km=lead_time["radius_km"],
         places=tuple(
-            NamedPlace(p["id"], p["name"], p["kind"], float(p["lon"]), float(p["lat"]), int(p["radius_m"]))
+            NamedPlace(
+                p["id"],
+                p["name"],
+                p["kind"],
+                float(p["lon"]),
+                float(p["lat"]),
+                int(p["radius_m"]),
+                p.get("address", p["name"]),
+            )
             for p in raw.get("places", [])
         ),
         files=Files(

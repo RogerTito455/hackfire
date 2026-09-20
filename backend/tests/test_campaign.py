@@ -123,7 +123,7 @@ def test_a_call_that_cannot_be_placed_counts_as_no_answer(line: FakeLine) -> Non
     # The coordinator sees the refused call, not a resident who "answered".
     assert {c["neighbor_id"]: c["call_id"] for c in response.json()}["n02"] is None
     statuses = {n["id"]: n["status"] for n in residents_of("la-atalaya")}
-    assert statuses == {"n01": "evacuating", "n02": "no_answer", "n03": "no_answer"}
+    assert statuses == {"n01": "evacuating", **{n: "no_answer" for n in statuses if n != "n01"}}
 
 
 def test_without_a_phone_line_nothing_is_dialled(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -155,7 +155,8 @@ def test_pressing_call_again_does_not_redial_a_call_still_going(line: FakeLine, 
     client.post("/api/campaigns/la-atalaya")
     client.post("/api/campaigns/la-atalaya")
 
-    assert sorted(arguments["neighbor_id"] for _, arguments in line.dialled) == ["n01", "n02", "n03"]
+    called = sorted(arguments["neighbor_id"] for _, arguments in line.dialled)
+    assert called == sorted(n["id"] for n in residents_of("la-atalaya"))
 
 
 def test_a_reset_stops_an_earlier_campaign_from_marking_the_new_run(

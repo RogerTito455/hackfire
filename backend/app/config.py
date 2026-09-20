@@ -123,7 +123,14 @@ class Settings:
         default_factory=lambda: _env("SLNG_LLM_MODEL", "bedrock-mantle/nvidia.nemotron-super-3-120b:latest")
     )
 
-    ors_api_key: str = field(default_factory=lambda: _env("ORS_API_KEY"))
+    # openrouteservice, in the order they are tried: ORS_API_KEY, then ORS_API_KEY2 and ORS_API_KEY3.
+    # The free plan gives 2,000 directions a day per key, so `pnpm data:routes` moves to the next one
+    # when a key's daily quota is gone (providers/routing.py). Empty ones are skipped.
+    ors_api_keys: list[str] = field(
+        default_factory=lambda: [
+            key for name in ("ORS_API_KEY", "ORS_API_KEY2", "ORS_API_KEY3") if (key := _env(name))
+        ]
+    )
 
     # The audit log (app/audit.py): one JSON object per line, append-only, git-ignored. Never holds
     # a phone number. docs/setup/operations.md.

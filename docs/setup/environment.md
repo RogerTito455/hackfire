@@ -36,6 +36,8 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 | `SLNG_LLM_MODEL` | Same | Default `bedrock-mantle/nvidia.nemotron-super-3-120b:latest`, the model the voice agents think with |
 | `GALTEA_API_KEY` | `pnpm eval:galtea` only: simulated residents against the resident agent, with `SLNG_API_KEY`. The app never reads it | https://platform.galtea.ai → Settings. See [Galtea](../services/galtea.md) |
 | `ORS_API_KEY` | Evacuation and rescue routes (#6); only needed to plan routes that are not in `data/routes_cache.json` | https://openrouteservice.org/dev/#/signup |
+| `ORS_API_KEY2` | The key used once `ORS_API_KEY` answers `403 Quota exceeded`; optional | A second account's key. The free plan gives 2,000 directions a day **per key**, so a long `pnpm data:routes` does not stop at the first spent one |
+| `ORS_API_KEY3` | The key after that; optional | Same. Empty ones are skipped, and the order is `ORS_API_KEY`, `ORS_API_KEY2`, `ORS_API_KEY3` |
 | `OVERPASS_URL` | `pnpm data:zones` (#4); optional, no key | Empty uses `https://overpass-api.de/api/interpreter`. See [Overpass](../services/overpass.md) if it refuses connections |
 | `OVERPASS_MIRRORS` | `pnpm data:zones`, live mode's places at risk; optional | Comma-separated, tried in order after `OVERPASS_URL`. Empty uses `overpass.openstreetmap.fr`, then `overpass.private.coffee` |
 | `DGT_FEED_URL` | Live mode's official DGT incidents and closures; optional, no key | Empty uses `https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml`, which redirects to the current version. See [DGT](../services/dgt.md) |

@@ -43,5 +43,50 @@
     "zone": "el-tiemblo",
     "lat": 40.4161,
     "lon": -4.5012
+  },
+  {
+    "id": "n06",
+    "name": "Hogar de la calle del Henares",
+    "phone": "+34000000006",
+    "address": "Calle del Henares, La Atalaya, El Tiemblo (Ávila)",
+    "zone": "la-atalaya",
+    "lat": 40.37825,
+    "lon": -4.46866
+  },
+  {
+    "id": "n07",
+    "name": "Hogar del paseo de Recoletos",
+    "phone": "+34000000007",
+    "address": "Paseo de Recoletos 22, El Tiemblo (Ávila)",
+    "zone": "el-tiemblo",
+    "lat": 40.41116,
+    "lon": -4.49728
+  },
+  {
+    "id": "n08",
+    "name": "Hogar de la calle de Juan Ramón Jiménez",
+    "phone": "+34000000008",
+    "address": "Calle de Juan Ramón Jiménez 14, El Tiemblo (Ávila)",
+    "zone": "el-tiemblo",
+    "lat": 40.413,
+    "lon": -4.497
+  },
+  {
+    "id": "n09",
+    "name": "Hogar de la calle de Milagros Mena",
+    "phone": "+34000000009",
+    "address": "Calle de Milagros Mena 5, El Tiemblo (Ávila)",
+    "zone": "el-tiemblo",
+    "lat": 40.41371,
+    "lon": -4.49835
+  },
+  {
+    "id": "n10",
+    "name": "Hogar de la carretera de Cebreros",
+    "phone": "+34000000010",
+    "address": "Carretera de Cebreros 12, El Tiemblo (Ávila)",
+    "zone": "el-tiemblo",
+    "lat": 40.41434,
+    "lon": -4.49923
   }
 ]
