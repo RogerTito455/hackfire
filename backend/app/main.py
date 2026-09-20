@@ -75,6 +75,10 @@ TILE_HOST = "https://tile.openstreetmap.org"
 # Vonage Video (#18, services/videoCall.ts): configuration and logging over https, signalling and
 # media over wss. A project's own Rumor server is a subdomain of its own, so wildcards it is.
 VONAGE_HOSTS = ("https://*.opentok.com", "https://*.tokbox.com")
+# LiveKit's client asks its cloud which region to use over https before it opens the wss room
+# (verified 2026-09-20 with a browser call: without this the request is refused and the SDK falls
+# back). SLNG hands out the deployment per call, so the subdomain is a wildcard.
+LIVEKIT_HOSTS = ("https://*.livekit.cloud",)
 
 
 def content_security_policy() -> str:
@@ -82,7 +86,15 @@ def content_security_policy() -> str:
     # LiveKit's room (services/voiceSession.ts) is a wss URL SLNG hands out per call, on whichever
     # deployment it picks, so the host cannot be listed ahead of time. `wss:` allows secure
     # WebSockets and nothing else; with script-src 'self' there is no script here to abuse it.
-    connect = ["'self'", TILE_HOST, "wss:", *VONAGE_HOSTS, settings.public_url, *settings.csp_connect_origins]
+    connect = [
+        "'self'",
+        TILE_HOST,
+        "wss:",
+        *LIVEKIT_HOSTS,
+        *VONAGE_HOSTS,
+        settings.public_url,
+        *settings.csp_connect_origins,
+    ]
     return "; ".join(
         [
             "default-src 'self'",

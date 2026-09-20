@@ -83,3 +83,12 @@ def test_report_only_blocks_nothing(client: TestClient, monkeypatch: pytest.Monk
     response = client.get("/")
     assert HEADER not in response.headers
     assert response.headers["content-security-policy-report-only"] == content_security_policy()
+
+
+def test_the_voice_call_can_reach_livekit() -> None:
+    """A browser call fetches the region list over https before it opens the wss room: 2026-09-20,
+    a call with the policy on was refused `https://…livekit.cloud/settings/regions` without this."""
+    policy = content_security_policy()
+    connect = next(part for part in policy.split("; ") if part.startswith("connect-src"))
+    assert "https://*.livekit.cloud" in connect
+    assert "wss:" in connect
