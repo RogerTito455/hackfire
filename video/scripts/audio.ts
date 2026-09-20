@@ -42,13 +42,26 @@ function apiKey(): string {
   return key
 }
 
+const describe = (error: unknown): string => (error instanceof Error ? error.message : String(error))
+
 async function call(path: string, body?: object): Promise<Response> {
-  const response = await fetch(API + path, {
-    method: body ? 'POST' : 'GET',
-    headers: { 'xi-api-key': apiKey(), 'content-type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  if (!response.ok) throw new Error(`ElevenLabs ${path}: HTTP ${response.status} ${(await response.text()).slice(0, 300)}`)
+  let response: Response
+  try {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a network failure names the
+    // endpoint instead of surfacing as a bare "fetch failed".
+    response = await fetch(API + path, {
+      method: body ? 'POST' : 'GET',
+      headers: { 'xi-api-key': apiKey(), 'content-type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  } catch (error) {
+    throw new Error(`ElevenLabs ${path}: could not reach the API (${describe(error)})`, { cause: error })
+  }
+  if (!response.ok) {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: an unreadable body must not hide the status.
+    const detail = await response.text().catch(() => '')
+    throw new Error(`ElevenLabs ${path}: HTTP ${response.status} ${detail.slice(0, 300)}`)
+  }
   return response
 }
 
@@ -86,6 +99,11 @@ function words(chars: string[], starts: number[], ends: number[], offset: number
   return out
 }
 
+type SpeechAnswer = {
+  audio_base64: string
+  alignment: { characters: string[]; character_start_times_seconds: number[]; character_end_times_seconds: number[] }
+}
+
 async function lines(): Promise<void> {
   const script: Script = JSON.parse(readFileSync(join(ROOT, 'src/script.json'), 'utf-8'))
   const previous: NarrationLine[] = existsSync(NARRATION) ? JSON.parse(readFileSync(NARRATION, 'utf-8')).lines : []
@@ -104,13 +122,19 @@ async function lines(): Promise<void> {
         out.push({ ...kept, ...line, id, scene: scene.id, file })
         continue
       }
-      const answer = (await (
-        await call(`/v1/text-to-speech/${voice.id}/with-timestamps?output_format=mp3_44100_128`, {
-          text: line.say ?? line.text,
-          model_id: MODEL,
-          voice_settings: voice.settings,
-        })
-      ).json()) as { audio_base64: string; alignment: { characters: string[]; character_start_times_seconds: number[]; character_end_times_seconds: number[] } }
+      let answer: SpeechAnswer
+      try {
+        // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: say which line failed.
+        answer = (await (
+          await call(`/v1/text-to-speech/${voice.id}/with-timestamps?output_format=mp3_44100_128`, {
+            text: line.say ?? line.text,
+            model_id: MODEL,
+            voice_settings: voice.settings,
+          })
+        ).json()) as SpeechAnswer
+      } catch (error) {
+        throw new Error(`${id}: the clip was not generated. ${describe(error)}`, { cause: error })
+      }
       const { characters, character_start_times_seconds: starts, character_end_times_seconds: ends } = answer.alignment
       const raw = join(PUBLIC, `audio/lines/${id}.raw.mp3`)
       writeFileSync(raw, Buffer.from(answer.audio_base64, 'base64'))
@@ -148,12 +172,24 @@ const SFX: Record<string, [string, number]> = {
 
 async function sfx(): Promise<void> {
   mkdirSync(join(PUBLIC, 'audio/sfx'), { recursive: true })
+  const failed: string[] = []
   for (const [name, [prompt, seconds]] of Object.entries(SFX)) {
     const file = join(PUBLIC, `audio/sfx/${name}.mp3`)
     if (existsSync(file)) continue
-    const audio = await (await call('/v1/sound-generation', { text: prompt, duration_seconds: seconds, prompt_influence: 0.5 })).arrayBuffer()
-    writeFileSync(file, Buffer.from(audio))
-    console.log(`sfx/${name}.mp3  ${seconds} s`)
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: one failed effect must not
+    // throw away the ones still to make. Say which failed, and exit non-zero at the end.
+    try {
+      const audio = await (await call('/v1/sound-generation', { text: prompt, duration_seconds: seconds, prompt_influence: 0.5 })).arrayBuffer()
+      writeFileSync(file, Buffer.from(audio))
+      console.log(`sfx/${name}.mp3  ${seconds} s`)
+    } catch (error) {
+      console.error(`sfx/${name}.mp3 failed: ${error instanceof Error ? error.message : error}`)
+      failed.push(name)
+    }
+  }
+  if (failed.length > 0) {
+    console.error(`${failed.length} sound effect(s) not made: ${failed.join(', ')}. Run the command again to retry them.`)
+    process.exitCode = 1
   }
 }
 
@@ -169,7 +205,13 @@ async function music(seconds = Number(process.argv[3] ?? 135)): Promise<void> {
   if (existsSync(file)) {
     console.log('audio/music.mp3 exists; delete it to make a new one')
   } else {
-    const audio = await (await call('/v1/music', { prompt: MUSIC_PROMPT, music_length_ms: seconds * 1000 })).arrayBuffer()
+    let audio: ArrayBuffer
+    try {
+      // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+      audio = await (await call('/v1/music', { prompt: MUSIC_PROMPT, music_length_ms: seconds * 1000 })).arrayBuffer()
+    } catch (error) {
+      throw new Error(`The music was not generated. ${describe(error)}`, { cause: error })
+    }
     mkdirSync(dirname(file), { recursive: true })
     writeFileSync(file, Buffer.from(audio))
     console.log(`audio/music.mp3  ${(durationMs(file) / 1000).toFixed(1)} s`)
@@ -183,6 +225,10 @@ const ENVELOPE = join(ROOT, 'src/data/music-envelope.json')
  * a generated track that builds up can be 10 dB louder at its peak than where it starts. */
 async function envelope(): Promise<void> {
   const run = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', join(PUBLIC, 'audio/music.mp3'), '-af', 'ebur128', '-f', 'null', '-'], { encoding: 'utf-8' })
+  // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: without ffmpeg `run.stderr` is null.
+  if (run.error || run.status !== 0 || typeof run.stderr !== 'string') {
+    throw new Error(`ffmpeg could not measure the music's loudness (${run.error ? run.error.message : `exit code ${run.status}`}). Is ffmpeg installed?`)
+  }
   const perSecond: number[][] = []
   for (const match of run.stderr.matchAll(/t:\s*([\d.]+)\s+TARGET:.*?M:\s*(-?[\d.]+|-inf)/g)) {
     const second = Math.floor(Number(match[1]))
@@ -205,4 +251,11 @@ if (!command) {
   console.error(`Usage: node scripts/audio.ts ${Object.keys(commands).join('|')}`)
   process.exit(1)
 }
-await command()
+// Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: every await above ends up here.
+try {
+  await command()
+} catch (error) {
+  console.error(`node scripts/audio.ts ${process.argv[2]} failed: ${describe(error)}`)
+  if (process.env.DEBUG) console.error(error)
+  process.exitCode = 1
+}
