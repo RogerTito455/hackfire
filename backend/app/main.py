@@ -74,7 +74,9 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 TILE_HOST = "https://tile.openstreetmap.org"
 # Vonage Video (#18, services/videoCall.ts): configuration and logging over https, signalling and
 # media over wss. A project's own Rumor server is a subdomain of its own, so wildcards it is.
-VONAGE_HOSTS = ("https://*.opentok.com", "https://*.tokbox.com")
+# video.api.vonage.com is where the SDK asks for the session before it connects: without it the
+# crews' room fails with OT_CONNECT_FAILED (1006), seen in a browser on 20 September.
+VONAGE_HOSTS = ("https://*.opentok.com", "https://*.tokbox.com", "https://video.api.vonage.com")
 # LiveKit's client asks its cloud which region to use over https before it opens the wss room
 # (verified 2026-09-20 with a browser call: without this the request is refused and the SDK falls
 # back). SLNG hands out the deployment per call, so the subdomain is a wildcard.
@@ -105,7 +107,10 @@ def content_security_policy() -> str:
             "script-src 'self'",
             # MapLibre GL runs its tile worker from a blob URL it builds itself.
             "worker-src 'self' blob:",
-            "style-src 'self'",
+            # The Vonage Video SDK sizes and places its own video elements with inline styles, and
+            # refuses to show a stream without them (same browser test). Scripts stay on 'self', so
+            # this allows styling, not code.
+            "style-src 'self' 'unsafe-inline'",
             # data: for the arrows and badges in MapLibre's own stylesheet, blob: for the images
             # the map and the video SDKs build in memory.
             f"img-src 'self' data: blob: {TILE_HOST}",

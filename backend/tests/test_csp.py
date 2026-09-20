@@ -46,11 +46,14 @@ def test_nothing_runs_that_this_origin_did_not_serve() -> None:
     policy = content_security_policy()
     assert "default-src 'self'" in policy
     assert "script-src 'self'" in policy
-    assert "style-src 'self'" in policy
+    assert "style-src 'self' 'unsafe-inline'" in policy
     assert "object-src 'none'" in policy
     assert "base-uri 'self'" in policy
     assert "frame-ancestors 'none'" in policy
-    assert "'unsafe-inline'" not in policy
+    # Only styles may be inline, for the video SDK's own elements (docs/findings/2026-09-20-csp.md).
+    # Nothing may run: no inline script, no eval.
+    directives = dict(part.split(" ", 1) for part in policy.split("; "))
+    assert "'unsafe-inline'" not in directives["script-src"]
     assert "'unsafe-eval'" not in policy
 
 
