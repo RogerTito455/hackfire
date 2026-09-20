@@ -37,3 +37,6 @@ video/out/
 # Live mode's last DGT answer: forest-fire incidents and closures (backend/app/live_dgt.py)
 data/live_dgt.json
 data/live_dgt.tmp
+
+# Screenshots dropped here while testing; never part of the build.
+errors/
