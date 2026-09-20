@@ -6,6 +6,7 @@
 const CACHE = 'hackfire-osm-tiles-v1'
 const MAX_TILES = 4000
 const TILE_HOST = 'tile.openstreetmap.org'
+const NETWORK_TIMEOUT_MS = 20000
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
@@ -17,7 +18,7 @@ async function trim(cache) {
     const keys = await cache.keys()
     for (const key of keys.slice(0, Math.max(0, keys.length - MAX_TILES))) await cache.delete(key)
   } catch (error) {
-    console.warn('Could not trim the tile cache', error)
+    console.error('Could not trim the tile cache', error)
   }
 }
 
@@ -30,23 +31,29 @@ async function tile(request) {
     const hit = await cache.match(request)
     if (hit) return hit
   } catch (error) {
-    console.warn('The tile cache is unavailable; using the network', error)
+    console.error('The tile cache is unavailable; using the network', error)
   }
+  // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a stalled tile request gives
+  // up. An AbortController rather than AbortSignal.timeout, which iOS before 16 lacks.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS)
   try {
-    const response = await fetch(request)
+    const response = await fetch(request, { signal: controller.signal })
     if (response.ok && cache) {
       try {
         await cache.put(request, response.clone())
         trim(cache)
       } catch (error) {
         // Storage full, for one: the map still gets the tile it asked for.
-        console.warn('Could not keep a map tile', error)
+        console.error('Could not keep a map tile', error)
       }
     }
     return response
   } catch (error) {
-    console.warn('A map tile could not be fetched', error)
+    console.error('A map tile could not be fetched', error)
     return Response.error()
+  } finally {
+    clearTimeout(timer)
   }
 }
 

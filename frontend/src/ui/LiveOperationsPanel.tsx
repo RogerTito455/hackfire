@@ -24,8 +24,6 @@ const VISIBLE_PLACES = 8
 export function LiveOperationsPanel({ fires, view, onSelect, onRetry }: LiveOperationsPanelProps) {
   const { t, intl } = useI18n()
   const { fireId, status, data, capUrl } = view
-  // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: only a safe-protocol link is rendered.
-  const capHref = capUrl === null ? null : safeHref(capUrl)
   if (fireId === null) return <FirePicker fires={fires} onSelect={onSelect} />
 
   const run = fires.find((fire) => fire.fireId === fireId)
@@ -88,9 +86,10 @@ export function LiveOperationsPanel({ fires, view, onSelect, onRetry }: LiveOper
               ))}
             </ul>
           )}
-          {capHref && (
+          {capUrl !== null && (
             <div className="live-cap">
-              <a className="live-cap-button" href={capHref} download>
+              {/* Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a link that is not http, https or mailto becomes '#'. */}
+              <a className="live-cap-button" href={safeHref(capUrl) ?? '#'} download>
                 {t('liveOps.cap')}
               </a>
               <p className="live-ops-small">{t('liveOps.capNote')}</p>

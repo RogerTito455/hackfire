@@ -35,7 +35,7 @@ export function useClosures(): Closures {
     } catch (error) {
       // Keep the last list; the next poll tries again.
       // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
-      if (!refreshFailing.current) console.warn('Could not read the road closures; keeping the last list', error)
+      if (!refreshFailing.current) console.error('Could not read the road closures; keeping the last list', error)
       refreshFailing.current = true
     }
   }, [])

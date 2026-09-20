@@ -14,8 +14,6 @@ interface ActivityLogProps {
 // The latest decisions and outcomes, newest first, and the whole run as a JSON download.
 export function ActivityLog({ events, loaded, failed, downloadUrl }: ActivityLogProps) {
   const { t, intl } = useI18n()
-  // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: only a safe-protocol link is rendered.
-  const download = safeHref(downloadUrl)
   return (
     <>
       {failed && events.length === 0 && <p className="empty">{t('audit.unavailable')}</p>}
@@ -39,11 +37,10 @@ export function ActivityLog({ events, loaded, failed, downloadUrl }: ActivityLog
           })}
         </ol>
       )}
-      {download && (
-        <a className="activity-download" href={download} download>
-          {t('audit.download')}
-        </a>
-      )}
+      {/* Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a link that is not http, https or mailto becomes '#'. */}
+      <a className="activity-download" href={safeHref(downloadUrl) ?? '#'} download>
+        {t('audit.download')}
+      </a>
     </>
   )
 }

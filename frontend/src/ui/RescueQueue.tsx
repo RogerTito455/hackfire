@@ -18,6 +18,12 @@ interface RescueQueueProps {
   }
 }
 
+// The request button's text: creating the link, sending it again, or asking for it the first time.
+function requestLabel(t: (key: string) => string, requesting: boolean, hasLink: boolean): string {
+  if (requesting) return t('video.creating')
+  return hasLink ? t('video.resend') : t('video.request')
+}
+
 export function RescueQueue({ rescues, video }: RescueQueueProps) {
   const { t } = useI18n()
   if (rescues.length === 0) return <p className="empty">{t('rescues.empty')}</p>
@@ -26,8 +32,6 @@ export function RescueQueue({ rescues, video }: RescueQueueProps) {
     <ol className="rescues">
       {rescues.map((rescue) => {
         const link = video?.links[rescue.neighbor.id]
-        // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: only a safe-protocol link becomes an anchor.
-        const linkHref = link ? safeHref(link.link) : null
         return (
           <li key={rescue.rescue_id}>
             <strong>{rescue.neighbor.name}</strong>
@@ -53,23 +57,16 @@ export function RescueQueue({ rescues, video }: RescueQueueProps) {
                 onClick={() => video.onRequest(rescue.neighbor.id)}
               >
                 <Icon name="live" size={16} />
-                {video.requesting === rescue.neighbor.id
-                  ? t('video.creating')
-                  : link
-                    ? t('video.resend')
-                    : t('video.request')}
+                {requestLabel(t, video.requesting === rescue.neighbor.id, link !== undefined)}
               </button>
             )}
             {link && video?.watching === rescue.neighbor.id && (
               <span className="video-link">
                 {link.sms_sent ? t('video.texted') : t('video.openOnPhone')}{' '}
-                {linkHref ? (
-                  <a href={linkHref} target="_blank" rel="noreferrer">
-                    {link.link}
-                  </a>
-                ) : (
-                  link.link
-                )}
+                {/* Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a link that is not http, https or mailto becomes '#'. */}
+                <a href={safeHref(link.link) ?? '#'} target="_blank" rel="noreferrer">
+                  {link.link}
+                </a>
               </span>
             )}
           </li>

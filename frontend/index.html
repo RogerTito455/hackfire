@@ -2,6 +2,8 @@
 <html lang="en" translate="no">
   <head>
     <meta charset="UTF-8" />
+    <!-- Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a cross-origin request (the map tiles) gets the origin, never the path. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <!--
       Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code.
       Content-Security-Policy for the built dashboard (vite.config.ts leaves it out of `pnpm dev:web`, whose

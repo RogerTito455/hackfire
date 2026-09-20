@@ -19,10 +19,24 @@ import type { RoadClosure } from '../domain/closures'
 import type { AuditEvent, ProviderStatus } from '../domain/operations'
 import type { Scenario } from '../domain/scenario'
 
-// Deployed, the backend serves this dashboard, so the API is on the same origin. VITE_API_URL
-// points a local dashboard at another backend.
-const DEFAULT_API_URL = import.meta.env.DEV ? 'http://localhost:8000' : ''
-const API_URL = (import.meta.env.VITE_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, '')
+// The API is on the dashboard's own origin: deployed, the backend serves the dashboard, and under
+// `pnpm dev:web` Vite proxies the API paths to the backend (vite.config.ts). VITE_API_URL points a
+// local dashboard at another backend instead.
+const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
+
+// Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: no request waits forever. An
+// AbortController rather than AbortSignal.timeout, which iOS before 16 (a crew's phone) lacks.
+const REQUEST_TIMEOUT_MS = 30000
+
+async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  try {
+    return await fetch(url, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 // The backend writes some sentences itself (route directions, orders, crew alerts): every request
 // asks for them in the dashboard's language, which the i18n provider keeps in <html lang>.
@@ -38,7 +52,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a network failure names the
     // path. It is not logged here: the dashboard polls a dozen endpoints every few seconds, so each
     // caller decides what to say when the backend is down (see useClosures, useCrewPlan, useTriage).
-    response = await fetch(`${API_URL}${path}`, inDashboardLanguage(init))
+    response = await fetchWithTimeout(`${API_URL}${path}`, inDashboardLanguage(init))
   } catch (error) {
     throw new Error(`${path} could not be reached`, { cause: error })
   }
@@ -124,7 +138,13 @@ export const watchRescueVideo = (neighborId: string) =>
 
 /** The resident's camera access, once per link: 'used' when it was opened before, 'unknown' when it never existed. */
 export async function joinVideo(linkId: string): Promise<VideoAccess | 'used' | 'unknown'> {
-  const response = await fetch(`${API_URL}/api/video/${encodeURIComponent(linkId)}`)
+  let response: Response
+  try {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a network failure names the path.
+    response = await fetchWithTimeout(`${API_URL}/api/video/${encodeURIComponent(linkId)}`)
+  } catch (error) {
+    throw new Error('/api/video could not be reached', { cause: error })
+  }
   if (response.status === 410) return 'used'
   if (response.status === 404) return 'unknown'
   if (!response.ok) throw new Error(`/api/video returned ${response.status}`)
@@ -146,7 +166,7 @@ export async function reopenRoad(closureId: string): Promise<void> {
   let response: Response
   try {
     // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a network failure is logged here, then passed on.
-    response = await fetch(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
+    response = await fetchWithTimeout(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
   } catch (error) {
     console.error(`Reopening road ${closureId} failed`, error)
     throw error

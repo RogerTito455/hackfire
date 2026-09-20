@@ -44,7 +44,7 @@ The backend reads every variable in one place, `backend/app/config.py`, which lo
 
 | Variable | Needed for | Value |
 |---|---|---|
-| `VITE_API_URL` | Pointing a local dashboard at another backend, such as the deployed one | Backend URL. Defaults to `http://localhost:8000` under `pnpm dev:web`, and to the page's own origin in a production build, so `vite preview` needs it set |
+| `VITE_API_URL` | Pointing a local dashboard at another backend, such as the deployed one | Backend URL. Unset, the dashboard asks its own origin: under `pnpm dev:web` Vite proxies `/api`, `/tools` and `/health` to `http://localhost:8000` (`frontend/vite.config.ts`), and a production build is served by the backend itself, so `vite preview` needs it set |
 
 Vite exposes `VITE_*` variables to the browser bundle, so anything placed there is public. Never put a secret key in a `VITE_*` variable.
 

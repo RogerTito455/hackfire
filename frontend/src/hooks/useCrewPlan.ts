@@ -26,7 +26,7 @@ export function useCrewPlan(): CrewPlanView {
     } catch (error) {
       // Keep the last plan; the next poll tries again.
       // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
-      if (!refreshFailing.current) console.warn('Could not read the crew plan; keeping the last one', error)
+      if (!refreshFailing.current) console.error('Could not read the crew plan; keeping the last one', error)
       refreshFailing.current = true
     }
   }, [crews])

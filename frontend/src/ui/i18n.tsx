@@ -12,7 +12,7 @@ function initialLocale(): string {
   } catch (error) {
     // Storage blocked (private mode): the browser's language decides.
     // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
-    console.warn('The saved language could not be read; using the browser language', error)
+    console.error('The saved language could not be read; using the browser language', error)
   }
   return preferredLocale(saved, navigator.languages ?? [])
 }
@@ -46,7 +46,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       // Not remembered this time; nothing else depends on it.
       // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
-      console.warn('The language could not be saved for next time', error)
+      console.error('The language could not be saved for next time', error)
     }
   }, [])
 

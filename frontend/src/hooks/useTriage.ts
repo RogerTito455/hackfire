@@ -55,13 +55,13 @@ export function useTriage(): Triage {
     // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
     try {
       await resetDemo()
+      await refresh() // handles its own errors
     } catch (error) {
       console.error('Resetting the demo failed', error)
       // The connection pill shows it until the next poll gets through; the caller must not carry on.
       setOnline(false)
       throw error
     }
-    await refresh() // handles its own errors
   }, [refresh])
 
   const counts = useMemo(() => countByStatus(neighbors), [neighbors])
