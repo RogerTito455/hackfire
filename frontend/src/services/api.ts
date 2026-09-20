@@ -33,6 +33,13 @@ async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Respon
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
     return await fetch(url, { ...init, signal: controller.signal })
+  } catch (error) {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a timeout says so, rather
+    // than surfacing as a bare AbortError.
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error(`no answer in ${REQUEST_TIMEOUT_MS / 1000} seconds`, { cause: error })
+    }
+    throw error
   } finally {
     clearTimeout(timer)
   }

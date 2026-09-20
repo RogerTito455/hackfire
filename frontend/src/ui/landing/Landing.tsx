@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { LeadTimeRange, PublishedLeadTime } from '../../domain/leadTime'
+import { safeHref } from '../../domain/url'
 import { Icon } from '../Icon'
 import { useI18n } from '../i18n'
 import { LanguagePicker } from '../LanguagePicker'
@@ -47,7 +48,8 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
             <Icon name="logo" size={24} />
             <span>HackFire</span>
           </a>
-          <a className="button primary small" href={demoUrl}>
+          {/* Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a link that is not http, https or mailto becomes '#'. */}
+          <a className="button primary small" href={safeHref(demoUrl) ?? '#'}>
             {t('landing.nav.demo')}
           </a>
           <LanguagePicker />
@@ -61,7 +63,8 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
               <h1 id="hero-title">{t('landing.hero.title')}</h1>
               <p className="hero-lead">{t('landing.hero.lead')}</p>
               <div className="hero-actions">
-                <a className="button primary" href={demoUrl}>
+                {/* Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: same check as above. */}
+                <a className="button primary" href={safeHref(demoUrl) ?? '#'}>
                   {t('landing.hero.cta')}
                 </a>
                 <a className="button secondary" href="#how">
@@ -148,7 +151,8 @@ export function Landing({ demoUrl, leadTime, leadTimeRange }: LandingProps) {
             <div>
               <h2 id="demo">{t('landing.demo.title')}</h2>
               <p className="demo-line">{t('landing.demo.line')}</p>
-              <a className="button primary" href={demoUrl}>
+              {/* Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: same check as above. */}
+              <a className="button primary" href={safeHref(demoUrl) ?? '#'}>
                 {t('landing.hero.cta')}
               </a>
             </div>

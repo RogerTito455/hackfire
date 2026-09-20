@@ -216,7 +216,12 @@ async function music(seconds = Number(process.argv[3] ?? 135)): Promise<void> {
     writeFileSync(file, Buffer.from(audio))
     console.log(`audio/music.mp3  ${(durationMs(file) / 1000).toFixed(1)} s`)
   }
-  await envelope()
+  try {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+    await envelope()
+  } catch (error) {
+    throw new Error(`The music's loudness was not measured. ${describe(error)}`, { cause: error })
+  }
 }
 
 const ENVELOPE = join(ROOT, 'src/data/music-envelope.json')
@@ -241,8 +246,13 @@ async function envelope(): Promise<void> {
 }
 
 async function check(): Promise<void> {
-  const plan = (await (await call('/v1/user/subscription')).json()) as Record<string, unknown>
-  console.log({ tier: plan.tier, used: plan.character_count, limit: plan.character_limit })
+  try {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+    const plan = (await (await call('/v1/user/subscription')).json()) as Record<string, unknown>
+    console.log({ tier: plan.tier, used: plan.character_count, limit: plan.character_limit })
+  } catch (error) {
+    throw new Error(`The plan could not be read. ${describe(error)}`, { cause: error })
+  }
 }
 
 const commands: Record<string, () => Promise<void>> = { lines, sfx, music: () => music(), envelope, check }

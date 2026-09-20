@@ -25,8 +25,10 @@ export function useAutopilot(onChange?: () => void): AutopilotControl {
   const refresh = useCallback(async () => {
     try {
       setScript(await fetchAutopilot())
-    } catch {
+    } catch (error) {
       // Offline: keep what we last knew; the connection pill already says so.
+      // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+      console.error('Could not read the autopilot; keeping what was last known', error)
     }
   }, [])
 
