@@ -1,3 +1,4 @@
+import { safeHref } from '../domain/url'
 import type { RoomState } from '../domain/video'
 import { Icon } from './Icon'
 import { useI18n } from './i18n'
@@ -14,6 +15,8 @@ interface ShareWithCrewsPanelProps {
 export function ShareWithCrewsPanel({ available, state, link, onShare, onStop }: ShareWithCrewsPanelProps) {
   const { t } = useI18n()
   if (!available) return null
+  // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: only a safe-protocol link becomes an anchor.
+  const linkHref = link ? safeHref(link) : null
   if (state === 'starting') return <p className="empty">{t('crewRoom.starting')}</p>
   if (state === 'live') {
     return (
@@ -22,9 +25,13 @@ export function ShareWithCrewsPanel({ available, state, link, onShare, onStop }:
         {link && (
           <span className="video-link">
             {t('crewRoom.linkForCrews')}{' '}
-            <a href={link} target="_blank" rel="noreferrer">
-              {link}
-            </a>
+            {linkHref ? (
+              <a href={linkHref} target="_blank" rel="noreferrer">
+                {link}
+              </a>
+            ) : (
+              link
+            )}
           </span>
         )}
         <button type="button" className="talk-hang-up icon-button" onClick={onStop}>

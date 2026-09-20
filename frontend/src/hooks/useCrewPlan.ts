@@ -1,6 +1,6 @@
 // The fire crews' plan, refreshed as rescues come in; the coordinator sets how many crews there are.
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CrewPlan } from '../domain/crewPlan'
 import { fetchCrewPlan } from '../services/api'
 
@@ -16,12 +16,18 @@ export interface CrewPlanView {
 export function useCrewPlan(): CrewPlanView {
   const [plan, setPlan] = useState<CrewPlan | null>(null)
   const [crews, setCrewsState] = useState(DEFAULT_CREWS)
+  // Polled every few seconds: log the first failure of a run, not every poll while the backend is down.
+  const refreshFailing = useRef(false)
 
   const refresh = useCallback(async () => {
     try {
       setPlan(await fetchCrewPlan(crews))
-    } catch {
+      refreshFailing.current = false
+    } catch (error) {
       // Keep the last plan; the next poll tries again.
+      // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+      if (!refreshFailing.current) console.warn('Could not read the crew plan; keeping the last one', error)
+      refreshFailing.current = true
     }
   }, [crews])
 

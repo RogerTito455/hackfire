@@ -46,11 +46,11 @@ Markers sit on a busy basemap, so they are filled and carry a white outline that
 - `statusMarkerSvg(color, icon)`: a 32 × 40 teardrop pin filled with `color`, with a 2 px white outline and the icon in white, 16 px, centred in the pin's head. Use it with `STATUS_COLOR[status]` and `STATUS_ICON[status]`.
 - `placeMarkerSvg(icon)`: a 28 px white disc with a 2 px dark grey (`#3c4043`) outline and the icon in the same grey. Use it for the safe point (`flag`) and the crew base (`fire-truck`).
 
-Both return an SVG string with its own width and height. The pin's tip is at the bottom centre:
+Both return an SVG string with its own width and height; `svgNode` turns it into a DOM node (never assign the string to `innerHTML`). The pin's tip is at the bottom centre:
 
 ```ts
 const element = document.createElement('div')
-element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
+element.replaceChildren(svgNode(statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])))
 new Marker({ element, anchor: 'bottom' }).setLngLat([neighbor.lon, neighbor.lat]).addTo(map)
 ```
 

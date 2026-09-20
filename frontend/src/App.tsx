@@ -50,8 +50,16 @@ function App() {
   // Reset restores everything between rehearsals: the backend's state and replay moment, the
   // slider back to the start, no resident selected.
   const resetDemo = async () => {
-    await triage.reset()
-    await autopilot.refresh()
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+    try {
+      await triage.reset()
+    } catch {
+      // The backend was not reset, so leave the slider and the selection where they are: moving
+      // them would look like a reset that did not happen. useTriage already logged it and marked
+      // the connection as down.
+      return
+    }
+    await autopilot.refresh() // handles its own errors
     selection.select(null)
     textTriage.clear()
     if (replay.range) replay.setTime(replay.range.start)

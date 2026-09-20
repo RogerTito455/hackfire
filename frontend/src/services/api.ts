@@ -33,7 +33,15 @@ function inDashboardLanguage(init?: RequestInit): RequestInit {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, inDashboardLanguage(init))
+  let response: Response
+  try {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a network failure names the
+    // path. It is not logged here: the dashboard polls a dozen endpoints every few seconds, so each
+    // caller decides what to say when the backend is down (see useClosures, useCrewPlan, useTriage).
+    response = await fetch(`${API_URL}${path}`, inDashboardLanguage(init))
+  } catch (error) {
+    throw new Error(`${path} could not be reached`, { cause: error })
+  }
   if (!response.ok) throw new Error(`${path} returned ${response.status}`)
   return response.json() as Promise<T>
 }
@@ -135,7 +143,14 @@ export const closeRoad = (lon: number, lat: number) =>
     body: JSON.stringify({ lon, lat }),
   })
 export async function reopenRoad(closureId: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
+  let response: Response
+  try {
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: a network failure is logged here, then passed on.
+    response = await fetch(`${API_URL}/api/closures/${encodeURIComponent(closureId)}`, inDashboardLanguage({ method: 'DELETE' }))
+  } catch (error) {
+    console.error(`Reopening road ${closureId} failed`, error)
+    throw error
+  }
   if (!response.ok) throw new Error(`/api/closures/${closureId} returned ${response.status}`)
 }
 

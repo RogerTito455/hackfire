@@ -7,6 +7,18 @@ import { MARKER_OUTLINE_COLOR, PLACE_MARKER_INK } from './theme'
 // Teardrop pin in a 32 × 40 box: a round head centred at (16, 15), radius 13, tip at (16, 38).
 const PIN_PATH = 'M16 38C11 32 3 24 3 15a13 13 0 0 1 26 0c0 9-8 17-13 23z'
 
+/**
+ * The SVG `markup` as a DOM node, for `element.replaceChildren(svgNode(...))`. Recommended by Norma —
+ * fixed with Claude Sonnet 5 via Claude Code: a marker is built from the parser, not by assigning
+ * `innerHTML`. The parsed document is inert (no script runs, nothing loads), and the HTML parser is
+ * as forgiving as `innerHTML` was, so every marker draws as before.
+ */
+export function svgNode(markup: string): Element {
+  const node = new DOMParser().parseFromString(markup, 'text/html').body.firstElementChild
+  if (node === null || node.nodeName.toLowerCase() !== 'svg') throw new Error('Marker markup is not an SVG')
+  return node
+}
+
 /** Nests an icon's own 24-grid markup as a size × size square at (x, y), inked in `color`. */
 function placeIcon(icon: IconName, x: number, y: number, size: number, color: string): string {
   return iconMarkup(icon).replace('<svg ', `<svg x="${x}" y="${y}" width="${size}" height="${size}" color="${color}" `)

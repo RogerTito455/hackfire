@@ -1,7 +1,7 @@
 // Road closures: the list (polled, since crews can report one too), the "tap the map to close a road"
 // mode, and who needs calling again because their route went through the road just closed.
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { closuresKey, type RoadClosure } from '../domain/closures'
 import { closeRoad, fetchClosures, reopenRoad } from '../services/api'
 
@@ -25,12 +25,18 @@ export function useClosures(): Closures {
   const [closing, setClosing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
+  // Polled every few seconds: log the first failure of a run, not every poll while the backend is down.
+  const refreshFailing = useRef(false)
 
   const refresh = useCallback(async () => {
     try {
       setClosures(await fetchClosures())
-    } catch {
+      refreshFailing.current = false
+    } catch (error) {
       // Keep the last list; the next poll tries again.
+      // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code
+      if (!refreshFailing.current) console.warn('Could not read the road closures; keeping the last list', error)
+      refreshFailing.current = true
     }
   }, [])
 

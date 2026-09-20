@@ -1,4 +1,5 @@
 import type { Rescue } from '../domain/triage'
+import { safeHref } from '../domain/url'
 import type { RescueVideoLink } from '../domain/video'
 import { Icon } from './Icon'
 import { useI18n } from './i18n'
@@ -25,6 +26,8 @@ export function RescueQueue({ rescues, video }: RescueQueueProps) {
     <ol className="rescues">
       {rescues.map((rescue) => {
         const link = video?.links[rescue.neighbor.id]
+        // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: only a safe-protocol link becomes an anchor.
+        const linkHref = link ? safeHref(link.link) : null
         return (
           <li key={rescue.rescue_id}>
             <strong>{rescue.neighbor.name}</strong>
@@ -60,9 +63,13 @@ export function RescueQueue({ rescues, video }: RescueQueueProps) {
             {link && video?.watching === rescue.neighbor.id && (
               <span className="video-link">
                 {link.sms_sent ? t('video.texted') : t('video.openOnPhone')}{' '}
-                <a href={link.link} target="_blank" rel="noreferrer">
-                  {link.link}
-                </a>
+                {linkHref ? (
+                  <a href={linkHref} target="_blank" rel="noreferrer">
+                    {link.link}
+                  </a>
+                ) : (
+                  link.link
+                )}
               </span>
             )}
           </li>

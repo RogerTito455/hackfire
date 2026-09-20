@@ -21,23 +21,30 @@ export function useResidentCamera(linkId: string): ResidentCamera {
   useEffect(() => {
     if (opened.current) return
     opened.current = true
-    ;(async () => {
-      try {
-        const access = await joinVideo(linkId)
-        if (access === 'used' || access === 'unknown') {
-          setState('used')
-          return
-        }
-        if (!videoRef.current) throw new Error('no video container')
-        call.current = await publishCamera(access, videoRef.current)
-        setState('live')
-      } catch {
-        setState('error')
-      }
-    })()
+    // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: the effect only starts the
+    // work; the state is set from the promise that settles it, not inside the effect body.
+    void openCamera(linkId, videoRef, call).then(setState)
   }, [linkId])
 
   useEffect(() => () => call.current?.end(), [])
 
   return { state, videoRef }
+}
+
+/** Open the link and publish the camera. Resolves to the state to show; it never rejects. */
+async function openCamera(
+  linkId: string,
+  videoRef: React.RefObject<HTMLDivElement | null>,
+  call: React.MutableRefObject<VideoCall | null>,
+): Promise<CameraState> {
+  try {
+    const access = await joinVideo(linkId)
+    if (access === 'used' || access === 'unknown') return 'used'
+    if (!videoRef.current) throw new Error('no video container')
+    call.current = await publishCamera(access, videoRef.current)
+    return 'live'
+  } catch (error) {
+    console.error('The camera did not start', error)
+    return 'error'
+  }
 }

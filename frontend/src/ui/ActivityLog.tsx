@@ -1,4 +1,5 @@
 import { auditKind, reportedStatus, type AuditEvent } from '../domain/operations'
+import { safeHref } from '../domain/url'
 import { Icon } from './Icon'
 import { useI18n } from './i18n'
 import { AUDIT_ICON, STATUS_COLOR, STATUS_ICON, formatClock } from './theme'
@@ -13,6 +14,8 @@ interface ActivityLogProps {
 // The latest decisions and outcomes, newest first, and the whole run as a JSON download.
 export function ActivityLog({ events, loaded, failed, downloadUrl }: ActivityLogProps) {
   const { t, intl } = useI18n()
+  // Recommended by Norma — fixed with Claude Sonnet 5 via Claude Code: only a safe-protocol link is rendered.
+  const download = safeHref(downloadUrl)
   return (
     <>
       {failed && events.length === 0 && <p className="empty">{t('audit.unavailable')}</p>}
@@ -36,9 +39,11 @@ export function ActivityLog({ events, loaded, failed, downloadUrl }: ActivityLog
           })}
         </ol>
       )}
-      <a className="activity-download" href={downloadUrl} download>
-        {t('audit.download')}
-      </a>
+      {download && (
+        <a className="activity-download" href={download} download>
+          {t('audit.download')}
+        </a>
+      )}
     </>
   )
 }

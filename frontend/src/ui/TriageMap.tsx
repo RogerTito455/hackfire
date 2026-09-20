@@ -23,7 +23,7 @@ import type { FireArea, Neighbor, Route, RouteKind } from '../domain/triage'
 import { ROAD_CLOSED_WITHIN_MIN, type ZoneImpact } from '../domain/zones'
 import type { MapMode } from '../hooks/useMapMode'
 import { useI18n } from './i18n'
-import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg } from './markers'
+import { placeMarkerSvg, STATUS_MARKER_HEIGHT, statusMarkerSvg, svgNode } from './markers'
 import {
   BASEMAP_PAINT,
   CLOSURE_COLOR,
@@ -762,7 +762,7 @@ export function TriageMap({
       const coordinates = route!.geometry!.coordinates
       const element = document.createElement('div')
       element.className = 'place-marker'
-      element.innerHTML = placeMarkerSvg(routeKind === 'rescue' ? 'fire-truck' : 'flag')
+      element.replaceChildren(svgNode(placeMarkerSvg(routeKind === 'rescue' ? 'fire-truck' : 'flag')))
       endpoint.current = new Marker({ element })
         .setLngLat(routeKind === 'rescue' ? coordinates[0] : coordinates[coordinates.length - 1])
         .addTo(instance)
@@ -792,7 +792,7 @@ export function TriageMap({
       const element = document.createElement('div')
       element.className = 'place-marker closure-marker'
       element.setAttribute('aria-label', t('closures.marker'))
-      element.innerHTML = placeMarkerSvg('road-closed')
+      element.replaceChildren(svgNode(placeMarkerSvg('road-closed')))
       return new Marker({ element }).setLngLat([closure.lon, closure.lat]).addTo(instance)
     })
   }, [styleReady, closures, t])
@@ -816,7 +816,7 @@ export function TriageMap({
         element.className = 'status-marker'
         element.setAttribute('role', 'button')
         element.setAttribute('aria-label', label)
-        element.innerHTML = statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])
+        element.replaceChildren(svgNode(statusMarkerSvg(STATUS_COLOR[neighbor.status], STATUS_ICON[neighbor.status])))
         marker = new Marker({ element, anchor: 'bottom' })
           .setLngLat([neighbor.lon, neighbor.lat])
           .setPopup(new Popup({ offset: [0, -STATUS_MARKER_HEIGHT + 2], closeButton: false, focusAfterOpen: false }).setText(label))
