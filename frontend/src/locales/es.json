@@ -146,7 +146,11 @@
     "take": "Llamar a {name} (contestas aquí)",
     "failed": "No se pudo conectar con el agente. Usa la respuesta escrita de abajo.",
     "mute": "Silenciar el micrófono",
-    "unmute": "Micrófono silenciado, toca para hablar"
+    "unmute": "Micrófono silenciado, toca para hablar",
+    "phone": "Llamar al teléfono de {name}",
+    "ringing": "Llamando…",
+    "phonePlaced": "El agente está llamando a {name}.",
+    "phoneFailed": "No se pudo lanzar la llamada. Inténtalo otra vez o atiéndela en el navegador."
   },
   "ask": {
     "connecting": "Conectando con el agente…",

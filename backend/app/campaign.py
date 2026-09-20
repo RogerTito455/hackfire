@@ -35,6 +35,14 @@ class NoPhoneLine(Exception):
     """No outbound trunk is set up (HACKFIRE_PHONE_CALLS is off)."""
 
 
+class Unknown(Exception):
+    """No resident with that id."""
+
+
+class AlreadyCalling(Exception):
+    """This resident's phone is already ringing."""
+
+
 def start(zone: str) -> list[CampaignCall]:
     if not voice.phone_calls_configured():
         raise NoPhoneLine
@@ -60,6 +68,38 @@ def start(zone: str) -> list[CampaignCall]:
         audit.record("call.phoneStarted", actor="system", source="campaign", subject=resident.id, name=resident.name)
         calls.append(CampaignCall(neighbor_id=resident.id, call_id=call_id))
     return calls
+
+
+def call_one(neighbor_id: str) -> CampaignCall:
+    """Ring one resident now, whatever their triage status.
+
+    What a campaign does for a whole zone, for a single phone: the button the coordinator presses
+    on stage, and in a rehearsal, when dialling everyone is more than the moment needs. A
+    campaign's guards stay: a phone line, the zone's order approved, and never two calls to the
+    same person at once. Unlike a campaign, someone who already answered can be rung again,
+    because a rehearsal repeats.
+    """
+    if not voice.phone_calls_configured():
+        raise NoPhoneLine
+    resident = state.get(neighbor_id)
+    if resident is None:
+        raise Unknown
+    if orders.approved_order(resident.zone) is None:
+        raise NotApproved
+    with _active_lock:
+        if neighbor_id in _active:
+            raise AlreadyCalling
+    try:
+        call_id = voice.call_resident(resident.phone, briefing.call_variables(resident))
+    except voice.VoiceUnavailable as error:
+        logger.warning("SLNG refused the call to %s: %s", resident.id, error)
+        if state.no_answer_if_pending(resident.id):
+            audit.status_reported(state.get(resident.id), source="campaign", actor="system")
+        return CampaignCall(neighbor_id=resident.id, call_id=None)
+    with _active_lock:
+        _active[resident.id] = call_id
+    audit.record("call.phoneStarted", actor="system", source="campaign", subject=resident.id, name=resident.name)
+    return CampaignCall(neighbor_id=resident.id, call_id=call_id)
 
 
 def watch(calls: list[CampaignCall]) -> None:

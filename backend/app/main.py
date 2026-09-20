@@ -584,6 +584,26 @@ def start_campaign(zone: str, background: BackgroundTasks) -> list[CampaignCall]
     return calls
 
 
+@app.post("/api/calls/{neighbor_id}")
+def call_one_resident(neighbor_id: str, background: BackgroundTasks) -> CampaignCall:
+    """Ring one resident's phone now, without dialling their whole zone (#8)."""
+    # The simulation approves orders, but real phones must never ring for a simulated workflow.
+    if autopilot.enabled():
+        raise HTTPException(status_code=409, detail="Turn off the call simulation before calling residents")
+    try:
+        call = campaign.call_one(neighbor_id)
+    except campaign.NoPhoneLine as error:
+        raise HTTPException(status_code=503, detail="No phone line is set up: talk to the resident from the dashboard") from error
+    except campaign.Unknown as error:
+        raise HTTPException(status_code=404, detail="No resident with that id") from error
+    except campaign.NotApproved as error:
+        raise HTTPException(status_code=409, detail="Approve the resident's zone order before calling them") from error
+    except campaign.AlreadyCalling as error:
+        raise HTTPException(status_code=409, detail="That resident's phone is already ringing") from error
+    background.add_task(campaign.watch, [call])
+    return call
+
+
 @app.get("/api/safe-points")
 def list_safe_points() -> list[SafePoint]:
     """Candidate destinations, and whether each is safe at the scenario time."""

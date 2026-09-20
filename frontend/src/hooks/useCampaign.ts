@@ -2,13 +2,19 @@
 
 import { useCallback, useState } from 'react'
 import { campaignResult, type CampaignResult } from '../domain/voice'
-import { startCampaign } from '../services/api'
+import { callOneResident, startCampaign } from '../services/api'
 
 export interface Campaign {
   /** Zone whose calls are being started, if any. */
   calling: string | null
   result: CampaignResult | null
   call: (zone: string) => Promise<void>
+  /** The resident whose own phone is being rung, if any. */
+  ringing: string | null
+  /** The last single call: who it was for, and whether a line was actually dialled. */
+  rang: { neighborId: string; placed: boolean } | null
+  /** Ring one resident's phone, for a rehearsal or for the demo itself. */
+  callOne: (neighborId: string) => Promise<void>
 }
 
 export function useCampaign(): Campaign {
@@ -27,5 +33,21 @@ export function useCampaign(): Campaign {
     }
   }, [])
 
-  return { calling, result, call }
+  const [ringing, setRinging] = useState<string | null>(null)
+  const [rang, setRang] = useState<{ neighborId: string; placed: boolean } | null>(null)
+
+  const callOne = useCallback(async (neighborId: string) => {
+    setRinging(neighborId)
+    setRang(null)
+    try {
+      const call = await callOneResident(neighborId)
+      setRang({ neighborId, placed: call.call_id !== null })
+    } catch {
+      setRang({ neighborId, placed: false })
+    } finally {
+      setRinging(null)
+    }
+  }, [])
+
+  return { calling, result, call, ringing, rang, callOne }
 }

@@ -219,6 +219,10 @@ export function Dashboard({
               onMutedChange={conversation.setMuted}
               onTalk={() => conversation.start(selected.id)}
               onHangUp={conversation.hangUp}
+              phoneCalls={voice.phone_calls}
+              ringing={campaign.ringing === selected.id}
+              rang={campaign.rang?.neighborId === selected.id ? campaign.rang.placed : null}
+              onPhone={() => void campaign.callOne(selected.id)}
             />
             <details className="backup">
               <summary>{t('section.typedBackup')}</summary>

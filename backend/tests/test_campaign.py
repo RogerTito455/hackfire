@@ -182,3 +182,38 @@ def test_an_approved_order_is_never_undercut_by_a_quiet_moment_on_the_slider() -
     summary = client.post("/tools/get_fire_status", json={"zone": "la-atalaya"}).json()["summary"]
 
     assert summary == order["message"]
+
+
+def test_one_resident_can_be_rung_on_their_own(line: FakeLine) -> None:
+    approve("la-atalaya")
+    resident = residents_of("la-atalaya")[0]
+
+    response = client.post(f"/api/calls/{resident['id']}")
+
+    assert response.status_code == 200
+    assert response.json()["neighbor_id"] == resident["id"]
+    assert [arguments["neighbor_id"] for _, arguments in line.dialled] == [resident["id"]]
+    # The dashboard URL is public and the registry holds real numbers.
+    assert line.dialled[0][0] not in response.text
+
+
+def test_ringing_one_resident_needs_their_zones_order_approved(line: FakeLine) -> None:
+    resident = residents_of("la-atalaya")[0]
+
+    response = client.post(f"/api/calls/{resident['id']}")
+
+    assert response.status_code == 409
+    assert line.dialled == []
+
+
+def test_a_resident_who_already_answered_can_be_rung_again(line: FakeLine) -> None:
+    approve("la-atalaya")
+    resident = residents_of("la-atalaya")[0]
+    client.post("/tools/report_status", json={"neighbor_id": resident["id"], "status": "evacuating"})
+
+    # A campaign skips them; the single call is for the stage, so it dials anyway.
+    assert client.post("/api/campaigns/la-atalaya").status_code == 200
+    assert resident["id"] not in [arguments["neighbor_id"] for _, arguments in line.dialled]
+
+    assert client.post(f"/api/calls/{resident['id']}").status_code == 200
+    assert [arguments["neighbor_id"] for _, arguments in line.dialled][-1] == resident["id"]

@@ -2787,3 +2787,31 @@ button:active {
     width: calc(100% - 4px);
   }
 }
+
+/* Ringing one resident's real phone, beside taking their call in the browser. */
+.talk-phone {
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--route);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--route);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.talk-phone:disabled {
+  border-color: var(--line);
+  color: var(--ink-2);
+}
+
+@media (min-width: 900px) {
+  .talk-phone {
+    min-height: 36px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+}

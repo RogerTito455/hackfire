@@ -146,7 +146,11 @@
     "take": "Call {name} (answer here)",
     "failed": "Could not reach the agent. Use the typed answer below.",
     "mute": "Mute the microphone",
-    "unmute": "Microphone off, tap to speak"
+    "unmute": "Microphone off, tap to speak",
+    "phone": "Ring {name}'s phone",
+    "ringing": "Ringing…",
+    "phonePlaced": "The agent is calling {name} now.",
+    "phoneFailed": "The call could not be placed. Try again, or take it in the browser."
   },
   "ask": {
     "connecting": "Connecting to the agent…",

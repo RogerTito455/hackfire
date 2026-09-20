@@ -132,6 +132,9 @@ export const fetchFocus = () => request<AgentFocus | null>('/api/focus')
 export const fetchVoiceCapabilities = () => request<VoiceCapabilities>('/api/voice')
 export const startCampaign = (zone: string) =>
   request<CampaignCall[]>(`/api/campaigns/${encodeURIComponent(zone)}`, { method: 'POST' })
+/** Ring one resident's phone now, without dialling their whole zone. */
+export const callOneResident = (neighborId: string) =>
+  request<CampaignCall>(`/api/calls/${encodeURIComponent(neighborId)}`, { method: 'POST' })
 export const createWebSession = (neighborId: string) =>
   request<WebSession>(`/api/neighbors/${encodeURIComponent(neighborId)}/web-session`, { method: 'POST' })
 export const createCoordinatorSession = () => request<WebSession>('/api/coordinator/web-session', { method: 'POST' })

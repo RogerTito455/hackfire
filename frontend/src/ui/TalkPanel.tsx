@@ -18,6 +18,13 @@ interface TalkPanelProps {
   onMutedChange: (muted: boolean) => void
   onTalk: () => void
   onHangUp: () => void
+  /** Whether a real phone line is set up, so this resident's own phone can be rung. */
+  phoneCalls: boolean
+  /** Their phone is being dialled right now. */
+  ringing: boolean
+  /** The last time their phone was rung: whether the call was placed. */
+  rang: boolean | null
+  onPhone: () => void
 }
 
 // No phone can ring: the resident agent calls this laptop, and someone answers as the resident.
@@ -31,6 +38,10 @@ export function TalkPanel({
   onMutedChange,
   onTalk,
   onHangUp,
+  phoneCalls,
+  ringing,
+  rang,
+  onPhone,
 }: TalkPanelProps) {
   const { t } = useI18n()
   if (!available) return <p className="empty">{t('talk.notConfigured')}</p>
@@ -66,6 +77,15 @@ export function TalkPanel({
         {t('talk.take', { name: neighbor.name })}
       </button>
       {mine && state === 'error' && <p className="empty">{t('talk.failed')}</p>}
+      {/* The resident's own phone: the same call, down a real line. */}
+      {phoneCalls && (
+        <button type="button" className="talk-phone icon-button" disabled={ringing} onClick={onPhone}>
+          <Icon name="phone" size={16} />
+          {ringing ? t('talk.ringing') : t('talk.phone', { name: neighbor.name })}
+        </button>
+      )}
+      {rang === true && <p className="empty">{t('talk.phonePlaced', { name: neighbor.name })}</p>}
+      {rang === false && <p className="empty warning">{t('talk.phoneFailed')}</p>}
     </div>
   )
 }
