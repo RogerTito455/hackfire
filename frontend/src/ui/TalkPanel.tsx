@@ -13,6 +13,9 @@ interface TalkPanelProps {
   /** The resident the agent is talking to, if any, and how that is going. */
   activeId: string | null
   state: ConversationState
+  /** Whether the microphone is closed; the coordinator opens and closes it during the call. */
+  muted: boolean
+  onMutedChange: (muted: boolean) => void
   onTalk: () => void
   onHangUp: () => void
 }
@@ -24,6 +27,8 @@ export function TalkPanel({
   order,
   activeId,
   state,
+  muted,
+  onMutedChange,
   onTalk,
   onHangUp,
 }: TalkPanelProps) {
@@ -43,6 +48,10 @@ export function TalkPanel({
     return (
       <div className="talk">
         <p className="talk-live">{t('talk.onTheLine', { name: neighbor.name })}</p>
+        <button type="button" className="talk-mic icon-button" aria-pressed={muted} onClick={() => onMutedChange(!muted)}>
+          <Icon name={muted ? 'mic-off' : 'mic'} size={16} />
+          {muted ? t('talk.unmute') : t('talk.mute')}
+        </button>
         <button type="button" className="talk-hang-up icon-button" onClick={onHangUp}>
           <Icon name="close" size={16} />
           {t('talk.hangUp')}

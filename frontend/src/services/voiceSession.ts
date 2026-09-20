@@ -5,6 +5,8 @@ import type { WebSession } from '../domain/voice'
 
 export interface Conversation {
   hangUp: () => void
+  /** Open or close the microphone mid-call: a noisy room must not talk over the resident. */
+  setMicrophone: (on: boolean) => Promise<void>
 }
 
 /** Join the agent's room with the microphone on. `onEnded` runs once, whoever hangs up. */
@@ -38,5 +40,8 @@ export async function joinConversation(session: WebSession, onEnded: () => void)
     await room.disconnect()
     throw error
   }
-  return { hangUp: () => void room.disconnect() }
+  return {
+    hangUp: () => void room.disconnect(),
+    setMicrophone: (on: boolean) => room.localParticipant.setMicrophoneEnabled(on).then(() => undefined),
+  }
 }

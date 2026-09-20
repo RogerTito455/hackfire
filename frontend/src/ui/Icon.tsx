@@ -25,6 +25,8 @@ export const ICON_NAMES = [
   'lifebuoy',
   'live',
   'logo',
+  'mic',
+  'mic-off',
   'pause',
   'phone',
   'phone-missed',
