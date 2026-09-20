@@ -2,16 +2,22 @@
 
 A public DATEX II v3 feed, no key: https://nap.dgt.es. `DGT_FEED_URL` (config.py) points at the
 SituationPublication file, which redirects to the current version (datex2_v37.xml on 2026-09-19,
-about 3 MB, some 700 situation records in Spanish). Parsed with the standard library.
+about 3 MB, some 700 situation records in Spanish).
 
 Each record becomes a plain dict: its road, a point (and the far end for a stretch), its cause, how
 the road is managed (roadClosed, carriagewayClosures, laneClosures…) and since when. Only the
 official data is kept; nothing is inferred.
+
+The feed is third-party XML fetched over the network, so it is parsed with defusedxml, which
+refuses entity expansion and external entities (Norma py-sec-xml-xxe). ElementTree is still used
+for the element types and for walking the tree it returns.
 """
 
 import xml.etree.ElementTree as ET
 
 import httpx
+from defusedxml.ElementTree import fromstring as parse_xml
+from defusedxml.common import DefusedXmlException
 
 from ..config import settings
 
@@ -124,9 +130,9 @@ def parse_record(record: ET.Element, situation_id: str | None) -> dict | None:
 def parse(body: bytes) -> dict:
     """The feed as {"published_at", "records"}. Pure. Raises ValueError on anything but DATEX II."""
     try:
-        root = ET.fromstring(body)
-    except ET.ParseError as error:
-        raise ValueError(f"DGT feed is not XML: {error}") from error
+        root = parse_xml(body)
+    except (ET.ParseError, DefusedXmlException) as error:
+        raise ValueError(f"DGT feed is not plain DATEX II XML: {error}") from error
     if _local(root) != "payload":
         raise ValueError(f"DGT feed has an unexpected root <{_local(root)}>")
     records = []

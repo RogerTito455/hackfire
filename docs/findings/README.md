@@ -6,6 +6,7 @@ One file per finding, named `YYYY-MM-DD-<slug>.md`, newest first in the list bel
 
 | Date | Finding | Area |
 |---|---|---|
+| 2026-09-20 | [The Norma pass: one XXE in the DGT feed parser, and what we chose not to change](2026-09-20-norma-scan.md) | Norma, code quality |
 | 2026-09-20 | [Voice latency: the model answers a turn in about one second](2026-09-20-voice-latency.md) | Voice, demo |
 | 2026-09-19 | [Which press figures hold up against their sources](2026-09-19-press-figures.md) | Pitch |
 | 2026-09-19 | [Which LLMs an SLNG agent accepts for Spanish in Europe](2026-09-19-slng-agent-llms-for-spanish.md) | SLNG |
