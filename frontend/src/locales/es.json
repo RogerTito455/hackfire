@@ -20,7 +20,10 @@
     "full": "Recoger el panel"
   },
   "console": {
-    "rail": "Secciones"
+    "rail": "Secciones",
+    "divider": "Ancho del panel",
+    "mapOnly": "Solo el mapa",
+    "showPanel": "Mostrar el panel"
   },
   "legend": {
     "title": "Qué hay en el mapa",

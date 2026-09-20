@@ -20,7 +20,10 @@
     "full": "Collapse panel"
   },
   "console": {
-    "rail": "Sections"
+    "rail": "Sections",
+    "divider": "Width of the panel",
+    "mapOnly": "Map only",
+    "showPanel": "Show the panel"
   },
   "legend": {
     "title": "What's on the map",

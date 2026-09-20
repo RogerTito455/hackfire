@@ -2620,3 +2620,138 @@ button:active {
 .legend-row.states {
   grid-template-columns: auto minmax(0, 1fr);
 }
+
+/* --- Room for either side: the divider, and the map on its own -------------------------------
+   Laptops and desktops only. The widths in the breakpoints above are defaults now: a width someone
+   drags is written on the .app element itself and outranks them. Phones never see any of this. */
+
+@media (min-width: 900px) {
+  .console-divider {
+    position: absolute;
+    z-index: 5;
+    top: var(--header);
+    bottom: 0;
+    left: var(--sidebar);
+    width: 6px;
+    margin-left: -3px;
+    background: transparent;
+    cursor: col-resize;
+    touch-action: none;
+  }
+
+  .console-divider:hover,
+  .console-divider.dragging {
+    background: var(--route-soft);
+  }
+
+  /* The line stays a hairline; the grip is the 44 px target, halfway down where no map control is. */
+  .console-grip {
+    position: absolute;
+    top: 50%;
+    left: -19px;
+    width: 44px;
+    height: 84px;
+    margin-top: -42px;
+  }
+
+  .console-grip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 36px;
+    margin: -18px 0 0 -2px;
+    border-radius: 999px;
+    background: var(--line);
+  }
+
+  .console-divider:hover .console-grip::before,
+  .console-divider.dragging .console-grip::before {
+    background: var(--route);
+  }
+
+  /* Map only: the console steps aside and the top bar spans the screen, so the mode, the language
+     and the connection stay in reach and the way back is the same button in the same corner. */
+  .app[data-console='hidden'] {
+    --sidebar: 0px;
+  }
+
+  .app[data-console='hidden'] .sheet {
+    display: none;
+  }
+
+  .app[data-console='hidden'] .topbar {
+    width: 100%;
+    border-right: 0;
+  }
+
+  .app[data-console='hidden'] .map-area {
+    top: var(--header);
+  }
+
+  /* At the narrowest widths the brand name would push the mode toggle out of the header. */
+  .app[data-console='narrow'] .brand-name {
+    display: none;
+  }
+
+  .map-only {
+    position: absolute;
+    z-index: 3;
+    top: 12px;
+    right: 12px;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: var(--float);
+    cursor: pointer;
+  }
+
+  /* The key never takes more than a third of a narrow map, and scrolls rather than run off it. */
+  .map-legend {
+    box-sizing: border-box;
+    max-width: 300px;
+    max-width: min(300px, 38%);
+    max-height: calc(100vh - var(--header) - 132px);
+    overflow-y: auto;
+  }
+}
+
+/* --- The console at its narrowest -----------------------------------------------------------
+   Four states across 400 px broke the words inside them ("Ne-ce-si-ta"), and a 176 px rail left
+   the open section too thin to read. Below 520 px the strip goes two by two and the rail gives
+   the panel its room back. */
+
+@media (min-width: 900px) {
+  .app[data-console='narrow'] {
+    --rail: 132px;
+  }
+
+  .app[data-console='narrow'] .status-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app[data-console='narrow'] .rail-item {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  .app[data-console='narrow'] .stage .group {
+    padding: 16px 14px 24px;
+  }
+}
+
+/* Narrow, the names wrap onto three lines and the rail has to scroll, so the reset sits on its
+   floor over the list: it takes the rail's whole width there, or the row behind it reads through. */
+@media (min-width: 900px) {
+  .app[data-console='narrow'] .rail .reset {
+    box-sizing: border-box;
+    width: calc(100% - 4px);
+  }
+}

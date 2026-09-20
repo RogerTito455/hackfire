@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { AutopilotControl } from '../hooks/useAutopilot'
 import type { ScriptedCallView } from '../hooks/useScriptedCall'
 import type { FireForecast } from '../hooks/useFireForecast'
@@ -24,6 +25,7 @@ import { ActivityLog } from './ActivityLog'
 import { AutopilotToggle } from './AutopilotToggle'
 import { BottomSheet } from './BottomSheet'
 import { Console, type ConsoleSection } from './Console'
+import { ConsoleDivider } from './ConsoleDivider'
 import { CrewAlerts } from './CrewAlerts'
 import { DataNote } from './DataNote'
 import { Icon } from './Icon'
@@ -50,6 +52,7 @@ import { AskAgentPanel } from './AskAgentPanel'
 import { SpreadLegend } from './SpreadLegend'
 import { StatusCounts } from './StatusCounts'
 import { TriageMap } from './TriageMap'
+import { consoleState, useConsoleLayout } from './useConsoleLayout'
 import { useWideScreen } from './useWideScreen'
 import { ZonesAtRisk } from './ZonesAtRisk'
 import './dashboard.css'
@@ -118,6 +121,14 @@ export function Dashboard({
 }: DashboardProps) {
   const { t } = useI18n()
   const wide = useWideScreen()
+  // How much of a laptop screen the console takes, and whether the coordinator asked for the map
+  // alone. Below 900 px none of it applies: the phone keeps the bottom sheet at full width.
+  const layout = useConsoleLayout()
+  const sidebar = wide && !layout.hidden ? layout.width : 0
+  // Only a width someone chose is written here; otherwise the stylesheet's own breakpoints decide.
+  const appStyle = wide && !layout.hidden && layout.chosen ? ({ '--sidebar': `${sidebar}px` } as CSSProperties) : undefined
+  // A legend three hundred pixels wide over a narrow map is a legend covering the map.
+  const mapRoom = !wide || layout.viewport - sidebar >= 620
   const { neighbors, rescues, alerts, counts, online, reset } = triage
   const selected = neighbors.find((neighbor) => neighbor.id === selection.neighborId) ?? null
   const watched = rescueVideo.live ? neighbors.find((neighbor) => neighbor.id === rescueVideo.live?.neighborId) : undefined
@@ -408,7 +419,7 @@ export function Dashboard({
   const wake = selection.neighborId ?? liveOperations.fireId
 
   return (
-    <div className="app">
+    <div className="app" data-console={consoleState(layout, wide)} style={appStyle}>
       <div className="map-area">
         <TriageMap
           mode={mode}
@@ -434,8 +445,14 @@ export function Dashboard({
           spread={forecast.spread}
           zones={forecast.zonesAtRisk}
           liveVideo={liveVideo}
+          resizeKey={sidebar}
         />
-        <MapLegend mode={mode} />
+        <MapLegend mode={mode} room={mapRoom} />
+        {wide && (
+          <button type="button" className="map-only" onClick={layout.toggleHidden}>
+            {layout.hidden ? t('console.showPanel') : t('console.mapOnly')}
+          </button>
+        )}
       </div>
 
       <header className="topbar">
@@ -452,6 +469,10 @@ export function Dashboard({
         <ModeToggle mode={mode} onChange={onModeChange} />
         <LanguagePicker />
       </header>
+
+      {wide && !layout.hidden && (
+        <ConsoleDivider width={layout.width} min={layout.min} max={layout.max} onWidthChange={layout.setWidth} />
+      )}
 
       {wide ? (
         <Console

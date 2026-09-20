@@ -40,16 +40,18 @@ function Row({ swatch, name, from, to }: { swatch: ReactNode; name: string; from
   )
 }
 
-export function MapLegend({ mode }: { mode: MapMode }) {
+/** Whether the map is wide enough for the open key: false once the console has taken the room. */
+export function MapLegend({ mode, room = true }: { mode: MapMode; room?: boolean }) {
   const { t } = useI18n()
   const wide = useWideScreen()
-  const [open, setOpen] = useState(wide)
-  // Crossing the breakpoint decides it again: open where there is room, folded where it would
-  // cover the map. State adjusted during render, not in an effect.
-  const [lastWide, setLastWide] = useState(wide)
-  if (wide !== lastWide) {
-    setLastWide(wide)
-    setOpen(wide)
+  const roomy = wide && room
+  const [open, setOpen] = useState(roomy)
+  // Crossing the breakpoint, or the divider leaving the map too narrow, decides it again: open
+  // where there is room, folded where it would cover the map. Adjusted during render, not in an effect.
+  const [lastRoomy, setLastRoomy] = useState(roomy)
+  if (roomy !== lastRoomy) {
+    setLastRoomy(roomy)
+    setOpen(roomy)
   }
   return (
     <details className="map-legend" open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
