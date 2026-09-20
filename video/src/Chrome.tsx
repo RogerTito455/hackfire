@@ -82,18 +82,20 @@ export function SimulationTag({ opacity, top = 132 }: { opacity: number; top?: n
 // Where the data each scene shows comes from, in small type at the bottom left. The press figures are
 // the checked ones (docs/findings/2026-09-19-press-figures.md).
 const SOURCES: Record<string, string> = {
-  open: 'Hotspots: Deepfire (MTG, VIIRS, MODIS, Sentinel-3). Map: OpenStreetMap. 37,818 ha: Junta de CyL via Ávilared, 21 Aug, provisional. 1,500, 5: Tribuna de Ávila. 229: Idealista via Ávilared.',
+  open: 'Hotspots: Deepfire (MTG, VIIRS, MODIS, Sentinel-3). Map: OpenStreetMap. 37,818 ha: Junta de CyL via Ávilared, 21 Aug, provisional. 3 km in 40 min, 1,300 evacuated from La Atalaya, 5 homes: Tribuna de Ávila and Ávilared, 23 July. 229 homes inside the burned area: Idealista via Ávilared.',
   problem: 'Source: ES-Alert text as published by Ávilared, 23 July 2026, translated from Spanish.',
-  brand: 'Built on Deepfire (hotspots), SLNG (voice agents), openrouteservice and OpenStreetMap (routes), Vonage (video).',
+  brand: 'Built on Deepfire (hotspots), SLNG (voice agents), openrouteservice and OpenStreetMap (routes), Vonage (texts).',
   forecast: "Hotspots: Deepfire, up to 15:30. Forecast: HackFire's spread model on those hotspots only. Map: OpenStreetMap.",
   leadtime: 'Lead time: HackFire, from Deepfire hotspots (docs/findings/2026-09-19-lead-time.md); a range over 2 to 5 km, as the site publishes it. Map: OpenStreetMap.',
   order: "Simulation with demo residents, at the demo autopilot's times. The order is HackFire's proposal, approved by hand.",
   call: 'Simulated call, condensed. Voice agent: SLNG. Route: openrouteservice on OpenStreetMap data.',
   understood: "Classified by the voice agent's language model (SLNG) from what the resident said. Map: OpenStreetMap.",
   rescue: "Routes: openrouteservice on OpenStreetMap. Dashed red: roads inside the area routes avoid, burned plus the next hour of HackFire's forecast.",
-  command: 'Coordinator agent: SLNG. Live map for the crews: Vonage Video.',
+  command: 'Coordinator agent: SLNG. Crew route: openrouteservice on OpenStreetMap.',
+  handover: "Crew SMS: the text HackFire sends (backend/app/locales), by Twilio or Vonage when a crew phone is set; otherwise the alert stays on the dashboard. Route: openrouteservice on OpenStreetMap.",
+  scale: 'Live mode as built: Deepfire\'s active fires, official DGT incidents, and the alert drafts downloaded as CAP 1.2. Drafts only: HackFire sends nothing to the public.',
   compare: "Left: the ES-Alert of that day (Ávilared). Right: HackFire as built. 2 s is how often the dashboard refreshes the triage; the lead time is the replay's.",
-  roadmap: 'Transfer to a person: SLNG transfer_call, which needs an outbound phone line (SIP).',
+  roadmap: 'Transfer to a person: SLNG transfer_call, on an outbound phone line (SIP).',
   devin: 'Planned (issue #19): Devin, by Cognition, iterating the spread model against real hotspots. Not running yet.',
 }
 

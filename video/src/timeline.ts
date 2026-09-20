@@ -14,9 +14,9 @@ export type Scene = { id: string; start: number; end: number; lines: TimedLine[]
 const frames = (ms: number) => Math.round((ms / 1000) * FPS)
 
 // Frames before a scene's first line: room for a sound or a picture to arrive first.
-const LEAD: Record<string, number> = { open: 22, brand: 24, forecast: 20, call: 50, leadtime: 8, close: 12 }
+const LEAD: Record<string, number> = { open: 22, brand: 24, forecast: 20, call: 50, leadtime: 8, close: 12, handover: 16, scale: 14 }
 // Frames after a scene's last line, before the next scene: a picture that needs to be seen.
-const HOLD: Record<string, number> = { compare: 40, roadmap: 16, devin: 40, brand: 84, leadtime: 30, understood: 10, command: 16, close: 96 }
+const HOLD: Record<string, number> = { compare: 40, roadmap: 24, brand: 84, leadtime: 30, understood: 10, command: 16, close: 96, handover: 30, scale: 34 }
 const GAP = 6 // between two sentences of the narrator
 const TURN = 8 // between turns in the call
 
@@ -73,7 +73,7 @@ export const CHAPTERS: [string, string, string[]][] = [
   ['01', 'That day', ['open', 'problem', 'compare']],
   ['02', 'The forecast', ['brand', 'forecast', 'leadtime']],
   ['03', 'The call', ['order', 'call', 'understood']],
-  ['04', 'The rescue', ['rescue', 'command']],
-  ['05', "What's next", ['roadmap', 'devin']],
+  ['04', 'The rescue', ['rescue', 'handover', 'command']],
+  ['05', 'Beyond this fire', ['scale', 'roadmap']],
   ['06', 'Listening back', ['close']],
 ]

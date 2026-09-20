@@ -46,7 +46,11 @@
         },
         {
           "speaker": "narrator",
-          "text": "That day, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area."
+          "text": "In all, the fire burned about thirty-eight thousand hectares in Ávila, and two hundred and twenty-nine homes stood inside the burned area."
+        },
+        {
+          "speaker": "narrator",
+          "text": "It ran three kilometres in forty minutes. Thirteen hundred people were evacuated from La Atalaya, and five homes burned."
         }
       ]
     },
@@ -68,7 +72,11 @@
       "lines": [
         {
           "speaker": "narrator",
-          "text": "We can't rerun that day. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds."
+          "text": "We can't rerun that day, and we won't pretend to. What HackFire changes is what the coordinator knows: every household answers, and each answer reaches the map within two seconds."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Not another alert. A call that listens, and a rescue queue that knows who is still inside."
         }
       ]
     },
@@ -104,6 +112,10 @@
         {
           "speaker": "narrator",
           "text": "About six hours of lead time, from satellite data alone."
+        },
+        {
+          "speaker": "narrator",
+          "text": "That is the window this product works in. This is what it does with it."
         }
       ]
     },
@@ -161,11 +173,42 @@
       ]
     },
     {
+      "id": "handover",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "The crew doesn't have to watch a dashboard. They get a text: who needs help, where, and a link."
+        },
+        {
+          "speaker": "narrator",
+          "text": "The same phone that got the alert that day. This time the message has a name on it, and the link is the route."
+        }
+      ]
+    },
+    {
       "id": "command",
       "lines": [
         {
           "speaker": "narrator",
-          "text": "The coordinator can ask the agent by voice, and with Vonage, share the live map with every crew."
+          "text": "At the command post, the coordinator asks by voice, and the agent reads back the rescue queue."
+        },
+        {
+          "speaker": "narrator",
+          "text": "The answer is spoken, and the map is already drawing the crew's route to that street."
+        }
+      ]
+    },
+    {
+      "id": "scale",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "text": "Nothing here is built for one fire. The hotspots come from Deepfire, the roads and the care homes from OpenStreetMap, the routes from openrouteservice."
+        },
+        {
+          "speaker": "narrator",
+          "text": "Point it at any fire Deepfire is watching, and the alerts come out as CAP 1.2, the format Civil Protection already reads.",
+          "say": "Point it at any fire Deepfire is watching, and the alerts come out as CAP one-point-two, the format Civil Protection already reads."
         }
       ]
     },
@@ -174,24 +217,7 @@
       "lines": [
         {
           "speaker": "narrator",
-          "text": "Next: real phone lines, and a handover to a person at the control post."
-        },
-        {
-          "speaker": "narrator",
-          "text": "After that, more regions, built into the firefighters' workflow."
-        }
-      ]
-    },
-    {
-      "id": "devin",
-      "lines": [
-        {
-          "speaker": "narrator",
-          "text": "And the forecast will learn from every fire. Devin will replay each one against the real satellite hotspots, measure the error, and propose a better model."
-        },
-        {
-          "speaker": "narrator",
-          "text": "Nothing ships unless it beats today's model on fires it has never seen, and every call's answers become new tests for the agent."
+          "text": "Next: a handover to a person at the control post, and a pilot with one municipality."
         }
       ]
     },

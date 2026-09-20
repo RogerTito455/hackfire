@@ -107,7 +107,7 @@ const PIPELINE: [string, string, string][] = [
   ['flag', 'Order', 'the coordinator approves'],
   ['phone', 'Call', 'voice agent, SLNG'],
   ['lifebuoy', 'Triage', "who can't leave"],
-  ['fire-truck', 'Crews', 'plan and live map'],
+  ['fire-truck', 'Crews', 'plan, text and route'],
 ]
 // Recommended by Norma — fixed with Claude Opus 5 via Claude Code: one colour per node, in PIPELINE's order,
 // instead of a chain of ternaries on the index. The same colours the scene rendered before.
@@ -345,7 +345,7 @@ function Field({ label, at, f, before, after, color = C.ink, icon }: { label: st
 export function Command({ f }: { f: number }) {
   const s = scene('command')
   const voice = beat('command-0', 'voice')
-  const vonage = beat('command-0', 'vonage')
+  const answer = beat('command-0', 'agent')
   const t = f - s.start
   return (
     <Overlay id="command" f={f}>
@@ -373,34 +373,29 @@ export function Command({ f }: { f: number }) {
           </Panel>
         </div>
       </div>
-      <div style={{ position: 'absolute', left: 860, top: 150, width: 980, ...pop(f - vonage) }}>
+      {/* The dashboard's map: it draws the crew's route while the agent answers. */}
+      <div style={{ position: 'absolute', left: 860, top: 150, width: 980, ...pop(f - answer) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-          <span style={{ width: 14, height: 14, borderRadius: '50%', background: C.status.needs_rescue, opacity: 0.5 + 0.5 * Math.abs(Math.sin(f / 8)) }} />
-          <span style={text(28, 700)}>Live map, shared from the command post</span>
-          <span style={{ ...mono(18, 500, C.ink2), marginLeft: 'auto' }}>Vonage Video</span>
+          <Icon name="route" size={28} color={C.route} />
+          <span style={text(28, 700)}>The crew's route, drawn as the agent answers</span>
+          <span style={{ ...mono(18, 500, C.ink2), marginLeft: 'auto' }}>openrouteservice</span>
         </div>
-        <div style={{ display: 'flex', gap: 24 }}>
-          {['Crew 1', 'Crew 2'].map((crew, i) => (
-            <div key={crew} style={{ ...pop(f - vonage - 6 - i * 6) }}>
-              <div style={{ width: 470, height: 560, borderRadius: 30, border: `3px solid ${C.line}`, background: '#050a1c', overflow: 'hidden', position: 'relative' }}>
-                <FireMap
-                  cam={camAt(-4.47, 40.397, 58)}
-                  width={470}
-                  height={560}
-                  time={2315}
-                  f={f}
-                  risk={1}
-                  labels={0}
-                  crewBase={1}
-                  wayIn={1}
-                  closedRoads={1}
-                  closure={1}
-                  residents={{ n01: 'evacuating', n02: 'no_answer', n03: 'needs_rescue', n04: 'pending', n05: 'pending' }}
-                />
-                <div style={{ position: 'absolute', left: 16, top: 14, padding: '6px 14px', borderRadius: 999, background: 'rgba(4,8,23,0.85)', ...text(20, 700) }}>{crew}</div>
-              </div>
-            </div>
-          ))}
+        <div style={{ width: 980, height: 560, borderRadius: 30, border: `3px solid ${C.line}`, background: '#050a1c', overflow: 'hidden', position: 'relative' }}>
+          <FireMap
+            cam={camAt(-4.47, 40.397, 58)}
+            width={980}
+            height={560}
+            time={2315}
+            f={f}
+            risk={1}
+            labels={0}
+            crewBase={1}
+            wayIn={1}
+            closedRoads={1}
+            closure={1}
+            residents={{ n01: 'evacuating', n02: 'no_answer', n03: 'needs_rescue', n04: 'pending', n05: 'pending' }}
+          />
+          <div style={{ position: 'absolute', left: 16, top: 14, padding: '6px 14px', borderRadius: 999, background: 'rgba(4,8,23,0.85)', ...text(20, 700) }}>Crew 1</div>
         </div>
       </div>
     </Overlay>
@@ -506,11 +501,11 @@ export function Compare({ f }: { f: number }) {
 const ROADMAP: [string, string, string, [string, string][]][] = [
   ['Now', 'Built this weekend', C.status.evacuating, [
     ['satellite', 'Forecast from satellite hotspots'],
-    ['phone', 'Calls, triage, rescue queue'],
-    ['fire-truck', 'Crew plan, road closures, live map'],
+    ['phone', 'Phone calls, triage, rescue queue'],
+    ['fire-truck', 'Crew plan, road closures, crew texts'],
   ]],
   ['Next', 'Pilot', C.route, [
-    ['phone', 'Real phone lines (SIP)'],
+    ['fire-truck', "The live map on the crews' phones"],
     ['mic', 'Handover to a person at the control post'],
     ['home', 'One municipality, voluntary registry'],
   ]],
@@ -523,7 +518,8 @@ const ROADMAP: [string, string, string, [string, string][]][] = [
 
 export function Roadmap({ f }: { f: number }) {
   const s = scene('roadmap')
-  const at = [s.start + 4, line('roadmap-0').at, beat('roadmap-1', 'after')]
+  // Three cards on one line now: the second and third follow it instead of a second sentence.
+  const at = [s.start + 4, line('roadmap-0').at, line('roadmap-0').at + 34]
   return (
     <Overlay id="roadmap" f={f}>
       <Grid f={f} />
@@ -621,6 +617,170 @@ export function Devin({ f }: { f: number }) {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderRadius: 14, border: `1px solid ${C.line}`, background: 'rgba(4,8,23,0.9)' }}>
           <Icon name="phone" size={26} color={C.agent} />
           <span style={text(22, 600)}>Every call's answers, new tests for the agent</span>
+        </div>
+      </div>
+    </Overlay>
+  )
+}
+
+// ── 04 The handover: what the crew actually gets ──────────────────────────────
+
+/** The text HackFire sends a crew, from `crew.alert` in backend/app/locales, with the demo rescue in it. */
+const CREW_SMS = "Rescue needed at Calle del Júcar, La Atalaya. 2 people, mother can't walk. Route: frontend-production-ae2c.up.railway.app/?rescue=n03"
+
+/** The dashboard's map key, the part a crew needs: what is closed, and what they are driving. */
+const KEY: [string, string, boolean][] = [
+  ['Road the fire has reached', C.status.needs_rescue, true],
+  ['The way in, around it', C.route, false],
+  ['Road the coordinator closed', C.ink2, true],
+]
+
+export function Handover({ f }: { f: number }) {
+  const s = scene('handover')
+  const link = beat('handover-0', 'link')
+  const route = beat('handover-1', 'route')
+  const t = f - s.start
+  return (
+    <Overlay id="handover" f={f}>
+      <Grid f={f} />
+      <SimulationTag opacity={1} top={36} />
+      {/* The same phone as the opening. This time the message has a name on it. */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 130,
+          top: 110,
+          width: 420,
+          height: 840,
+          borderRadius: 52,
+          border: `4px solid ${C.line}`,
+          background: '#070c22',
+          overflow: 'hidden',
+          ...pop(t - 2),
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '28px 30px 0' }}>
+          <Icon name="fire-truck" size={26} color={C.ink2} />
+          <span style={mono(20, 500, C.ink2)}>Crew 1</span>
+          <span style={{ ...mono(20, 500, C.ink2), marginLeft: 'auto' }}>16:35</span>
+        </div>
+        <div
+          style={{
+            margin: '20px 26px 0',
+            borderRadius: 22,
+            border: `2px solid ${C.status.needs_rescue}`,
+            background: 'rgba(224,48,42,0.16)',
+            padding: 20,
+            ...pop(t - 12),
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <Icon name="bell" size={24} color={C.status.needs_rescue} />
+            <span style={text(20, 800, C.status.needs_rescue)}>HackFire</span>
+          </div>
+          <div style={{ ...text(24, 500, C.ink), lineHeight: 1.35, overflowWrap: 'anywhere' }}>{CREW_SMS}</div>
+        </div>
+        {/* The link is the route: it opens in the same phone, on the street they are going to. */}
+        <div
+          style={{
+            position: 'relative',
+            width: 364,
+            height: 420,
+            margin: '20px 26px 0',
+            borderRadius: 22,
+            overflow: 'hidden',
+            border: `2px solid ${C.line}`,
+            ...pop(f - link - 4),
+          }}
+        >
+          <FireMap
+            cam={camAt(-4.4565, 40.3875, 58)}
+            width={364}
+            height={420}
+            time={2315}
+            f={f}
+            risk={1}
+            labels={0}
+            crewBase={1}
+            wayIn={1}
+            closedRoads={1}
+            closure={1}
+            residents={{ n03: 'needs_rescue' }}
+          />
+        </div>
+      </div>
+      <div style={{ position: 'absolute', left: 660, top: 180, width: 1120, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={pop(t - 8)}>
+          <Panel title="One text, three things">
+            <Row icon="lifebuoy" color={C.status.needs_rescue}>Who needs help, and how many of them</Row>
+            <Row icon="home" color={C.ink}>The address the agent confirmed on the call</Row>
+            <Row icon="route" color={C.route}>A link: the route, around the fire</Row>
+          </Panel>
+        </div>
+        <div style={pop(f - route - 8)}>
+          <Panel title="What's on the map">
+            {KEY.map(([label, color, dashed]) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span
+                  style={{
+                    width: 54,
+                    height: 5,
+                    borderRadius: 3,
+                    background: dashed
+                      ? `repeating-linear-gradient(to right, ${color} 0 10px, transparent 10px 18px)`
+                      : color,
+                  }}
+                />
+                <span style={text(24, 500)}>{label}</span>
+              </div>
+            ))}
+          </Panel>
+        </div>
+      </div>
+    </Overlay>
+  )
+}
+
+// ── 05 Beyond this fire ───────────────────────────────────────────────────────
+
+/** An alert draft as the dashboard writes it in live mode (`liveOps.alert` in backend/app/locales). */
+const CAP_TEXT =
+  'Wildfire near El Tiemblo: the simulation expects it to arrive in about 2 hours. Follow the instructions of Civil Protection and 112.'
+
+const STACK: [string, string, string][] = [
+  ['satellite', 'Deepfire', 'hotspots and spread, on any fire it watches'],
+  ['home', 'OpenStreetMap', 'towns, care homes, schools and roads'],
+  ['car', 'openrouteservice', 'routes on foot and by car'],
+  ['phone', 'SLNG', 'the voice agents'],
+]
+
+export function Scale({ f }: { f: number }) {
+  const s = scene('scale')
+  const point = beat('scale-1', 'point')
+  const t = f - s.start
+  return (
+    <Overlay id="scale" f={f}>
+      <Grid f={f} />
+      <div style={{ position: 'absolute', left: 90, top: 150, width: 940, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ ...text(46, 800), ...pop(t - 2) }}>Nothing here is built for one fire</div>
+        {STACK.map(([icon, name, what], i) => (
+          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 18, ...pop(t - 10 - i * 5) }}>
+            <Icon name={icon} size={34} color={C.route} />
+            <span style={{ ...text(30, 700), width: 330 }}>{name}</span>
+            <span style={text(24, 500, C.ink2)}>{what}</span>
+          </div>
+        ))}
+      </div>
+      {/* The alert leaves in the format Civil Protection already reads, and only as a draft. */}
+      <div style={{ position: 'absolute', left: 1010, top: 170, width: 800, ...pop(f - point - 6) }}>
+        <div style={{ borderRadius: 22, border: `2px dashed ${C.line}`, background: 'rgba(20,30,66,0.9)', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 22px', borderBottom: `1px solid ${C.line}` }}>
+            <Icon name="flag" size={26} color={C.fire[1]} />
+            <span style={mono(22, 500, C.ink2)}>el-tiemblo-alert.cap</span>
+            <span style={{ ...mono(20, 700, C.ink), marginLeft: 'auto', padding: '4px 12px', borderRadius: 999, background: C.line }}>CAP 1.2</span>
+          </div>
+          <div style={{ ...text(28, 500, C.ink), padding: '22px 24px', lineHeight: 1.4 }}>{CAP_TEXT}</div>
+          <div style={{ ...mono(20, 500, C.ink2), padding: '0 24px 20px' }}>Draft. HackFire sends nothing to the public.</div>
         </div>
       </div>
     </Overlay>
