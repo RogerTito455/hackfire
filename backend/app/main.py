@@ -116,6 +116,23 @@ async def security_headers(request: Request, call_next: Callable[[Request], Awai
 app.middleware("http")(security_headers)
 
 
+@app.on_event("startup")
+def warm_the_caches() -> None:
+    """Read the cached files before the first request, not during it.
+
+    On a live call the agent waits for the answer, and the first request after a deploy was paying
+    for the 1.2 MB route cache, the hotspots and the forecasts all at once: 11.5 s of silence on the
+    phone, measured on 20 September. Each loader caches itself, so this only moves the cost to boot.
+    """
+    try:
+        evacuation._disk_cache()
+        impact.zones()
+        impact.forecasts()
+        replay.burned_area_m(scenario.current().scenario_time)
+    except Exception:  # a warm-up must never stop the service from starting
+        logging.getLogger("hackfire").exception("warm-up failed; the first request will be slower")
+
+
 @app.middleware("http")
 async def request_locale(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     """The language of the sentences this request gets back (app/i18n.py).
