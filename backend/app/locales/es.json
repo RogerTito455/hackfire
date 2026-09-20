@@ -36,7 +36,8 @@
     "none": "No se ha encontrado ninguna ruta que se aleje del fuego. Sigue las instrucciones de los servicios de emergencia en el lugar.",
     "closed": "La carretera hacia {destination} está cortada.",
     "blocked": "La ruta habitual pasa por una carretera cortada y ahora no se puede calcular otra. Siga las indicaciones de los servicios de emergencia en el lugar.",
-    "brief": "Ve en coche hasta {destination}{way}, {duration}."
+    "brief": "Ve en coche hasta {destination}{way}, {duration}.",
+    "unknown": "La ruta no está disponible; sigue el mapa del panel"
   },
   "order": {
     "leave": "La orden para {zone} es salir ahora hacia {destination}.",

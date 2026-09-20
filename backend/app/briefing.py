@@ -7,7 +7,7 @@ resident waits.
 
 import logging
 
-from . import i18n, impact, orders
+from . import evacuation, i18n, impact, orders
 from .config import settings
 from .i18n import t
 from .models import Neighbor, TravelMode
@@ -63,6 +63,18 @@ def crew_briefing(neighbor: Neighbor) -> str:
             mobility=neighbor.mobility or t("crew.mobilityUnknown"),
             fire=t("crew.fireIn", count=round(minutes / 60)) if minutes else t("crew.fireUnknown"),
         )
+
+
+def crew_call_data(neighbor: Neighbor) -> dict[str, str]:
+    """What the crew's call carries: the rescue in one sentence and the way in, both said up front."""
+    with i18n.using(settings.crew_locale):
+        try:
+            route = evacuation.rescue_route(neighbor)
+            way_in = route.brief or route.spoken_directions
+        except Exception:  # a call must go out even when routing does not answer
+            logger.exception("no crew route for the call about %s", neighbor.id)
+            way_in = t("route.unknown")
+    return {"rescue": crew_briefing(neighbor), "route": way_in}
 
 
 def _route_by_car(neighbor: Neighbor) -> str:

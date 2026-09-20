@@ -50,6 +50,8 @@ def test_the_crew_hears_the_rescue_in_the_first_breath(dialled: list[tuple[str, 
     _phone, arguments = dialled[0]
     assert "Avenida del Ebro" in arguments["rescue"]
     assert "2" in arguments["rescue"] or "two" in arguments["rescue"].lower()
+    # The way in goes with it: asking whether they want it wastes the first seconds of a rescue.
+    assert arguments["route"]
 
 
 def test_the_same_rescue_rings_once(dialled: list[tuple[str, dict]]) -> None:

@@ -798,7 +798,7 @@ def _call_the_crew(rescue_id: str) -> None:
     if neighbor is None:
         return
     try:
-        voice.call_crew(settings.crew_phone, {"rescue": briefing.crew_briefing(neighbor)})
+        voice.call_crew(settings.crew_phone, briefing.crew_call_data(neighbor))
     except voice.VoiceUnavailable:
         logger.exception("crew call for %s failed", rescue_id)
         audit.record("alert.crewCallFailed", actor="system", subject=neighbor_id, name=audit.resident_name(neighbor_id))
