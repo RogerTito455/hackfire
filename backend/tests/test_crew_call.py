@@ -21,10 +21,10 @@ def fresh():
 
 
 @pytest.fixture
-def dialled(monkeypatch: pytest.MonkeyPatch) -> list[str]:
-    calls: list[str] = []
+def dialled(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, dict]]:
+    calls: list[tuple[str, dict]] = []
     monkeypatch.setattr(voice, "crew_calls_configured", lambda: True)
-    monkeypatch.setattr(voice, "call_crew", lambda phone: calls.append(phone) or "call-1")
+    monkeypatch.setattr(voice, "call_crew", lambda phone, arguments: calls.append((phone, arguments)) or "call-1")
     monkeypatch.setattr(main, "settings", type(settings)(**{**settings.__dict__, "crew_phone": "+34000000099"}))
     return calls
 
@@ -37,13 +37,22 @@ def first_id() -> str:
     return client.get("/api/neighbors").json()[0]["id"]
 
 
-def test_a_new_rescue_rings_the_crew(dialled: list[str]) -> None:
+def test_a_new_rescue_rings_the_crew(dialled: list[tuple[str, dict]]) -> None:
     rescue(first_id())
 
-    assert dialled == ["+34000000099"]
+    assert [phone for phone, _ in dialled] == ["+34000000099"]
 
 
-def test_the_same_rescue_rings_once(dialled: list[str]) -> None:
+def test_the_crew_hears_the_rescue_in_the_first_breath(dialled: list[tuple[str, dict]]) -> None:
+    """The crew hung up on a greeting that said nothing: the call has to open with the rescue."""
+    rescue(first_id())
+
+    _phone, arguments = dialled[0]
+    assert "Avenida del Ebro" in arguments["rescue"]
+    assert "2" in arguments["rescue"] or "two" in arguments["rescue"].lower()
+
+
+def test_the_same_rescue_rings_once(dialled: list[tuple[str, dict]]) -> None:
     rescue(first_id())
     rescue(first_id())
 
@@ -52,15 +61,15 @@ def test_the_same_rescue_rings_once(dialled: list[str]) -> None:
 
 def test_nothing_is_dialled_until_crew_calls_are_turned_on(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(voice, "crew_calls_configured", lambda: False)
-    monkeypatch.setattr(voice, "call_crew", lambda phone: pytest.fail("crew calls are off"))
+    monkeypatch.setattr(voice, "call_crew", lambda *_: pytest.fail("crew calls are off"))
 
     rescue(first_id())
 
     assert client.get("/api/alerts").json(), "the alert still reaches the dashboard"
 
 
-def test_a_failed_call_never_breaks_the_agent_s_tool(dialled: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
-    def refused(_phone: str) -> str:
+def test_a_failed_call_never_breaks_the_agent_s_tool(dialled: list[tuple[str, dict]], monkeypatch: pytest.MonkeyPatch) -> None:
+    def refused(_phone: str, _arguments: dict) -> str:
         raise voice.VoiceUnavailable("SLNG said no")
 
     monkeypatch.setattr(voice, "call_crew", refused)

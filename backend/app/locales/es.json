@@ -63,7 +63,14 @@
       "other": "{count} personas"
     },
     "peopleUnknown": "Número de personas desconocido",
-    "navigate": "Ir: {link}"
+    "navigate": "Ir: {link}",
+    "briefing": "{name}, en {address}. {people}, {mobility}. {fire}.",
+    "mobilityUnknown": "no se sabe cómo están",
+    "fireIn": {
+      "one": "El fuego llega en una hora",
+      "other": "El fuego llega en unas {count} horas"
+    },
+    "fireUnknown": "No hay estimación del fuego"
   },
   "demo": {
     "wheelchair": "una persona va en silla de ruedas",

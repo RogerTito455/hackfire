@@ -63,7 +63,14 @@
       "other": "{count} people"
     },
     "peopleUnknown": "Number of people unknown",
-    "navigate": "Navigate: {link}"
+    "navigate": "Navigate: {link}",
+    "briefing": "{name}, at {address}. {people}, {mobility}. {fire}.",
+    "mobilityUnknown": "how they are is not known",
+    "fireIn": {
+      "one": "The fire is expected in about an hour",
+      "other": "The fire is expected in about {count} hours"
+    },
+    "fireUnknown": "There is no estimate for the fire"
   },
   "demo": {
     "wheelchair": "one person uses a wheelchair",

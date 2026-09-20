@@ -62,13 +62,13 @@ def crew_calls_configured() -> bool:
     return bool(settings.crew_calls and settings.slng_api_key and settings.slng_crew_agent_id)
 
 
-def call_crew(phone: str) -> str:
+def call_crew(phone: str, arguments: dict[str, str]) -> str:
     """Ring the crew with the agent that reads the rescue queue, the plan and the routes.
 
-    It takes no call variables: the agent asks its tools while it talks, so what it says is what the
-    coordinator sees at that moment.
+    `arguments` carry the rescue it is ringing about, so the agent opens with it; its tools answer
+    everything after that, from what the coordinator sees at that moment.
     """
-    return _dial(settings.slng_crew_agent_id, phone, None)
+    return _dial(settings.slng_crew_agent_id, phone, arguments)
 
 
 def _dial(agent_id: str, phone: str, arguments: dict[str, str] | None) -> str:

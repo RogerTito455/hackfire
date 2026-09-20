@@ -47,6 +47,24 @@ def call_variables(neighbor: Neighbor) -> dict[str, str]:
         }
 
 
+def crew_briefing(neighbor: Neighbor) -> str:
+    """One sentence for the crew's phone: who needs help, where, how many and how long there is.
+
+    It travels with the call, so the agent says it in its first breath instead of waiting to be
+    asked; its tools still answer everything after that.
+    """
+    with i18n.using(settings.crew_locale):
+        minutes = state.minutes_to_impact(neighbor.zone)
+        return t(
+            "crew.briefing",
+            name=neighbor.name,
+            address=neighbor.address,
+            people=t("crew.people", count=neighbor.people) if neighbor.people else t("crew.peopleUnknown"),
+            mobility=neighbor.mobility or t("crew.mobilityUnknown"),
+            fire=t("crew.fireIn", count=round(minutes / 60)) if minutes else t("crew.fireUnknown"),
+        )
+
+
 def _route_by_car(neighbor: Neighbor) -> str:
     try:
         route = orders.route_for(neighbor, TravelMode.CAR)
